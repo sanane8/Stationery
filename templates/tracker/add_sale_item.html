@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Add Item to Sale #{{ sale.id }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold text-primary">Add Item to Sale #{{ sale.id }}</h5>
+                <small class="text-muted">Customer: {{ sale.customer.name|default:"Walk-in" }} | Current Total: TZS {{ sale.total_amount|floatformat:0 }}</small>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.item.id_for_label }}" class="form-label">Stationery Item *</label>
+                                {{ form.item }}
+                                {% if form.item.errors %}
+                                    <div class="text-danger">{{ form.item.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="{{ form.quantity.id_for_label }}" class="form-label">Quantity *</label>
+                                {{ form.quantity }}
+                                {% if form.quantity.errors %}
+                                    <div class="text-danger">{{ form.quantity.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="{{ form.unit_price.id_for_label }}" class="form-label">Unit Price *</label>
+                                {{ form.unit_price }}
+                                {% if form.unit_price.errors %}
+                                    <div class="text-danger">{{ form.unit_price.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> The unit price will default to the item's current price, but you can modify it if needed for this sale.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Sale
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemSelect = document.getElementById('id_item');
+    const unitPriceInput = document.getElementById('id_unit_price');
+    
+    // Store item prices for quick lookup
+    const itemPrices = {
+        {% for item in form.item.field.queryset %}
+        {{ item.pk }}: {{ item.unit_price|floatformat:2 }},
+        {% endfor %}
+    };
+    
+    itemSelect.addEventListener('change', function() {
+        if (this.value && itemPrices[this.value]) {
+            unitPriceInput.value = itemPrices[this.value];
+        }
+    });
+});
+</script>
+{% endblock %}

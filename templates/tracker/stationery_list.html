@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title %}Stationery Items{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'create_stationery_item' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Item
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ search_query }}" placeholder="Search by name, SKU, or description">
+            </div>
+            <div class="col-md-3">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" id="category" name="category">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <a href="{% url 'stationery_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stationery Items Table -->
+<div class="card">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Stationery Items ({{ items.count }})</h6>
+    </div>
+    <div class="card-body">
+        {% if items %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>SKU</th>
+                            <th>Category</th>
+                            <th>Unit Price</th>
+                            <th>Cost Price</th>
+                            <th>Stock</th>
+                            <th>Profit Margin</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.name }}</strong>
+                                {% if item.description %}
+                                    <br><small class="text-muted">{{ item.description|truncatechars:50 }}</small>
+                                {% endif %}
+                            </td>
+                            <td><code>{{ item.sku }}</code></td>
+                            <td>{{ item.category.name }}</td>
+                            <td>TZS {{ item.unit_price|floatformat:0|intcomma }}</td>
+                            <td>TZS {{ item.cost_price|floatformat:0|intcomma }}</td>
+                            <td>
+                                <span class="{% if item.is_low_stock %}text-warning{% else %}text-success{% endif %}">
+                                    {{ item.stock_quantity }}
+                                </span>
+                                {% if item.is_low_stock %}
+                                    <br><small class="text-warning">Min: {{ item.minimum_stock }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.profit_margin|floatformat:1 }}%</td>
+                            <td>
+                                {% if item.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                                {% if item.is_low_stock %}
+                                    <br><span class="badge bg-warning">Low Stock</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'stationery_detail' item.pk %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/admin/tracker/stationeryitem/{{ item.pk }}/change/" class="btn btn-outline-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No stationery items found</h5>
+                <p class="text-muted">Start by adding your first stationery item.</p>
+                <a href="{% url 'create_stationery_item' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add First Item
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
