@@ -36,3 +36,4 @@ class Command(BaseCommand):
             self.style.SUCCESS(f'\nTotal categories created: {created_count}')
         )
         self.stdout.write('You can now add stationery items with these categories!')
+

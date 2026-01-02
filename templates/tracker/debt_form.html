@@ -34,15 +34,36 @@
                     </div>
                     
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="{{ form.amount.id_for_label }}" class="form-label">Amount *</label>
+                                <label for="{{ form.item.id_for_label }}" class="form-label">Item *</label>
+                                {{ form.item }}
+                                {% if form.item.errors %}
+                                    <div class="text-danger">{{ form.item.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.quantity.id_for_label }}" class="form-label">Quantity</label>
+                                {{ form.quantity }}
+                                {% if form.quantity.errors %}
+                                    <div class="text-danger">{{ form.quantity.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.amount.id_for_label }}" class="form-label">Unit Price *</label>
                                 {{ form.amount }}
+                                <div class="form-text text-muted">If an Item and Quantity are selected, entering the <strong>unit price</strong> will be multiplied by the quantity to produce the total debt</div>
                                 {% if form.amount.errors %}
                                     <div class="text-danger">{{ form.amount.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="{{ form.due_date.id_for_label }}" class="form-label">Due Date *</label>
@@ -52,7 +73,6 @@
                                 {% endif %}
                             </div>
                         </div>
-                    </div>
                     
                     <div class="mb-3">
                         <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>

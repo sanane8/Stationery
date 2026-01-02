@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load humanize %}
+{% load humanize tz %}
 
 {% block page_title %}{{ item.name }}{% endblock %}
 
@@ -119,7 +119,7 @@
                     {% for sale in recent_sales %}
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <div>
-                            <small class="text-muted">{{ sale.sale_date|date:"M d, Y" }}</small>
+                            <small class="text-muted">{{ sale.sale_date|localtime|date:"M d, Y" }}</small>
                         </div>
                         <div>
                             <strong>TZS {{ sale.total_amount|floatformat:0 |intcomma}}</strong>

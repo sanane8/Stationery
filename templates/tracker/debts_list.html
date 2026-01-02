@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load humanize %}
+{% load humanize querystring %}
 
 {% block page_title %}Debts{% endblock %}
 
@@ -17,6 +17,17 @@
     <div class="card-body">
         <form method="get" class="row g-3">
             <div class="col-md-3">
+                <label for="customer" class="form-label">Customer</label>
+                <select class="form-select" id="customer" name="customer">
+                    <option value="">All Customers</option>
+                    {% for customer in customers %}
+                        <option value="{{ customer.id }}" {% if selected_customer|stringformat:"s" == customer.id|stringformat:"s" %}selected{% endif %}>
+                            {{ customer.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label for="status" class="form-label">Status</label>
                 <select class="form-select" id="status" name="status">
                     <option value="">All Status</option>
@@ -27,6 +38,13 @@
                 </select>
             </div>
             <div class="col-md-3">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" class="form-control" id="search" name="search" placeholder="{% if selected_customer %}Description{% else %}Customer name or description{% endif %}" value="{{ search_query|default:'' }}">
+                {% if selected_customer %}
+                    <small class="text-muted">Searching in description only</small>
+                {% endif %}
+            </div>
+            <div class="col-md-2">
                 <div class="form-check mt-4">
                     <input class="form-check-input" type="checkbox" id="overdue" name="overdue" 
                            {% if overdue_only %}checked{% endif %}>
@@ -35,7 +53,7 @@
                     </label>
                 </div>
             </div>
-            <div class="col-md-3 d-flex align-items-end">
+            <div class="col-md-2 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary me-2">
                     <i class="fas fa-search"></i> Filter
                 </button>
@@ -47,10 +65,30 @@
     </div>
 </div>
 
+<!-- Totals Summary -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <h6 class="text-muted mb-1">Total Remaining Debt</h6>
+                <h4 class="text-success mb-0">TZS {{ total_remaining|floatformat:0|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-primary">
+            <div class="card-body text-center">
+                <h6 class="text-muted mb-1">Total Paid Debt</h6>
+                <h4 class="text-primary mb-0">TZS {{ total_paid|floatformat:0|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Debts Table -->
 <div class="card">
     <div class="card-header">
-        <h6 class="m-0 font-weight-bold text-primary">Debts ({{ debts.count }})</h6>
+        <h6 class="m-0 font-weight-bold text-primary">Debts ({{ debts.paginator.count }})</h6>
     </div>
     <div class="card-body">
         {% if debts %}
@@ -126,4 +164,27 @@
         {% endif %}
     </div>
 </div>
+{% if page_obj.has_other_pages %}
+<nav aria-label="Debts pagination" class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?{% url_replace 'page' page_obj.previous_page_number %}">Previous</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?{% url_replace 'page' num %}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?{% url_replace 'page' page_obj.next_page_number %}">Next</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}

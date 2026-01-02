@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load humanize %}
+{% load humanize tz %}
 
 {% block page_title %}Debt - {{ debt.customer.name }}{% endblock %}
 
@@ -30,6 +30,14 @@
                             <tr>
                                 <td><strong>Customer:</strong></td>
                                 <td>{{ debt.customer.name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Item:</strong></td>
+                                <td>{% if debt.item %}<a href="{% url 'stationery_detail' debt.item.pk %}">{{ debt.item.name }}</a>{% else %}-{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Quantity:</strong></td>
+                                <td>{{ debt.quantity }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Amount:</strong></td>
@@ -78,7 +86,7 @@
                             </tr>
                             <tr>
                                 <td><strong>Sale Date:</strong></td>
-                                <td>{{ debt.sale.sale_date|date:"M d, Y" }}</td>
+                                <td>{{ debt.sale.sale_date|localtime|date:"M d, Y" }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Sale Amount:</strong></td>

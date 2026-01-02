@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load humanize %}
+{% load humanize tz %}
 
 {% block page_title %}Sale #{{ sale.id }}{% endblock %}
 
@@ -17,7 +17,7 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="m-0 font-weight-bold text-primary">Sale #{{ sale.id }}</h5>
-                <small class="text-muted">{{ sale.sale_date|date:"F d, Y \a\t g:i A" }}</small>
+                <small class="text-muted">{{ sale.sale_date|localtime|date:"F d, Y \a\t g:i A" }}</small>
             </div>
             <div class="card-body">
                 <div class="row mb-4">
@@ -61,7 +61,11 @@
                             </tr>
                             <tr>
                                 <td><strong>Created By:</strong></td>
+                                {% if sale.created_by %}
                                 <td>{{ sale.created_by.get_full_name|default:sale.created_by.username }}</td>
+                                {% else %}
+                                <td>-</td>
+                                {% endif %}
                             </tr>
                         </table>
                     </div>

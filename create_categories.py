@@ -44,3 +44,4 @@ def create_default_categories():
 
 if __name__ == "__main__":
     create_default_categories()
+

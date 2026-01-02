@@ -21,3 +21,4 @@ def tzs_decimal(value):
         return f"TZS {value:,.2f}"
     except (ValueError, TypeError):
         return "TZS 0.00"
+

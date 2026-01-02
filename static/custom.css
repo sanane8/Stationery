@@ -32,3 +32,28 @@
         padding: 1rem;
     }
 }
+
+/* Filter controls styling */
+.filter-actions {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.filter-actions .btn {
+    display: inline-flex;
+    align-items: center;
+}
+.filter-actions .badge {
+    font-size: 0.75rem;
+    vertical-align: middle;
+}
+
+@media (max-width: 576px) {
+    .filter-actions .d-none.d-sm-inline {
+        display: none !important;
+    }
+    .filter-actions .action-buttons {
+        display: flex;
+        gap: .5rem;
+        margin-top: .5rem;
+    }
+}

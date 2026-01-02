@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.contrib import messages
+from django.utils import timezone
 from .models import Category, StationeryItem, Customer, Sale, SaleItem, Debt, Payment
+from .models import Expenditure
 
 
 @admin.register(Category)
@@ -44,15 +47,45 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):
-    list_display = ['id', 'customer', 'sale_date', 'total_amount', 'payment_method', 'is_paid', 'profit_display', 'created_by']
+    list_display = ['id', 'customer', 'sale_date_local', 'total_amount', 'payment_method', 'is_paid', 'profit_display', 'created_by']
     list_filter = ['payment_method', 'is_paid', 'sale_date', 'created_by']
     search_fields = ['customer__name', 'notes']
     readonly_fields = ['profit_display']
     inlines = [SaleItemInline]
+    actions = ['delete_and_restore_stock']
 
     def profit_display(self, obj):
-        return f"TZS {obj.profit:,.0f}"
+        return f"${obj.profit:.2f}"
     profit_display.short_description = "Profit"
+
+    def sale_date_local(self, obj):
+        if not obj.sale_date:
+            return '-'
+        local_dt = timezone.localtime(obj.sale_date)
+        return local_dt.strftime('%b %d, %Y %H:%M')
+    sale_date_local.admin_order_field = 'sale_date'
+    sale_date_local.short_description = 'Sale Date'
+
+    def delete_and_restore_stock(self, request, queryset):
+        """Admin action to delete selected sales and show restored stock in a message."""
+        # Collect restored quantities per item name
+        restored = {}
+        total_sales = queryset.count()
+        for sale in queryset:
+            for si in sale.items.all():
+                name = si.item.name
+                restored[name] = restored.get(name, 0) + si.quantity
+
+        # Perform deletion (this will trigger signals to restore stock for bulk deletes)
+        queryset.delete()
+
+        if restored:
+            parts = [f"{name} (+{qty})" for name, qty in restored.items()]
+            messages.success(request, f"Deleted {total_sales} sale(s). Restored stock: {', '.join(parts)}")
+        else:
+            messages.success(request, f"Deleted {total_sales} sale(s).")
+
+    delete_and_restore_stock.short_description = "Delete selected sales and restore stock (show restored items)"
 
 
 @admin.register(SaleItem)
@@ -80,3 +113,11 @@ class PaymentAdmin(admin.ModelAdmin):
     list_display = ['debt', 'amount', 'payment_date', 'payment_method']
     list_filter = ['payment_method', 'payment_date']
     search_fields = ['debt__customer__name', 'notes']
+
+
+@admin.register(Expenditure)
+class ExpenditureAdmin(admin.ModelAdmin):
+    list_display = ['id', 'category', 'amount', 'expense_date', 'created_by']
+    list_filter = ['category', 'expense_date']
+    search_fields = ['description']
+    readonly_fields = ['created_at']

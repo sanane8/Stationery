@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% load humanize %}
+{% load humanize tz %}
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
@@ -12,8 +12,8 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-uppercase mb-1">Today's Sales</div>
-                        <div class="h5 mb-0 font-weight-bold">TZS {{ today_sales.total_sales|default:0|floatformat:0|intcomma }}</div>
-                        <div class="text-xs">{{ today_sales.count_sales|default:0|intcomma }} transactions</div>
+                        <div class="h5 mb-0 font-weight-bold">TZS {{ net_today_sales|default:0|floatformat:0|intcomma }}</div>
+                        <div class="text-xs">{{ today_sales.count_sales|default:0|intcomma }} transactions • <small class="text-muted">Gross: TZS {{ today_sales.total_sales|default:0|floatformat:0|intcomma }}</small> • <small class="text-muted">Expend: TZS {{ exp_today.total|default:0|floatformat:0|intcomma }}</small></div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-dollar-sign fa-2x"></i>
@@ -29,8 +29,8 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-uppercase mb-1">Monthly Sales</div>
-                        <div class="h5 mb-0 font-weight-bold">TZS {{ monthly_sales.total_sales|default:0|floatformat:0|intcomma }}</div>
-                        <div class="text-xs">{{ monthly_sales.count_sales|default:0|intcomma }} transactions</div>
+                        <div class="h5 mb-0 font-weight-bold">TZS {{ net_monthly_sales|default:0|floatformat:0|intcomma }}</div>
+                        <div class="text-xs">{{ monthly_sales.count_sales|default:0|intcomma }} transactions • <small class="text-muted">Gross: TZS {{ monthly_sales.total_sales|default:0|floatformat:0|intcomma }}</small> • <small class="text-muted">Expend: TZS {{ exp_month.total|default:0|floatformat:0|intcomma }}</small></div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-chart-line fa-2x"></i>
@@ -75,6 +75,31 @@
     </div>
 </div>
 
+<div class="row mt-3">
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Today's Expenditures</h6>
+            </div>
+            <div class="card-body">
+                <div class="h5 mb-0 font-weight-bold">TZS {{ exp_today.total|default:0|floatformat:0|intcomma }}</div>
+                <div class="text-xs">{{ exp_today.count|default:0 }} transactions</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">This Month's Expenditures</h6>
+            </div>
+            <div class="card-body">
+                <div class="h5 mb-0 font-weight-bold">TZS {{ exp_month.total|default:0|floatformat:0|intcomma }}</div>
+                <div class="text-xs">{{ exp_month.count|default:0 }} transactions</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <!-- Recent Sales -->
     <div class="col-xl-8 col-lg-7">
@@ -99,7 +124,7 @@
                             <tbody>
                                 {% for sale in recent_sales %}
                                 <tr>
-                                    <td>{{ sale.sale_date|date:"M d, Y" }}</td>
+                                    <td>{{ sale.sale_date|localtime|date:"M d, Y" }}</td>
                                     <td>{{ sale.customer.name|default:"Walk-in" }}</td>
                                     <td>TZS {{ sale.total_amount|floatformat:0|intcomma }}</td>
                                     <td>{{ sale.get_payment_method_display }}</td>

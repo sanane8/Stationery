@@ -12,12 +12,21 @@ urlpatterns = [
     
     # Sales
     path('sales/', views.sales_list, name='sales_list'),
+    path('sales/export/daily/', views.sales_daily_export_csv, name='sales_daily_export'),
+    path('sales/export/daily/pdf/', views.sales_daily_export_pdf, name='sales_daily_export_pdf'),
+    path('sales/print/daily/', views.sales_daily_print, name='sales_daily_print'),
     path('sales/<int:pk>/', views.sale_detail, name='sale_detail'),
+    path('sales/<int:pk>/delete/', views.delete_sale, name='delete_sale'),
     path('sales/create/', views.create_sale, name='create_sale'),
     path('sales/<int:sale_id>/add-item/', views.add_sale_item, name='add_sale_item'),
     
     # Debts
     path('debts/', views.debts_list, name='debts_list'),
+    path('expenditures/', views.expenditures_list, name='expenditures_list'),
+    path('expenditures/create/', views.create_expenditure, name='create_expenditure'),
+    path('expenditures/export/', views.expenditures_export_csv, name='expenditures_export'),
+    path('expenditures/export/pdf/', views.expenditures_export_pdf, name='expenditures_export_pdf'),
+    path('expenditures/<int:pk>/delete/', views.delete_expenditure, name='delete_expenditure'),
     path('debts/<int:pk>/', views.debt_detail, name='debt_detail'),
     path('debts/create/', views.create_debt, name='create_debt'),
     path('debts/<int:debt_id>/payment/', views.add_payment, name='add_payment'),
