@@ -1,0 +1,59 @@
+/* Custom styles for Stationery Tracker */
+
+/* Additional customizations can be added here */
+.sidebar .nav-link.active {
+    background-color: #3498db !important;
+    color: #fff !important;
+}
+
+.stat-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        min-height: auto;
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+}
+
+/* Filter controls styling */
+.filter-actions {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.filter-actions .btn {
+    display: inline-flex;
+    align-items: center;
+}
+.filter-actions .badge {
+    font-size: 0.75rem;
+    vertical-align: middle;
+}
+
+@media (max-width: 576px) {
+    .filter-actions .d-none.d-sm-inline {
+        display: none !important;
+    }
+    .filter-actions .action-buttons {
+        display: flex;
+        gap: .5rem;
+        margin-top: .5rem;
+    }
+}
