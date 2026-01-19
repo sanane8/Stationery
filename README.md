@@ -141,20 +141,4 @@ The Django admin interface provides:
 - Bootstrap 5 is used for responsive design
 - Font Awesome icons are included
 
-## Security Notes
 
-- Change the `SECRET_KEY` in `settings.py` for production
-- Set `DEBUG = False` for production
-- Use environment variables for sensitive data
-- Implement proper user authentication and permissions
-
-## Support
-
-For issues or questions:
-1. Check the Django documentation
-2. Review the admin interface for data management
-3. Use the built-in search and filter features
-
-## License
-
-This project is open source and available under the MIT License.
