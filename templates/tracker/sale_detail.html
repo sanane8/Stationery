@@ -8,6 +8,9 @@
     <a href="{% url 'sales_list' %}" class="btn btn-outline-primary">
         <i class="fas fa-arrow-left"></i> Back to Sales
     </a>
+    <a href="{% url 'print_invoice' sale.pk %}" target="_blank" class="btn btn-outline-secondary">
+        <i class="fas fa-print"></i> Print Invoice
+    </a>
 </div>
 {% endblock %}
 

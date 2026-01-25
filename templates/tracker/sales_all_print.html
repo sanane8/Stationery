@@ -24,6 +24,7 @@
     <tr>
       <th>Sale #</th>
       <th>Date</th>
+      <th>Products</th>
       <th>Customer</th>
       <th class="text-end">Amount</th>
       <th class="text-end">Profit</th>
@@ -37,6 +38,7 @@
     <tr>
       <td>#{{ s.id }}</td>
       <td>{{ s.date }}</td>
+      <td>{{ s.products }}</td>
       <td>{{ s.customer }}</td>
       <td class="text-end">TZS {{ s.amount|floatformat:0|intcomma }}</td>
       <td class="text-end">TZS {{ s.profit|floatformat:0|intcomma }}</td>

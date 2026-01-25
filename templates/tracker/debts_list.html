@@ -8,6 +8,19 @@
     <a href="{% url 'create_debt' %}" class="btn btn-primary">
         <i class="fas fa-plus"></i> Add Debt
     </a>
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-paper-plane"></i> Send Bulk Reminders
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'send_bulk_debt_sms' %}">
+                <i class="fas fa-sms"></i> Send Bulk SMS
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'send_bulk_debt_whatsapp' %}">
+                <i class="fab fa-whatsapp"></i> Send Bulk WhatsApp
+            </a></li>
+        </ul>
+    </div>
 </div>
 {% endblock %}
 
