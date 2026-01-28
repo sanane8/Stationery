@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import models
 from django.db import transaction
-from django.db.models import Sum, Count, Q, F, DecimalField, ExpressionWrapper
+from django.db.models import Sum, Count, Q, F, DecimalField, ExpressionWrapper, Exists, OuterRef
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 from django.core.paginator import Paginator
@@ -14,8 +14,12 @@ from .forms import SaleForm, SaleItemForm, DebtForm, PaymentForm, StationeryItem
 from .forms import ExpenditureForm
 from .models import Expenditure
 import csv
+import logging
 from django.http import HttpResponse
 from io import BytesIO
+import json
+
+logger = logging.getLogger(__name__)
 try:
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas
@@ -27,8 +31,14 @@ except Exception:
 
 def dashboard(request):
     """Main dashboard view"""
-    # Get recent **paid** sales (exclude unpaid sales from 'recent' listing)
-    recent_sales = Sale.objects.select_related('customer').filter(is_paid=True).order_by('-sale_date')[:10]
+    # Get recent **paid** sales (exclude unpaid sales and sales with no items)
+    recent_sales = (
+        Sale.objects.select_related('customer')
+        .prefetch_related('items__item')
+        .annotate(item_count=Count('items'))
+        .filter(is_paid=True, item_count__gt=0)
+        .order_by('-sale_date')[:10]
+    )
 
     # Get low stock items
     low_stock_items = StationeryItem.objects.filter(
@@ -185,7 +195,7 @@ def stationery_detail(request, pk):
 
 def sales_list(request):
     """List all sales"""
-    sales = Sale.objects.select_related('customer', 'created_by').order_by('-sale_date')
+    sales = Sale.objects.select_related('customer', 'created_by').prefetch_related('items__item').order_by('-sale_date')
     
     # Filter by date range
     start_date = request.GET.get('start_date')
@@ -215,9 +225,29 @@ def sales_list(request):
         sales = sales.filter(is_paid=True)
     elif payment_status == 'unpaid':
         sales = sales.filter(is_paid=False)
+
     elif payment_status == 'all':
         # explicit request to include all sales
         pass
+
+    # Filter by product (items sold): sales that contain at least one item whose name matches
+    product_search = request.GET.get('product') or request.GET.get('search_product')
+    if product_search in (None, '', 'None'):
+        product_search = None
+    else:
+        product_search = str(product_search).strip() or None
+    if product_search:
+        has_product = SaleItem.objects.filter(
+            sale=OuterRef('pk'),
+            item__name__icontains=product_search,
+        )
+        sales = sales.filter(Exists(has_product))
+
+    # Exclude sales that have no items and are not payment-only sales
+    # Payment sales are stored as sales with no items but notes like 'Payment for Debt #<id>'
+    sales = sales.annotate(item_count=Count('items')).filter(
+        Q(item_count__gt=0) | Q(notes__contains='Payment for Debt #')
+    )
 
     # Annotate per-sale total_cost and profit to avoid N+1 queries in template
     total_cost_expr = Sum(F('items__quantity') * F('items__item__cost_price'), output_field=DecimalField())
@@ -249,6 +279,8 @@ def sales_list(request):
     # Use a separate queryset for aggregation to avoid confusing pagination (evaluate full set)
     sales_for_agg = sales.select_related('customer').prefetch_related('items__item')
 
+    product_search_lower = (product_search or '').lower()
+
     for sale in sales_for_agg:
         local_date = timezone.localtime(sale.sale_date).date()
         rev = sale.total_amount or Decimal('0')
@@ -257,33 +289,73 @@ def sales_list(request):
         except Exception:
             cost = Decimal('0')
 
-        entry = daily_map.setdefault(local_date, {'revenue': Decimal('0'), 'cost': Decimal('0'), 'count': 0})
+        entry = daily_map.setdefault(local_date, {
+            'revenue': Decimal('0'), 'cost': Decimal('0'), 'count': 0,
+            'product_qty': 0, 'product_revenue': Decimal('0'), 'product_cost': Decimal('0'),
+            'product_names': set(),
+        })
         entry['revenue'] += rev
         entry['cost'] += cost
         entry['count'] += 1
+        if product_search_lower:
+            try:
+                match_qty = 0
+                match_revenue = Decimal('0')
+                match_cost = Decimal('0')
+                names = entry.get('product_names') or set()
+                for si in sale.items.all():
+                    if product_search_lower not in ((si.item.name or '').lower()):
+                        continue
+                    match_qty += si.quantity
+                    match_revenue += si.total_price or (si.quantity * (si.unit_price or Decimal('0')))
+                    match_cost += si.quantity * (si.item.cost_price or Decimal('0'))
+                    if si.item.name:
+                        names.add(si.item.name)
+                entry['product_qty'] = entry.get('product_qty', 0) + match_qty
+                entry['product_revenue'] = entry.get('product_revenue', Decimal('0')) + match_revenue
+                entry['product_cost'] = entry.get('product_cost', Decimal('0')) + match_cost
+                entry['product_names'] = names
+            except Exception:
+                pass
 
     # Convert map into sorted list (newest date first)
     daily_sales = []
     for date_key in sorted(daily_map.keys(), reverse=True):
         data = daily_map[date_key]
-        # Subtract expenditures for this date
         exp_for_date = Expenditure.objects.filter(expense_date__date=date_key).aggregate(total=Sum('amount'))['total'] or Decimal('0')
-        net_revenue = data['revenue'] - (exp_for_date or Decimal('0'))
-        profit = net_revenue - data['cost']
+        if product_search:
+            # Product filter: Total Sold = revenue from matching items only; Profit = that revenue − cost of those items.
+            # Qty and Total Sold are then from the same line items (mathematically consistent).
+            revenue = data.get('product_revenue') or Decimal('0')
+            cost = data.get('product_cost') or Decimal('0')
+            profit = revenue - cost
+        else:
+            net_revenue = data['revenue'] - (exp_for_date or Decimal('0'))
+            revenue = net_revenue
+            cost = data['cost']
+            profit = net_revenue - cost
+        product_names = data.get('product_names') or set()
         daily_sales.append({
             'date': date_key,
-            'revenue': net_revenue,
-            'cost': data['cost'],
+            'revenue': revenue,
+            'cost': cost,
             'expenditure': exp_for_date,
             'profit': profit,
             'count': data['count'],
+            'product_qty': data.get('product_qty', 0),
+            'product_names': sorted(product_names),
         })
 
     # By default (when no filters applied) show only the most recent two days
     # Use `payment_status_explicit` to detect whether user provided a filter;
     # if not provided, we treat the page as having no user filters and shorten the summary.
-    if not (start_date or end_date or (locals().get('payment_status_explicit', False))):
+    if not (start_date or end_date or (locals().get('payment_status_explicit', False)) or product_search):
         daily_sales = daily_sales[:2]
+
+    # Totals for daily summary (sum of Total Sold and Profit columns); respect date filters.
+    daily_summary_total_sold = sum(d['revenue'] for d in daily_sales)
+    daily_summary_total_profit = sum(d['profit'] for d in daily_sales)
+    daily_summary_total_product_qty = sum(d.get('product_qty', 0) for d in daily_sales)
     
     # Paginate
     page = request.GET.get('page')
@@ -298,16 +370,74 @@ def sales_list(request):
                 sale.annotated_profit = sale.profit
             except Exception:
                 sale.annotated_profit = Decimal('0')
+        # Build a products string for display on the sales list for payment-only sales
+        try:
+            sale_items = list(sale.items.select_related('item').all())
+        except Exception:
+            sale_items = []
+
+        products_list = []
+        if sale_items:
+            for si in sale_items:
+                products_list.append(f"{si.item.name} ({si.quantity})")
+        else:
+            import re
+            m = re.search(r'Payment for Debt #(\d+)', (sale.notes or ''))
+            if m:
+                try:
+                    debt = Debt.objects.select_related('item', 'sale').get(pk=int(m.group(1)))
+                    if debt.sale and debt.sale.items.exists():
+                        for si in debt.sale.items.select_related('item').all():
+                            products_list.append(f"{si.item.name} ({si.quantity})")
+                    elif debt.item:
+                        products_list.append(f"{debt.item.name} ({debt.quantity})")
+                except Debt.DoesNotExist:
+                    pass
+
+        sale.products = ', '.join(products_list) if products_list else None
+
+        # Determine a display name for the 'Created By' column. For payment-only
+        # sales that reference a Debt, prefer the original sale's creator if available.
+        created_by_name = None
+        if sale.created_by:
+            try:
+                created_by_name = sale.created_by.get_full_name() or sale.created_by.username
+            except Exception:
+                try:
+                    created_by_name = sale.created_by.username
+                except Exception:
+                    created_by_name = None
+
+        if not created_by_name:
+            # If this is a payment-sale, try to infer creator from the originating debt/sale
+            import re
+            m2 = re.search(r'Payment for Debt #(\d+)', (sale.notes or ''))
+            if m2:
+                try:
+                    debt = Debt.objects.select_related('sale__created_by').get(pk=int(m2.group(1)))
+                    if debt.sale and debt.sale.created_by:
+                        try:
+                            created_by_name = debt.sale.created_by.get_full_name() or debt.sale.created_by.username
+                        except Exception:
+                            created_by_name = getattr(debt.sale.created_by, 'username', None)
+                except Debt.DoesNotExist:
+                    pass
+
+        sale.created_by_display = created_by_name
 
     context = {
         'sales': page_obj,
         'start_date': start_date,
         'end_date': end_date,
         'payment_status': payment_status,
+        'product_search': product_search or '',
         'total_amount': total_amount,
         'total_amount_net': total_amount_net,
         'total_expenditure': total_expenditure,
         'daily_sales': daily_sales,
+        'daily_summary_total_sold': daily_summary_total_sold,
+        'daily_summary_total_profit': daily_summary_total_profit,
+        'daily_summary_total_product_qty': daily_summary_total_product_qty,
         'overall_profit': overall_profit,
         'paginator': paginator,
         'page_obj': page_obj,
@@ -327,6 +457,68 @@ def sale_detail(request, pk):
     }
     
     return render(request, 'tracker/sale_detail.html', context)
+
+
+def print_invoice(request, pk):
+    """Render a printable invoice for a single sale."""
+    sale = get_object_or_404(Sale, pk=pk)
+    sale_items = sale.items.select_related('item')
+
+    # Calculate totals and cost
+    try:
+        total_cost = sum((si.quantity * (si.item.cost_price or Decimal('0'))) for si in sale_items)
+    except Exception:
+        total_cost = Decimal('0')
+    revenue = sale.total_amount or Decimal('0')
+    profit = revenue - (total_cost or Decimal('0'))
+
+    context = {
+        'sale': sale,
+        'sale_items': sale_items,
+        'total_cost': total_cost,
+        'revenue': revenue,
+        'profit': profit,
+    }
+
+    return render(request, 'tracker/sale_invoice.html', context)
+
+
+def sales_chart(request):
+    """Graphical representation of sales"""
+    # Get sales data for chart
+    sales = Sale.objects.filter(is_paid=True).order_by('sale_date')
+    
+    # Filter by date range if provided
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    if start_date in (None, '', 'None'):
+        start_date = None
+    if end_date in (None, '', 'None'):
+        end_date = None
+    
+    if start_date:
+        sales = sales.filter(sale_date__date__gte=start_date)
+    if end_date:
+        sales = sales.filter(sale_date__date__lte=end_date)
+    
+    # Group by date
+    from django.db.models.functions import TruncDate
+    daily_sales = sales.annotate(date=TruncDate('sale_date')).values('date').annotate(
+        total=Sum('total_amount')
+    ).order_by('date')
+    
+    # Prepare data for Chart.js
+    labels = [item['date'].strftime('%Y-%m-%d') for item in daily_sales]
+    data = [float(item['total']) for item in daily_sales]
+    
+    context = {
+        'labels': json.dumps(labels),
+        'data': json.dumps(data),
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    
+    return render(request, 'tracker/sales_chart.html', context)
 
 
 def sales_daily_export_csv(request):
@@ -351,6 +543,16 @@ def sales_daily_export_csv(request):
         sales = sales.filter(is_paid=True)
     elif payment_status == 'unpaid':
         sales = sales.filter(is_paid=False)
+
+    product_search = request.GET.get('product') or request.GET.get('search_product')
+    if product_search not in (None, '', 'None') and str(product_search).strip():
+        product_search = str(product_search).strip()
+        has_product = SaleItem.objects.filter(
+            sale=OuterRef('pk'),
+            item__name__icontains=product_search,
+        )
+        sales = sales.filter(Exists(has_product))
+
     # Export all matching sales (row per sale) as CSV
     sales = sales.select_related('customer').prefetch_related('items__item')
 
@@ -432,6 +634,15 @@ def sales_daily_export_pdf(request):
         sales = sales.filter(is_paid=True)
     elif payment_status == 'unpaid':
         sales = sales.filter(is_paid=False)
+
+    product_search = request.GET.get('product') or request.GET.get('search_product')
+    if product_search not in (None, '', 'None') and str(product_search).strip():
+        product_search = str(product_search).strip()
+        has_product = SaleItem.objects.filter(
+            sale=OuterRef('pk'),
+            item__name__icontains=product_search,
+        )
+        sales = sales.filter(Exists(has_product))
 
     # Export all matching sales (no two-day cap) as a PDF listing individual sales
     # Build list of sales respecting filters
@@ -522,6 +733,15 @@ def sales_daily_print(request):
     elif payment_status == 'unpaid':
         sales = sales.filter(is_paid=False)
 
+    product_search = request.GET.get('product') or request.GET.get('search_product')
+    if product_search not in (None, '', 'None') and str(product_search).strip():
+        product_search = str(product_search).strip()
+        has_product = SaleItem.objects.filter(
+            sale=OuterRef('pk'),
+            item__name__icontains=product_search,
+        )
+        sales = sales.filter(Exists(has_product))
+
     sales = sales.select_related('customer').prefetch_related('items__item')
 
     rows = []
@@ -538,15 +758,73 @@ def sales_daily_print(request):
         except Exception:
             date_str = str(sale.sale_date)
 
+        # Determine products for this sale. For payment-only sales (no items)
+        # try to infer the original product(s) from an associated Debt.
+        products_list = []
+        try:
+            sale_items = list(sale.items.select_related('item').all())
+        except Exception:
+            sale_items = []
+
+        if sale_items:
+            for si in sale_items:
+                products_list.append(f"{si.item.name} ({si.quantity})")
+        else:
+            # Try to infer from notes like 'Payment for Debt #<id>'
+            import re
+            m = re.search(r'Payment for Debt #(\d+)', (sale.notes or ''))
+            if m:
+                from .models import Debt
+                try:
+                    debt = Debt.objects.select_related('item', 'sale').get(pk=int(m.group(1)))
+                    # If the debt references an originating sale with items, use those
+                    if debt.sale and debt.sale.items.exists():
+                        for si in debt.sale.items.select_related('item').all():
+                            products_list.append(f"{si.item.name} ({si.quantity})")
+                    elif debt.item:
+                        products_list.append(f"{debt.item.name} ({debt.quantity})")
+                except Debt.DoesNotExist:
+                    pass
+
+        products_str = ', '.join(products_list) if products_list else ''
+
+        # Determine created_by for print rows. Prefer sale.created_by, then
+        # originating sale's created_by (if debt.sale), then debt.created_by.
+        created_by_name = ''
+        if sale.created_by:
+            try:
+                created_by_name = sale.created_by.get_full_name() or sale.created_by.username
+            except Exception:
+                created_by_name = getattr(sale.created_by, 'username', '')
+        else:
+            import re
+            m2 = re.search(r'Payment for Debt #(\d+)', (sale.notes or ''))
+            if m2:
+                try:
+                    debt = Debt.objects.select_related('sale__created_by', 'created_by').get(pk=int(m2.group(1)))
+                    if debt.sale and debt.sale.created_by:
+                        try:
+                            created_by_name = debt.sale.created_by.get_full_name() or debt.sale.created_by.username
+                        except Exception:
+                            created_by_name = getattr(debt.sale.created_by, 'username', '')
+                    elif debt.created_by:
+                        try:
+                            created_by_name = debt.created_by.get_full_name() or debt.created_by.username
+                        except Exception:
+                            created_by_name = getattr(debt.created_by, 'username', '')
+                except Debt.DoesNotExist:
+                    created_by_name = ''
+
         rows.append({
             'id': sale.id,
             'date': date_str,
             'customer': sale.customer.name if sale.customer else 'Walk-in',
             'amount': revenue,
             'profit': profit,
+            'products': products_str,
             'payment_method': sale.get_payment_method_display(),
             'status': 'Paid' if sale.is_paid else 'Unpaid',
-            'created_by': sale.created_by.get_full_name() if sale.created_by else '',
+            'created_by': created_by_name,
         })
 
     context = {
@@ -569,6 +847,34 @@ def delete_sale(request, pk):
         restored_items = []
         for si in sale.items.all():
             restored_items.append(f"{si.item.name} (+{si.quantity})")
+
+        # Check if this is a payment sale for a debt
+        if not sale.items.exists() and sale.notes and 'Payment for Debt #' in sale.notes:
+            import re
+            match = re.search(r'Payment for Debt #(\d+)', sale.notes)
+            if match:
+                debt_id = int(match.group(1))
+                try:
+                    from .models import Debt
+                    debt = Debt.objects.get(pk=debt_id)
+                    # Restore stock for the debt's item and quantity
+                    debt.item.stock_quantity += debt.quantity
+                    debt.item.save(update_fields=['stock_quantity'])
+                    restored_items.append(f"{debt.item.name} (+{debt.quantity})")
+                    # Reverse the payment
+                    debt.paid_amount -= sale.total_amount
+                    if debt.paid_amount < 0:
+                        debt.paid_amount = Decimal('0')
+                    # Update debt status
+                    if debt.paid_amount >= debt.amount:
+                        debt.status = 'paid'
+                    elif debt.paid_amount > 0:
+                        debt.status = 'partial'
+                    else:
+                        debt.status = 'pending'
+                    debt.save()
+                except Debt.DoesNotExist:
+                    pass  # Debt might have been deleted already
 
         sale.delete()
 
@@ -978,6 +1284,12 @@ def create_debt(request):
                 except Exception:
                     # If anything goes wrong with comparison, fall back to using the provided amount
                     pass
+            # record which user created this debt (if available)
+            try:
+                debt.created_by = request.user
+            except Exception:
+                pass
+
             # Reduce stock if item provided
             if debt.item:
                 if debt.item.stock_quantity < debt.quantity:
@@ -995,6 +1307,7 @@ def create_debt(request):
     
     context = {
         'form': form,
+        'unit_prices': form.unit_prices,
     }
     
     return render(request, 'tracker/debt_form.html', context)
@@ -1123,3 +1436,184 @@ def create_stationery_item(request):
     }
     
     return render(request, 'tracker/stationery_form.html', context)
+
+
+@login_required
+def send_debt_sms(request, debt_id):
+    """Send SMS reminder for a specific debt"""
+    debt = get_object_or_404(Debt, pk=debt_id)
+
+    if request.method == 'POST':
+        from .sms_utils import send_debt_reminder_sms
+
+        result = send_debt_reminder_sms(debt)
+
+        if result['success']:
+            messages.success(request, f'SMS sent successfully to {debt.customer.name}')
+        else:
+            messages.error(request, f'Failed to send SMS: {result.get("error", "Unknown error")}')
+
+        return redirect('debt_detail', pk=debt.pk)
+
+    # GET request - show confirmation page
+    context = {
+        'debt': debt,
+    }
+
+    return render(request, 'tracker/send_debt_sms.html', context)
+
+
+@login_required
+def send_bulk_debt_sms(request):
+    """Send SMS reminders to multiple customers with outstanding debts"""
+    if request.method == 'POST':
+        try:
+            try:
+                from .sms_utils import send_debt_reminder_sms
+            except Exception as e:
+                logger.exception("Failed to import sms_utils: %s", e)
+                messages.error(request, 'SMS module could not be loaded. Check configuration.')
+                return redirect('send_bulk_debt_sms')
+
+            # Parse and validate debt_ids
+            raw_ids = request.POST.getlist('debt_ids')
+            debt_ids = []
+            for sid in raw_ids:
+                if not sid:
+                    continue
+                try:
+                    debt_ids.append(int(sid))
+                except (ValueError, TypeError):
+                    continue
+
+            if not debt_ids:
+                messages.warning(request, 'No debts selected. Please select at least one debt.')
+                return redirect('send_bulk_debt_sms')
+
+            debts = Debt.objects.select_related('customer').filter(
+                id__in=debt_ids,
+                customer__phone__isnull=False
+            ).exclude(customer__phone='')
+
+            sent_count = 0
+            failed_count = 0
+            errors = []
+
+            for debt in debts:
+                try:
+                    result = send_debt_reminder_sms(debt)
+                    if result.get('success'):
+                        sent_count += 1
+                    else:
+                        failed_count += 1
+                        errors.append(f"{debt.customer.name}: {result.get('error', 'Unknown error')}")
+                except Exception as e:
+                    logger.exception("Bulk SMS failed for debt id=%s: %s", debt.pk, e)
+                    failed_count += 1
+                    errors.append(f"{debt.customer.name}: {str(e)}")
+
+            if sent_count > 0:
+                messages.success(request, f'SMS sent to {sent_count} customers')
+
+            if failed_count > 0:
+                messages.warning(request, f'Failed to send SMS to {failed_count} customers')
+                for err in errors[:5]:
+                    messages.warning(request, err)
+
+            if sent_count == 0 and failed_count == 0:
+                messages.warning(request, 'No eligible debts with phone numbers found for the selected items.')
+
+            return redirect('debts_list')
+
+        except Exception as e:
+            logger.exception("Bulk SMS request failed: %s", e)
+            messages.error(
+                request,
+                'An unexpected error occurred while sending bulk SMS. Please try again or contact support.'
+            )
+            return redirect('send_bulk_debt_sms')
+
+    # GET request - show form to select debts
+    debts = Debt.objects.select_related('customer').filter(
+        status__in=['pending', 'partial', 'overdue'],
+        customer__phone__isnull=False
+    ).exclude(customer__phone='').order_by('due_date')
+
+    context = {
+        'debts': debts,
+    }
+
+    return render(request, 'tracker/send_bulk_debt_sms.html', context)
+
+
+@login_required
+def send_debt_whatsapp(request, debt_id):
+    """Send WhatsApp reminder for a specific debt"""
+    debt = get_object_or_404(Debt, pk=debt_id)
+
+    if request.method == 'POST':
+        from .sms_utils import send_debt_reminder_whatsapp
+
+        result = send_debt_reminder_whatsapp(debt)
+
+        if result['success']:
+            messages.success(request, f'WhatsApp message sent successfully to {debt.customer.name}')
+        else:
+            messages.error(request, f'Failed to send WhatsApp message: {result.get("error", "Unknown error")}')
+
+        return redirect('debt_detail', pk=debt.pk)
+
+    # GET request - show confirmation page
+    context = {
+        'debt': debt,
+    }
+
+    return render(request, 'tracker/send_debt_whatsapp.html', context)
+
+
+@login_required
+def send_bulk_debt_whatsapp(request):
+    """Send WhatsApp reminders to multiple customers with outstanding debts"""
+    if request.method == 'POST':
+        from .sms_utils import send_debt_reminder_whatsapp
+
+        # Get debts to send WhatsApp to
+        debt_ids = request.POST.getlist('debt_ids')
+        debts = Debt.objects.filter(
+            id__in=debt_ids,
+            customer__phone__isnull=False
+        ).exclude(customer__phone='')
+
+        sent_count = 0
+        failed_count = 0
+        errors = []
+
+        for debt in debts:
+            result = send_debt_reminder_whatsapp(debt)
+            if result['success']:
+                sent_count += 1
+            else:
+                failed_count += 1
+                errors.append(f"{debt.customer.name}: {result.get('error', 'Unknown error')}")
+
+        if sent_count > 0:
+            messages.success(request, f'WhatsApp messages sent to {sent_count} customers')
+
+        if failed_count > 0:
+            messages.warning(request, f'Failed to send WhatsApp to {failed_count} customers')
+            for error in errors[:5]:  # Show first 5 errors
+                messages.warning(request, error)
+
+        return redirect('debts_list')
+
+    # GET request - show form to select debts
+    debts = Debt.objects.select_related('customer').filter(
+        status__in=['pending', 'partial', 'overdue'],
+        customer__phone__isnull=False
+    ).exclude(customer__phone='').order_by('due_date')
+
+    context = {
+        'debts': debts,
+    }
+
+    return render(request, 'tracker/send_bulk_debt_whatsapp.html', context)

@@ -8,6 +8,9 @@
     <a href="{% url 'create_sale' %}" class="btn btn-primary">
         <i class="fas fa-plus"></i> New Sale
     </a>
+    <a href="{% url 'sales_chart' %}" class="btn btn-info">
+        <i class="fas fa-chart-line"></i> Sales Chart
+    </a>
 </div>
 {% endblock %}
 
@@ -15,28 +18,32 @@
 <!-- Filters -->
 <div class="card mb-4">
     <div class="card-body">
-        <form method="get" class="row g-3">
-            <div class="col-md-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col">
                 <label for="start_date" class="form-label">Start Date</label>
-                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                <input type="date" class="form-control form-control-sm" id="start_date" name="start_date" value="{{ start_date }}">
             </div>
-            <div class="col-md-3">
+            <div class="col">
                 <label for="end_date" class="form-label">End Date</label>
-                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                <input type="date" class="form-control form-control-sm" id="end_date" name="end_date" value="{{ end_date }}">
             </div>
-            <div class="col-md-3">
+            <div class="col">
                 <label for="payment_status" class="form-label">Payment Status</label>
-                <select class="form-select" id="payment_status" name="payment_status">
+                <select class="form-select form-select-sm" id="payment_status" name="payment_status">
                     <option value="all" {% if payment_status == 'all' %}selected{% endif %}>All</option>
                     <option value="paid" {% if payment_status == 'paid' %}selected{% endif %}>Paid</option>
                     <option value="unpaid" {% if payment_status == 'unpaid' %}selected{% endif %}>Unpaid</option>
                 </select>
             </div>
-            <div class="col-md-3 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary me-2">
+            <div class="col">
+                <label for="product" class="form-label">Product</label>
+                <input type="text" class="form-control form-control-sm" id="product" name="product" value="{{ product_search }}" placeholder="Product name…">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary btn-sm me-1">
                     <i class="fas fa-search"></i> Filter
                 </button>
-                <a href="{% url 'sales_list' %}" class="btn btn-outline-secondary">
+                <a href="{% url 'sales_list' %}" class="btn btn-outline-secondary btn-sm">
                     <i class="fas fa-times"></i> Clear
                 </a>
             </div>
@@ -44,11 +51,14 @@
     </div>
 </div>
 
-<!-- Daily Totals and Profit -->
+<!-- Daily Totals and Profit (report with fields like Daily Summary; respects date & product filters) -->
 {% if daily_sales %}
 <div class="card mb-4">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <strong>Daily Summary</strong>
+        {% if product_search %}
+        <span class="badge bg-info">Filtered by product: {{ product_search }}</span>
+        {% endif %}
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -56,58 +66,92 @@
                 <thead>
                     <tr>
                         <th>Date</th>
+                        {% if product_search %}
+                        <th>Product names sold</th>
+                        {% endif %}
                         <th class="text-end">Total Sold (TZS)</th>
                         <th class="text-end">Profit (TZS)</th>
-                        <th class="text-center"> Number of Sales</th>
+                        {% if product_search %}
+                        <th class="text-end">Qty “{{ product_search }}”</th>
+                        {% endif %}
+                        <th class="text-center">Number of Sales</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for d in daily_sales %}
                     <tr>
                         <td>{{ d.date|date:"Y-m-d" }}</td>
+                        {% if product_search %}
+                        <td>{{ d.product_names|join:", "|default:"—" }}</td>
+                        {% endif %}
                         <td class="text-end text-success">TZS {{ d.revenue|floatformat:0|intcomma }}</td>
                         <td class="text-end">TZS {{ d.profit|floatformat:0|intcomma }}</td>
+                        {% if product_search %}
+                        <td class="text-end">{{ d.product_qty|floatformat:0|intcomma }}</td>
+                        {% endif %}
                         <td class="text-center">{{ d.count }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
+                <tfoot>
+                    <tr class="table-primary fw-bold">
+                        <td>Total</td>
+                        {% if product_search %}
+                        <td>—</td>
+                        {% endif %}
+                        <td class="text-end text-success">TZS {{ daily_summary_total_sold|floatformat:0|intcomma }}</td>
+                        <td class="text-end">TZS {{ daily_summary_total_profit|floatformat:0|intcomma }}</td>
+                        {% if product_search %}
+                        <td class="text-end">{{ daily_summary_total_product_qty|floatformat:0|intcomma }}</td>
+                        {% endif %}
+                        <td class="text-center">—</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
-    <div class="card-footer text-muted small">Summary shows totals for the currently filtered sales.</div>
+    <div class="card-footer text-muted small">
+        Summary shows totals for the currently filtered sales.
+        {% if product_search %}Only sales containing “{{ product_search }}” are included.{% endif %}
+    </div>
 </div>
 {% endif %}
 
 <!-- Sales Table -->
 <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header">
         <h6 class="m-0 font-weight-bold text-primary">Sales ({{ sales.paginator.count }})</h6>
-        <div class="text-end">
-            <div>Total Amount: <strong class="text-success">TZS {{ total_amount_net|floatformat:0|intcomma }}</strong></div>
-            <div><small class="text-muted">Gross: TZS {{ total_amount|floatformat:0|intcomma }} • Expenditure: TZS {{ total_expenditure|floatformat:0|intcomma }}</small></div>
-            <div>Overall Profit: <strong class="text-info">TZS {{ overall_profit|floatformat:0|intcomma }}</strong></div>
-        </div>
     </div>
     <div class="card-body">
         <div class="mb-3 text-end">
-            <a href="{% url 'sales_daily_export' %}?start_date={{ start_date }}&end_date={{ end_date }}&payment_status={{ payment_status }}" class="btn btn-sm btn-outline-secondary me-2">
+            <a href="{% url 'sales_daily_export' %}?start_date={{ start_date|default:'' }}&end_date={{ end_date|default:'' }}&payment_status={{ payment_status }}{% if product_search %}&product={{ product_search|urlencode }}{% endif %}" class="btn btn-sm btn-outline-secondary me-2">
                 <i class="fas fa-file-csv"></i> Export All Sales (CSV)
             </a>
-            {# PDF export removed from this page per request #}
-            <a href="{% url 'sales_daily_print' %}?start_date={{ start_date }}&end_date={{ end_date }}&payment_status={{ payment_status }}" target="_blank" class="btn btn-sm btn-outline-primary">
+            <a href="{% url 'sales_daily_print' %}?start_date={{ start_date|default:'' }}&end_date={{ end_date|default:'' }}&payment_status={{ payment_status }}{% if product_search %}&product={{ product_search|urlencode }}{% endif %}" target="_blank" class="btn btn-sm btn-outline-primary">
                 <i class="fas fa-print"></i> Print All Sales
             </a>
         </div>
         {% if sales %}
             <div class="table-responsive">
                 <table class="table table-bordered table-hover">
+                    <colgroup>
+                        <col style="width:80px;" />
+                        <col style="width:150px;" />
+                        <col />
+                        <col style="width:180px;" />
+                        <col style="width:220px;" />
+                        <col style="width:120px;" />
+                        <col style="width:100px;" />
+                        <col style="width:160px;" />
+                        <col style="width:120px;" />
+                    </colgroup>
                     <thead>
                         <tr>
                             <th>Sale #</th>
                             <th>Date</th>
-                            <th>Customer</th>
-                            <th>Profit</th>
-                            <th>Amount</th>
+                            <th>Products</th>
+                            <th class="numeric-col money-col">Profit</th>
+                            <th class="numeric-col money-col">Amount</th>
                             <th>Payment Method</th>
                             <th>Status</th>
                             <th>Created By</th>
@@ -119,28 +163,51 @@
                         <tr>
                             <td><strong>#{{ sale.id }}</strong></td>
                             <td>{{ sale.sale_date|localtime|date:"M d, Y H:i" }}</td>
-                            <td>{{ sale.customer.name|default:"Walk-in" }}</td>
-                            <td>TZS {{ sale.annotated_profit|default:0|floatformat:0|intcomma }}</td>
-                            <td>TZS {{ sale.total_amount|floatformat:0|intcomma }}</td>
+                            <td>
+                                {% for item in sale.items.all %}
+                                    <span class="badge bg-light text-dark me-1">{{ item.item.name }} ({{ item.quantity }})</span>
+                                {% empty %}
+                                    {% if sale.products %}
+                                        <span class="badge bg-light text-dark me-1">{{ sale.products }}</span>
+                                    {% else %}
+                                        <span class="text-muted">No items</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td class="numeric-col money-col">TZS {{ sale.annotated_profit|default:0|floatformat:0|intcomma }}</td>
+                            <td class="numeric-col money-col"><strong>TZS {{ sale.total_amount|floatformat:0|intcomma }}</strong></td>
                             <td>{{ sale.get_payment_method_display }}</td>
                             <td>
                                 {% if sale.is_paid %}
-                                    <span class="badge bg-success">Paid</span>
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> Paid</span>
                                 {% else %}
-                                    <span class="badge bg-warning">Unpaid</span>
+                                    <span class="badge bg-warning"><i class="fas fa-clock"></i> Unpaid</span>
                                 {% endif %}
                             </td>
-                            <td>{% if sale.created_by %}{{ sale.created_by.get_full_name|default:sale.created_by.username }}{% else %}-{% endif %}</td>
                             <td>
-                                <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye"></i> View
-                                </a>
-                                <form method="post" action="{% url 'delete_sale' sale.pk %}" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete sale and restore stock?');">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </form>
+                                {% if sale.created_by_display %}
+                                    {{ sale.created_by_display }}
+                                {% elif sale.created_by %}
+                                    {{ sale.created_by.get_full_name|default:sale.created_by.username }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-outline-primary" title="View Sale Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'print_invoice' sale.pk %}" target="_blank" class="btn btn-outline-secondary" title="Print Invoice">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'delete_sale' sale.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger" title="Delete Sale" onclick="return confirm('Delete sale and restore stock?');">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

@@ -62,6 +62,19 @@ class SaleItemForm(forms.ModelForm):
 
 
 class DebtForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Customize the item field choices to include unit price data
+        self.fields['item'].choices = [
+            (item.id, f"{item.name} ({item.sku})")
+            for item in StationeryItem.objects.filter(is_active=True)
+        ]
+        # Store unit prices for JavaScript access
+        self.unit_prices = {
+            item.id: float(item.unit_price)
+            for item in StationeryItem.objects.filter(is_active=True)
+        }
+
     class Meta:
         model = Debt
         fields = ['customer', 'sale', 'item', 'quantity', 'amount', 'due_date', 'description']

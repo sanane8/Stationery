@@ -95,4 +95,34 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemSelect = document.getElementById('{{ form.item.id_for_label }}');
+    const amountInput = document.getElementById('{{ form.amount.id_for_label }}');
+    const quantityInput = document.getElementById('{{ form.quantity.id_for_label }}');
+    
+    // Unit prices data from the form
+    const unitPrices = {{ unit_prices|safe }};
+    
+    // Function to update amount based on selected item
+    function updateAmount() {
+        const selectedItemId = itemSelect.value;
+        if (selectedItemId && unitPrices[selectedItemId]) {
+            amountInput.value = unitPrices[selectedItemId];
+        }
+    }
+    
+    // Listen for item selection changes
+    itemSelect.addEventListener('change', updateAmount);
+    
+    // Also update amount when quantity changes if item is selected
+    quantityInput.addEventListener('input', function() {
+        const selectedItemId = itemSelect.value;
+        if (selectedItemId && unitPrices[selectedItemId]) {
+            amountInput.value = unitPrices[selectedItemId];
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -8,6 +8,21 @@
     <a href="{% url 'add_payment' debt.pk %}" class="btn btn-success">
         <i class="fas fa-plus"></i> Add Payment
     </a>
+    {% if debt.customer.phone and debt.status != 'paid' %}
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-paper-plane"></i> Send Reminder
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'send_debt_sms' debt.pk %}">
+                <i class="fas fa-sms"></i> Send SMS
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'send_debt_whatsapp' debt.pk %}">
+                <i class="fab fa-whatsapp"></i> Send WhatsApp
+            </a></li>
+        </ul>
+    </div>
+    {% endif %}
     <a href="{% url 'debts_list' %}" class="btn btn-outline-primary">
         <i class="fas fa-arrow-left"></i> Back to Debts
     </a>

@@ -35,3 +35,4 @@ tzdata==2025.1
 update==0.0.1
 urllib3==2.3.0
 whitenoise==6.10.0
+africastalking==1.2.7

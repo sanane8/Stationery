@@ -12,10 +12,12 @@ urlpatterns = [
     
     # Sales
     path('sales/', views.sales_list, name='sales_list'),
+    path('sales/chart/', views.sales_chart, name='sales_chart'),
     path('sales/export/daily/', views.sales_daily_export_csv, name='sales_daily_export'),
     path('sales/export/daily/pdf/', views.sales_daily_export_pdf, name='sales_daily_export_pdf'),
     path('sales/print/daily/', views.sales_daily_print, name='sales_daily_print'),
     path('sales/<int:pk>/', views.sale_detail, name='sale_detail'),
+    path('sales/<int:pk>/invoice/', views.print_invoice, name='print_invoice'),
     path('sales/<int:pk>/delete/', views.delete_sale, name='delete_sale'),
     path('sales/create/', views.create_sale, name='create_sale'),
     path('sales/<int:sale_id>/add-item/', views.add_sale_item, name='add_sale_item'),
@@ -30,6 +32,10 @@ urlpatterns = [
     path('debts/<int:pk>/', views.debt_detail, name='debt_detail'),
     path('debts/create/', views.create_debt, name='create_debt'),
     path('debts/<int:debt_id>/payment/', views.add_payment, name='add_payment'),
+    path('debts/<int:debt_id>/send-sms/', views.send_debt_sms, name='send_debt_sms'),
+    path('debts/send-bulk-sms/', views.send_bulk_debt_sms, name='send_bulk_debt_sms'),
+    path('debts/<int:debt_id>/send-whatsapp/', views.send_debt_whatsapp, name='send_debt_whatsapp'),
+    path('debts/send-bulk-whatsapp/', views.send_bulk_debt_whatsapp, name='send_bulk_debt_whatsapp'),
     
     # Customers
     path('customers/', views.customers_list, name='customers_list'),

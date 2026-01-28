@@ -4,6 +4,10 @@ Django settings for stationery_tracker project.
 import django_heroku
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -109,6 +113,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# Africa's Talking SMS Settings
+AFRICASTALKING_USERNAME = os.getenv('AFRICASTALKING_USERNAME', 'paul.sanane@gmail.com')
+AFRICASTALKING_API_KEY = os.getenv('AFRICASTALKING_API_KEY', 'atsk_70aca8c7d14163b27fc4b28bf3e6576855879ed56d7a8968ca176b64fa86364009e1aacc')
+AFRICASTALKING_SENDER_ID = os.getenv('AFRICASTALKING_SENDER_ID', 'your_sender_id')
 
 # Activate Django-Heroku.
 django_heroku.settings(locals())

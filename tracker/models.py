@@ -231,7 +231,8 @@ class Debt(models.Model):
     ]
 
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='debts')
-    sale = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name='debts', null=True, blank=True)
+    sale = models.ForeignKey(Sale, on_delete=models.SET_NULL, related_name='debts', null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     # Link to an item and the quantity owed (required for all debts)
     # Use PROTECT to avoid accidental deletion of items referenced by debts
     item = models.ForeignKey(StationeryItem, on_delete=models.PROTECT, related_name='debts')
