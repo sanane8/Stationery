@@ -1,9 +1,12 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    # Dashboard
-    path('', views.dashboard, name='dashboard'),
+    # Authentication
+    path('login/', views.login_view, name='login'),
+    path('register/', views.register_view, name='register'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     
     # Stationery items
     path('stationery/', views.stationery_list, name='stationery_list'),
@@ -41,4 +44,7 @@ urlpatterns = [
     path('customers/', views.customers_list, name='customers_list'),
     path('customers/<int:pk>/', views.customer_detail, name='customer_detail'),
     path('customers/create/', views.create_customer, name='create_customer'),
+    
+    # Dashboard (moved to root URLconf)
+    path('dashboard/', views.dashboard, name='dashboard'),
 ]

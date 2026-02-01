@@ -1,4 +1,6 @@
 from django import forms
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 from .models import StationeryItem, Sale, SaleItem, Debt, Payment, Customer, Category
 from .models import Expenditure
 
@@ -6,112 +8,143 @@ from .models import Expenditure
 class StationeryItemForm(forms.ModelForm):
     class Meta:
         model = StationeryItem
-        fields = ['name', 'description', 'category', 'sku', 'unit_price', 'cost_price', 
-                 'stock_quantity', 'minimum_stock', 'supplier', 'is_active']
+        fields = '__all__'
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
-            'unit_price': forms.NumberInput(attrs={'step': '0.01'}),
-            'cost_price': forms.NumberInput(attrs={'step': '0.01'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'sku': forms.TextInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'supplier': forms.Select(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'unit_price': forms.NumberInput(attrs={'class': 'form-control'}),
+            'cost_price': forms.NumberInput(attrs={'class': 'form-control'}),
+            'stock_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'minimum_stock': forms.NumberInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
-
-
-class CustomerForm(forms.ModelForm):
-    class Meta:
-        model = Customer
-        fields = ['name', 'email', 'phone', 'address', 'is_active']
-        widgets = {
-            'address': forms.Textarea(attrs={'rows': 3}),
-        }
-
 
 class SaleForm(forms.ModelForm):
     class Meta:
         model = Sale
         fields = ['customer', 'payment_method', 'is_paid', 'notes']
         widgets = {
-            'notes': forms.Textarea(attrs={'rows': 3}),
+            'customer': forms.Select(attrs={'class': 'form-control'}),
+            'payment_method': forms.Select(attrs={'class': 'form-control'}),
+            'total_amount': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'is_paid': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Optional notes...'}),
         }
 
-    def clean(self):
-        cleaned = super().clean()
-        # Use raw POST data to determine checkbox state reliably (handles HTML checkbox absence)
-        raw_is_paid = self.data.get('is_paid')
-        paid_bool = False
-        if raw_is_paid is not None:
-            try:
-                paid_bool = str(raw_is_paid).lower() in ('1', 'true', 't', 'on', 'yes', 'on')
-            except Exception:
-                paid_bool = False
-
-        customer = cleaned.get('customer')
-        # If payment not received, require a customer to attach the debt to
-        if not paid_bool and not customer:
-            self.add_error('customer', 'Customer is required when payment is not received.')
-        return cleaned
-
-
 class SaleItemForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set default quantity to 1 for new forms
+        if not self.instance.pk:
+            self.fields['quantity'].initial = 1
+    
     class Meta:
         model = SaleItem
         fields = ['item', 'quantity', 'unit_price']
         widgets = {
-            'unit_price': forms.NumberInput(attrs={'step': '0.01', 'class': 'form-control'}),
-            'item': forms.Select(attrs={'class': 'form-select'}),
-            'quantity': forms.NumberInput(attrs={'min': '1', 'class': 'form-control'}),
+            'item': forms.Select(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'unit_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
-
 
 class DebtForm(forms.ModelForm):
+    unit_prices = {}
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Customize the item field choices to include unit price data
-        self.fields['item'].choices = [
-            (item.id, f"{item.name} ({item.sku})")
-            for item in StationeryItem.objects.filter(is_active=True)
-        ]
-        # Store unit prices for JavaScript access
+        # Populate unit prices for JavaScript
         self.unit_prices = {
-            item.id: float(item.unit_price)
+            str(item.pk): str(item.unit_price) 
             for item in StationeryItem.objects.filter(is_active=True)
         }
-
+    
     class Meta:
         model = Debt
         fields = ['customer', 'sale', 'item', 'quantity', 'amount', 'due_date', 'description']
         widgets = {
-            'item': forms.Select(attrs={'class': 'form-select', 'required': 'required'}),
-            'quantity': forms.NumberInput(attrs={'min': '1', 'class': 'form-control'}),
-            'amount': forms.NumberInput(attrs={'step': '0.01'}),
-            'due_date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 3}),
+            'customer': forms.Select(attrs={'class': 'form-control'}),
+            'sale': forms.Select(attrs={'class': 'form-control'}),
+            'item': forms.Select(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
-
 class PaymentForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.debt = kwargs.pop('debt', None)
+        super().__init__(*args, **kwargs)
+        
+        # Set max amount attribute for client-side validation
+        if self.debt:
+            self.fields['amount'].widget.attrs.update({
+                'max': self.debt.remaining_amount,
+                'data-remaining': self.debt.remaining_amount
+            })
+    
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if self.debt and amount > self.debt.remaining_amount:
+            raise forms.ValidationError(
+                f'Payment amount cannot exceed the remaining debt amount of TZS {self.debt.remaining_amount:,.0f}'
+            )
+        return amount
+    
     class Meta:
         model = Payment
         fields = ['amount', 'payment_method', 'notes']
         widgets = {
-            'amount': forms.NumberInput(attrs={'step': '0.01'}),
-            'notes': forms.Textarea(attrs={'rows': 3}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0.01'}),
+            'payment_method': forms.Select(attrs={'class': 'form-control'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
-
-class CategoryForm(forms.ModelForm):
+class CustomerForm(forms.ModelForm):
     class Meta:
-        model = Category
-        fields = ['name', 'description']
+        model = Customer
+        fields = '__all__'
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
-
 
 class ExpenditureForm(forms.ModelForm):
     class Meta:
         model = Expenditure
-        fields = ['category', 'description', 'amount', 'expense_date']
+        fields = ['description', 'amount', 'category']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
-            'amount': forms.NumberInput(attrs={'step': '0.01'}),
-            'expense_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
         }
+
+class LoginForm(forms.Form):
+    username = forms.CharField(max_length=150, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+
+class RegistrationForm(UserCreationForm):
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    first_name = forms.CharField(max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name = forms.CharField(max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control'})
+        
+        # Add help text placeholders
+        self.fields['username'].help_text = 'Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'
+        self.fields['password1'].help_text = 'Your password must contain at least 8 characters.'
+        self.fields['password2'].help_text = 'Enter the same password as before, for verification.'

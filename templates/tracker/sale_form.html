@@ -2,93 +2,384 @@
 
 {% block page_title %}Create Sale{% endblock %}
 
+{% block extra_css %}
+<style>
+    .card-3d {
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+        border: none;
+        border-radius: 20px;
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.1),
+            0 10px 20px rgba(0, 0, 0, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        transform: perspective(1000px) rotateX(2deg);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-3d::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .card-3d:hover {
+        transform: perspective(1000px) rotateX(0deg) translateY(-5px);
+        box-shadow: 
+            0 30px 60px rgba(0, 0, 0, 0.15),
+            0 15px 30px rgba(0, 0, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+    
+    .card-header-3d {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 20px 20px 0 0;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-header-3d::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    
+    .card-body-3d {
+        padding: 2rem;
+        position: relative;
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    }
+    
+    .form-control-3d {
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        border-radius: 12px;
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+        box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.06),
+            0 1px 2px rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-3d:focus {
+        border-color: #667eea;
+        box-shadow: 
+            0 0 0 0.2rem rgba(102, 126, 234, 0.25),
+            inset 0 2px 4px rgba(0, 0, 0, 0.06),
+            0 4px 8px rgba(102, 126, 234, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    /* Apply 3D styles to all form controls */
+    .form-control, .form-select {
+        border: 1px solid rgba(102, 126, 234, 0.2) !important;
+        border-radius: 12px !important;
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+        box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.06),
+            0 1px 2px rgba(255, 255, 255, 0.8) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea !important;
+        box-shadow: 
+            0 0 0 0.2rem rgba(102, 126, 234, 0.25),
+            inset 0 2px 4px rgba(0, 0, 0, 0.06),
+            0 4px 8px rgba(102, 126, 234, 0.15) !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    .btn-3d {
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 
+            0 8px 16px rgba(102, 126, 234, 0.3),
+            0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-3d::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-3d:hover {
+        transform: translateY(-3px);
+        box-shadow: 
+            0 12px 24px rgba(102, 126, 234, 0.4),
+            0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-3d:hover::before {
+        left: 100%;
+    }
+    
+    .btn-3d:active {
+        transform: translateY(-1px);
+        box-shadow: 
+            0 6px 12px rgba(102, 126, 234, 0.3),
+            0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-3d {
+        background: linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 
+            0 8px 16px rgba(0, 0, 0, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .alert-3d {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 
+            0 4px 8px rgba(23, 162, 184, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="m-0 font-weight-bold text-primary">Create New Sale</h5>
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card card-3d">
+            <div class="card-header card-header-3d">
+                <h5 class="m-0 font-weight-bold text-white">Create New Sale</h5>
             </div>
-            <div class="card-body">
-                <form method="post" id="saleForm">
+            <div class="card-body card-body-3d">
+                <form method="post">
                     {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.customer.id_for_label }}" class="form-label">Customer</label>
-                                {{ form.customer }}
-                                {% if form.customer.errors %}
-                                    <div class="text-danger">{{ form.customer.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.payment_method.id_for_label }}" class="form-label">Payment Method</label>
-                                {{ form.payment_method }}
-                                {% if form.payment_method.errors %}
-                                    <div class="text-danger">{{ form.payment_method.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    {{ form.is_paid }}
-                                    <label class="form-check-label" for="{{ form.is_paid.id_for_label }}">
-                                        Payment Received
-                                    </label>
+                    <!-- Sale Details Section -->
+                    <div class="section-3d">
+                        <h6 class="text-primary mb-2"><i class="fas fa-receipt"></i> Sale Details</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label for="{{ sale_form.customer.id_for_label }}" class="form-label">Customer *</label>
+                                    {{ sale_form.customer }}
+                                    {% if sale_form.customer.errors %}
+                                        <div class="text-danger">{{ sale_form.customer.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <label for="{{ sale_form.notes.id_for_label }}" class="form-label">Notes</label>
+                            {{ sale_form.notes }}
+                            {% if sale_form.notes.errors %}
+                                <div class="text-danger">{{ sale_form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        {{ sale_form.is_paid }}
+                                        <label class="form-check-label" for="{{ sale_form.is_paid.id_for_label }}">
+                                            Is Paid
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ sale_form.payment_method.id_for_label }}" class="form-label">Payment Method</label>
+                                    {{ sale_form.payment_method }}
+                                    {% if sale_form.payment_method.errors %}
+                                        <div class="text-danger">{{ sale_form.payment_method.errors }}</div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
-                        {{ form.notes }}
-                        {% if form.notes.errors %}
-                            <div class="text-danger">{{ form.notes.errors }}</div>
-                        {% endif %}
+                    <!-- First Item Section -->
+                    <div class="section-3d">
+                        <h6 class="text-primary mb-2"><i class="fas fa-box"></i> First Item (Required)</h6>
+                        <div class="alert alert-info alert-3d py-2">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong> Every sale must have at least one item. Select the item and quantity below to create the sale.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-2">
+                                    <label for="{{ item_form.item.id_for_label }}" class="form-label">Item *</label>
+                                    {{ item_form.item }}
+                                    {% if item_form.item.errors %}
+                                        <div class="text-danger">{{ item_form.item.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-2">
+                                    <label for="{{ item_form.quantity.id_for_label }}" class="form-label">Quantity *</label>
+                                    {{ item_form.quantity }}
+                                    {% if item_form.quantity.errors %}
+                                        <div class="text-danger">{{ item_form.quantity.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-2">
+                                    <label for="{{ item_form.unit_price.id_for_label }}" class="form-label">Unit Price *</label>
+                                    {{ item_form.unit_price }}
+                                    {% if item_form.unit_price.errors %}
+                                        <div class="text-danger">{{ item_form.unit_price.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="d-flex justify-content-between">
-                        <a href="{% url 'sales_list' %}" class="btn btn-secondary">
+                        <a href="{% url 'sales_list' %}" class="btn btn-secondary btn-3d">
                             <i class="fas fa-arrow-left"></i> Cancel
                         </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Create Sale
+                        <button type="submit" class="btn btn-primary btn-3d" id="createSaleBtn">
+                            <span class="btn-text">
+                                <i class="fas fa-save"></i> Create Sale with Item
+                            </span>
+                            <span class="btn-spinner" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i> Creating Sale...
+                            </span>
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="m-0 font-weight-bold text-primary">Quick Tips</h6>
-            </div>
-            <div class="card-body">
-                <ul class="list-unstyled">
-                    <li class="mb-2">
-                        <i class="fas fa-info-circle text-info"></i>
-                        <small>Create the sale first, then add items from the sale detail page.</small>
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-user-plus text-success"></i>
-                        <small>Add new customers from the admin panel if needed.</small>
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-box text-warning"></i>
-                        <small>Make sure you have stationery items in your inventory first.</small>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemSelect = document.getElementById('id_item');
+    const unitPriceInput = document.getElementById('id_unit_price');
+    const quantityInput = document.getElementById('id_quantity');
+    const saleForm = document.querySelector('form');
+    const createSaleBtn = document.getElementById('createSaleBtn');
+    const btnText = createSaleBtn.querySelector('.btn-text');
+    const btnSpinner = createSaleBtn.querySelector('.btn-spinner');
+    
+    // Store item prices for quick lookup
+    const itemPrices = {
+        {% for item in item_form.item.field.queryset %}
+        {{ item.pk }}: {{ item.unit_price|floatformat:2 }},
+        {% endfor %}
+    };
+    
+    // Set default quantity to 1 when page loads
+    quantityInput.value = 1;
+    
+    // Function to handle item selection change
+    function handleItemChange() {
+        const selectedItemId = this.value;
+        
+        // Update unit price when item is selected
+        if (selectedItemId && itemPrices[selectedItemId]) {
+            unitPriceInput.value = itemPrices[selectedItemId];
+        }
+        
+        // Allow quantity to be changed when an item is selected
+        if (selectedItemId) {
+            quantityInput.readOnly = false;
+            quantityInput.style.backgroundColor = '';
+        } else {
+            quantityInput.value = 1;
+            quantityInput.readOnly = true;
+            quantityInput.style.backgroundColor = '#f8f9fa';
+        }
+    }
+    
+    // Handle form submission with loading effect
+    saleForm.addEventListener('submit', function(e) {
+        // Prevent immediate submission to show loading effect
+        e.preventDefault();
+        
+        // Show loading state
+        btnText.style.display = 'none';
+        btnSpinner.style.display = 'inline';
+        createSaleBtn.disabled = true;
+        createSaleBtn.style.opacity = '0.7';
+        createSaleBtn.style.cursor = 'not-allowed';
+        
+        // Add subtle pulse animation
+        createSaleBtn.style.animation = 'pulse 1s infinite';
+        
+        // Add loading overlay to form
+        const overlay = document.createElement('div');
+        overlay.className = 'form-loading-overlay';
+        overlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            border-radius: 0.375rem;
+        `;
+        overlay.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+        
+        const card = document.querySelector('.card-body');
+        card.style.position = 'relative';
+        card.appendChild(overlay);
+        
+        // Submit form after a short delay to show loading effect
+        setTimeout(function() {
+            saleForm.submit();
+        }, 500);
+    });
+    
+    // Handle initial state
+    handleItemChange.call(itemSelect);
+    
+    // Add event listener for item selection changes
+    itemSelect.addEventListener('change', handleItemChange);
+    
+    // Add input validation for quantity (must be at least 1)
+    quantityInput.addEventListener('input', function() {
+        if (this.value < 1 || this.value === '') {
+            this.value = 1;
+        }
+    });
+});
+</script>
 {% endblock %}

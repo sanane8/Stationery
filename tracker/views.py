@@ -4,13 +4,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import models
 from django.db import transaction
-from django.db.models import Sum, Count, Q, F, DecimalField, ExpressionWrapper, Exists, OuterRef
+from django.db.models import Sum, Count, Q, F, DecimalField, ExpressionWrapper, Exists, OuterRef, Case, When, Value, BooleanField
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 from django.core.paginator import Paginator
 from datetime import datetime, timedelta
 from .models import StationeryItem, Sale, SaleItem, Debt, Customer, Category
-from .forms import SaleForm, SaleItemForm, DebtForm, PaymentForm, StationeryItemForm, CustomerForm
+from .forms import SaleForm, SaleItemForm, DebtForm, PaymentForm, StationeryItemForm, CustomerForm, LoginForm, RegistrationForm
+from django.contrib.auth import authenticate, login
+
 from .forms import ExpenditureForm
 from .models import Expenditure
 import csv
@@ -29,7 +31,41 @@ except Exception:
     REPORTLAB_AVAILABLE = False
 
 
+
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('dashboard')
+            else:
+                messages.error(request, 'Invalid username or password.')
+    else:
+        form = LoginForm()
+    return render(request, 'tracker/login.html', {'form': form})
+
+
+def register_view(request):
+    """User registration view"""
+    if request.method == 'POST':
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            username = form.cleaned_data.get('username')
+            messages.success(request, f'Account created for {username}! You can now log in.')
+            return redirect('login')
+    else:
+        form = RegistrationForm()
+    
+    return render(request, 'tracker/register.html', {'form': form})
+
+@login_required
 def dashboard(request):
+
     """Main dashboard view"""
     # Get recent **paid** sales (exclude unpaid sales and sales with no items)
     recent_sales = (
@@ -109,6 +145,7 @@ def dashboard(request):
     return render(request, 'tracker/dashboard.html', context)
 
 
+@login_required
 def stationery_list(request):
     """List all stationery items"""
     # Include active items and any legacy items where is_active might be null
@@ -180,6 +217,7 @@ def stationery_list(request):
     return render(request, 'tracker/stationery_list.html', context)
 
 
+@login_required
 def stationery_detail(request, pk):
     """Detail view for a stationery item"""
     item = get_object_or_404(StationeryItem, pk=pk)
@@ -193,9 +231,16 @@ def stationery_detail(request, pk):
     return render(request, 'tracker/stationery_detail.html', context)
 
 
+@login_required
 def sales_list(request):
     """List all sales"""
-    sales = Sale.objects.select_related('customer', 'created_by').prefetch_related('items__item').order_by('-sale_date')
+    # Show all sales including payment-related sales (those without items)
+    # Payment sales are stored as sales with no items but notes like 'Payment for Debt #<id>'
+    sales = Sale.objects.select_related('customer', 'created_by').prefetch_related('items__item').annotate(
+        item_count=Count('items')
+    ).filter(
+        Q(item_count__gt=0) | Q(notes__contains='Payment for Debt')
+    ).order_by('-sale_date')
     
     # Filter by date range
     start_date = request.GET.get('start_date')
@@ -242,12 +287,6 @@ def sales_list(request):
             item__name__icontains=product_search,
         )
         sales = sales.filter(Exists(has_product))
-
-    # Exclude sales that have no items and are not payment-only sales
-    # Payment sales are stored as sales with no items but notes like 'Payment for Debt #<id>'
-    sales = sales.annotate(item_count=Count('items')).filter(
-        Q(item_count__gt=0) | Q(notes__contains='Payment for Debt #')
-    )
 
     # Annotate per-sale total_cost and profit to avoid N+1 queries in template
     total_cost_expr = Sum(F('items__quantity') * F('items__item__cost_price'), output_field=DecimalField())
@@ -446,6 +485,7 @@ def sales_list(request):
     return render(request, 'tracker/sales_list.html', context)
 
 
+@login_required
 def sale_detail(request, pk):
     """Detail view for a sale"""
     sale = get_object_or_404(Sale, pk=pk)
@@ -459,6 +499,7 @@ def sale_detail(request, pk):
     return render(request, 'tracker/sale_detail.html', context)
 
 
+@login_required
 def print_invoice(request, pk):
     """Render a printable invoice for a single sale."""
     sale = get_object_or_404(Sale, pk=pk)
@@ -482,7 +523,25 @@ def print_invoice(request, pk):
 
     return render(request, 'tracker/sale_invoice.html', context)
 
+@login_required
+def create_sale(request):
+    if request.method == 'POST':
+        form = SaleForm(request.POST)
+        if form.is_valid():
+            sale = form.save(commit=False)
+            sale.created_by = request.user
+            sale.save()
+            messages.success(request, 'Sale created successfully.')
+            return redirect('sale_detail', pk=sale.pk)
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = SaleForm()
+    return render(request, 'tracker/sale_form.html', {'form': form})
 
+
+
+@login_required
 def sales_chart(request):
     """Graphical representation of sales"""
     # Get sales data for chart
@@ -521,6 +580,7 @@ def sales_chart(request):
     return render(request, 'tracker/sales_chart.html', context)
 
 
+@login_required
 def sales_daily_export_csv(request):
     """Export daily sales summary (respecting same filters) as CSV."""
     sales = Sale.objects.select_related('customer', 'created_by').order_by('-sale_date')
@@ -608,6 +668,7 @@ def sales_daily_export_csv(request):
         return redirect('sales_list')
 
 
+@login_required
 def sales_daily_export_pdf(request):
     """Export daily sales summary as PDF using ReportLab."""
     if not REPORTLAB_AVAILABLE:
@@ -709,6 +770,7 @@ def sales_daily_export_pdf(request):
     return response
 
 
+@login_required
 def sales_daily_print(request):
     """Render a print-friendly HTML view of the daily sales summary."""
     # Render a print-friendly HTML listing of all matching sales (one row per sale)
@@ -891,22 +953,56 @@ def delete_sale(request, pk):
 
 @login_required
 def create_sale(request):
-    """Create a new sale"""
+    """Create a new sale with items"""
     if request.method == 'POST':
-        form = SaleForm(request.POST)
-        if form.is_valid():
-            sale = form.save(commit=False)
-            sale.created_by = request.user
-            # Set a default total_amount for now (will be calculated when items are added)
-            sale.total_amount = 0.00
-            sale.save()
-            messages.success(request, 'Sale created successfully! You can now add items to this sale.')
-            return redirect('sale_detail', pk=sale.pk)
+        # Handle both sale creation and first item addition in one step
+        sale_form = SaleForm(request.POST)
+        item_form = SaleItemForm(request.POST)
+        
+        if sale_form.is_valid() and item_form.is_valid():
+            try:
+                with transaction.atomic():
+                    # Create sale first
+                    sale = sale_form.save(commit=False)
+                    sale.created_by = request.user
+                    sale.total_amount = 0.00  # Will be calculated
+                    sale.save()
+                    
+                    # Add the first item
+                    sale_item = item_form.save(commit=False)
+                    sale_item.sale = sale
+                    
+                    # Check stock availability
+                    if sale_item.item.stock_quantity < sale_item.quantity:
+                        messages.error(request, f'Insufficient stock! Available: {sale_item.item.stock_quantity}, Requested: {sale_item.quantity}')
+                        sale.delete()  # Clean up the sale since no items were added
+                        context = {
+                            'sale_form': sale_form,
+                            'item_form': item_form,
+                        }
+                        return render(request, 'tracker/sale_form.html', context)
+                    
+                    # Save the sale item (this will reduce stock)
+                    sale_item.save()
+                    
+                    # Update sale total
+                    sale.total_amount = sale_item.total_price
+                    sale.save(update_fields=['total_amount'])
+                    
+                    messages.success(request, 'Sale created successfully with first item!')
+                    return redirect('sale_detail', pk=sale.pk)
+                    
+            except Exception as e:
+                messages.error(request, f'Error creating sale: {str(e)}')
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
-        form = SaleForm()
+        sale_form = SaleForm()
+        item_form = SaleItemForm()
     
     context = {
-        'form': form,
+        'sale_form': sale_form,
+        'item_form': item_form,
     }
     
     return render(request, 'tracker/sale_form.html', context)
@@ -1001,6 +1097,7 @@ def add_sale_item(request, sale_id):
     return render(request, 'tracker/add_sale_item.html', context)
 
 
+@login_required
 def debts_list(request):
     """List all debts"""
     debts = Debt.objects.select_related('customer').order_by('-created_at')
@@ -1072,6 +1169,7 @@ def debts_list(request):
     return render(request, 'tracker/debts_list.html', context)
 
 
+@login_required
 def expenditures_list(request):
     """List expenditures and totals"""
     expenditures = Expenditure.objects.all().order_by('-expense_date')
@@ -1136,6 +1234,7 @@ def delete_expenditure(request, pk):
     return render(request, 'tracker/confirm_delete_expenditure.html', {'expenditure': exp})
 
 
+@login_required
 def expenditures_export_csv(request):
     """Export filtered expenditures as CSV"""
     expenditures = Expenditure.objects.all().order_by('-expense_date')
@@ -1185,6 +1284,7 @@ def expenditures_export_csv(request):
         return redirect('expenditures_list')
 
 
+@login_required
 def expenditures_export_pdf(request):
     """Export filtered expenditures as PDF using ReportLab. Falls back to a friendly message if ReportLab missing."""
     if not REPORTLAB_AVAILABLE:
@@ -1250,6 +1350,7 @@ def expenditures_export_pdf(request):
     return response
 
 
+@login_required
 def debt_detail(request, pk):
     """Detail view for a debt"""
     debt = get_object_or_404(Debt, pk=pk)
@@ -1319,7 +1420,7 @@ def add_payment(request, debt_id):
     debt = get_object_or_404(Debt, pk=debt_id)
     
     if request.method == 'POST':
-        form = PaymentForm(request.POST)
+        form = PaymentForm(request.POST, debt=debt)
         if form.is_valid():
             payment = form.save(commit=False)
             payment.debt = debt
@@ -1327,12 +1428,21 @@ def add_payment(request, debt_id):
 
             # Create a Sale corresponding to this payment so sales dashboards reflect payments received
             try:
+                # Create detailed notes showing the debt items and information
+                debt_items_info = f"Debt #{debt.pk}: {debt.item.name}"
+                if debt.quantity > 1:
+                    debt_items_info += f" (Qty: {debt.quantity})"
+                debt_items_info += f" - Total: TZS {debt.amount:,.0f}"
+                if debt.description:
+                    debt_items_info += f" - {debt.description}"
+                
                 sale = Sale.objects.create(
                     customer=debt.customer,
                     total_amount=payment.amount,
-                    payment_method='cash',
+                    payment_method=payment.payment_method,
                     is_paid=True,
-                    notes=f'Payment for Debt #{debt.pk}'
+                    notes=f'Payment for {debt_items_info}',
+                    created_by=request.user
                 )
                 # Only link the created sale to the debt if the debt had no originating sale
                 # (we don't want to overwrite an original sale that generated the debt)
@@ -1347,7 +1457,7 @@ def add_payment(request, debt_id):
             return redirect('debt_detail', pk=debt.pk)
     else:
         # GET - display empty payment form
-        form = PaymentForm()
+        form = PaymentForm(debt=debt)
 
     context = {
         'form': form,
@@ -1357,6 +1467,7 @@ def add_payment(request, debt_id):
     return render(request, 'tracker/payment_form.html', context)
 
 
+@login_required
 def customers_list(request):
     """List all customers"""
     customers = Customer.objects.filter(is_active=True).order_by('name')
@@ -1385,6 +1496,7 @@ def customers_list(request):
     return render(request, 'tracker/customers_list.html', context)
 
 
+@login_required
 def customer_detail(request, pk):
     """Detail view for a customer"""
     customer = get_object_or_404(Customer, pk=pk)

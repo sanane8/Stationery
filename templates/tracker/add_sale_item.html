@@ -45,7 +45,7 @@
                     
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i>
-                        <strong>Note:</strong> The unit price will default to the item's current price, but you can modify it if needed for this sale.
+                        <strong>Note:</strong> The unit price will default to the item's current price, but you can modify it if needed for this sale. Quantity defaults to 1 and can be changed once an item is selected.
                     </div>
                     
                     <div class="d-flex justify-content-between">
@@ -68,6 +68,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const itemSelect = document.getElementById('id_item');
     const unitPriceInput = document.getElementById('id_unit_price');
+    const quantityInput = document.getElementById('id_quantity');
     
     // Store item prices for quick lookup
     const itemPrices = {
@@ -76,9 +77,40 @@ document.addEventListener('DOMContentLoaded', function() {
         {% endfor %}
     };
     
-    itemSelect.addEventListener('change', function() {
-        if (this.value && itemPrices[this.value]) {
-            unitPriceInput.value = itemPrices[this.value];
+    // Set default quantity to 1 when page loads
+    quantityInput.value = 1;
+    
+    // Function to handle item selection change
+    function handleItemChange() {
+        const selectedItemId = this.value;
+        
+        // Update unit price when item is selected
+        if (selectedItemId && itemPrices[selectedItemId]) {
+            unitPriceInput.value = itemPrices[selectedItemId];
+        }
+        
+        // Allow quantity to be changed when an item is selected
+        // If no item is selected, keep quantity at 1 and make it readonly
+        if (selectedItemId) {
+            quantityInput.readOnly = false;
+            quantityInput.style.backgroundColor = '';
+        } else {
+            quantityInput.value = 1;
+            quantityInput.readOnly = true;
+            quantityInput.style.backgroundColor = '#f8f9fa';
+        }
+    }
+    
+    // Handle initial state
+    handleItemChange.call(itemSelect);
+    
+    // Add event listener for item selection changes
+    itemSelect.addEventListener('change', handleItemChange);
+    
+    // Add input validation for quantity (must be at least 1)
+    quantityInput.addEventListener('input', function() {
+        if (this.value < 1 || this.value === '') {
+            this.value = 1;
         }
     });
 });
