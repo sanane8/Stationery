@@ -1,0 +1,48 @@
+# Production Requirements for Stationery Management System
+# Local Deployment for Tanzania
+
+# Core Django
+Django==4.2.7
+gunicorn==21.2.0
+psycopg2-binary==2.9.7
+
+# Security
+django-environ==0.11.2
+cryptography==41.0.4
+
+# Database
+django-db-backup==4.1.0
+
+# Image processing (for receipts/documents)
+Pillow==10.0.1
+
+# Date/time handling
+python-dateutil==2.8.2
+
+# File handling
+openpyxl==3.1.2
+
+# SMS Integration (Tanzania providers)
+africastalking==1.2.5
+twilio==8.8.0
+
+# Email
+django-anymail==10.2
+
+# PDF generation
+reportlab==4.0.4
+
+# Excel export
+xlsxwriter==3.1.9
+
+# Monitoring
+sentry-sdk==1.32.0
+
+# Caching
+redis==5.0.1
+
+# Task queue (for background jobs)
+celery==5.3.4
+
+# Development tools (remove in production if needed)
+django-debug-toolbar==4.2.0
