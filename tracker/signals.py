@@ -149,10 +149,14 @@ def restore_stock_on_sale_item_delete(sender, instance, **kwargs):
     if getattr(instance, '_stock_restored', False):
         # Stock was already restored in the model's delete; continue to adjust totals
         pass
-
-    stationery_item = instance.item
-    stationery_item.stock_quantity += instance.quantity
-    stationery_item.save(update_fields=['stock_quantity'])
+    else:
+        # Restore stock based on product type
+        if instance.product_type == 'retail' and instance.retail_item:
+            instance.retail_item.stock_quantity += instance.quantity
+            instance.retail_item.save(update_fields=['stock_quantity'])
+        elif instance.product_type == 'wholesale' and instance.wholesale_item:
+            instance.wholesale_item.cartons_in_stock += instance.quantity
+            instance.wholesale_item.save(update_fields=['cartons_in_stock'])
 
     # Recompute the sale total if the sale still exists (it may be being deleted)
     try:

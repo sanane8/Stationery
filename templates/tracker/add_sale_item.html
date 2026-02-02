@@ -14,12 +14,30 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="{{ form.item.id_for_label }}" class="form-label">Stationery Item *</label>
-                                {{ form.item }}
-                                {% if form.item.errors %}
-                                    <div class="text-danger">{{ form.item.errors }}</div>
+                                <label for="{{ form.product_type.id_for_label }}" class="form-label">Product Type *</label>
+                                {{ form.product_type }}
+                                {% if form.product_type.errors %}
+                                    <div class="text-danger">{{ form.product_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.retail_item.id_for_label }}" class="form-label retail-item-label">Retail Product *</label>
+                                {{ form.retail_item }}
+                                {% if form.retail_item.errors %}
+                                    <div class="text-danger">{{ form.retail_item.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.wholesale_item.id_for_label }}" class="form-label wholesale-item-label">Whole Sale Product *</label>
+                                {{ form.wholesale_item }}
+                                {% if form.wholesale_item.errors %}
+                                    <div class="text-danger">{{ form.wholesale_item.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -45,7 +63,7 @@
                     
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i>
-                        <strong>Note:</strong> The unit price will default to the item's current price, but you can modify it if needed for this sale. Quantity defaults to 1 and can be changed once an item is selected.
+                        <strong>Note:</strong> Select product type first, then choose the specific product. The unit price will default to the product's current price, but you can modify it if needed for this sale. Quantity defaults to 1 and can be changed once a product is selected.
                     </div>
                     
                     <div class="d-flex justify-content-between">
@@ -61,58 +79,78 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const itemSelect = document.getElementById('id_item');
+    const productTypeSelect = document.getElementById('id_product_type');
+    const retailItemSelect = document.getElementById('id_retail_item');
+    const wholesaleItemSelect = document.getElementById('id_wholesale_item');
     const unitPriceInput = document.getElementById('id_unit_price');
     const quantityInput = document.getElementById('id_quantity');
     
     // Store item prices for quick lookup
-    const itemPrices = {
-        {% for item in form.item.field.queryset %}
+    const retailItemPrices = {
+        {% for item in form.retail_item.field.queryset %}
         {{ item.pk }}: {{ item.unit_price|floatformat:2 }},
+        {% endfor %}
+    };
+    
+    const wholesaleItemPrices = {
+        {% for item in form.wholesale_item.field.queryset %}
+        {{ item.pk }}: {{ item.selling_price|floatformat:2 }},
         {% endfor %}
     };
     
     // Set default quantity to 1 when page loads
     quantityInput.value = 1;
     
-    // Function to handle item selection change
-    function handleItemChange() {
-        const selectedItemId = this.value;
+    // Function to toggle product fields based on selection
+    function toggleProductFields() {
+        const productType = productTypeSelect.value;
+        const retailItemDiv = retailItemSelect.closest('.mb-3');
+        const wholesaleItemDiv = wholesaleItemSelect.closest('.mb-3');
         
-        // Update unit price when item is selected
-        if (selectedItemId && itemPrices[selectedItemId]) {
-            unitPriceInput.value = itemPrices[selectedItemId];
-        }
-        
-        // Allow quantity to be changed when an item is selected
-        // If no item is selected, keep quantity at 1 and make it readonly
-        if (selectedItemId) {
-            quantityInput.readOnly = false;
-            quantityInput.style.backgroundColor = '';
-        } else {
-            quantityInput.value = 1;
-            quantityInput.readOnly = true;
-            quantityInput.style.backgroundColor = '#f8f9fa';
+        if (productType === 'retail') {
+            retailItemDiv.style.display = 'block';
+            wholesaleItemDiv.style.display = 'none';
+            retailItemSelect.required = true;
+            wholesaleItemSelect.required = false;
+            wholesaleItemSelect.value = '';
+        } else if (productType === 'wholesale') {
+            retailItemDiv.style.display = 'none';
+            wholesaleItemDiv.style.display = 'block';
+            wholesaleItemSelect.required = true;
+            retailItemSelect.required = false;
+            retailItemSelect.value = '';
         }
     }
     
-    // Handle initial state
-    handleItemChange.call(itemSelect);
-    
-    // Add event listener for item selection changes
-    itemSelect.addEventListener('change', handleItemChange);
-    
-    // Add input validation for quantity (must be at least 1)
-    quantityInput.addEventListener('input', function() {
-        if (this.value < 1 || this.value === '') {
-            this.value = 1;
+    // Function to update unit price based on selected item
+    function updateUnitPrice() {
+        const productType = productTypeSelect.value;
+        let price = 0;
+        
+        if (productType === 'retail' && retailItemSelect.value) {
+            price = retailItemPrices[retailItemSelect.value] || 0;
+        } else if (productType === 'wholesale' && wholesaleItemSelect.value) {
+            price = wholesaleItemPrices[wholesaleItemSelect.value] || 0;
         }
+        
+        unitPriceInput.value = price;
+    }
+    
+    // Event listeners
+    productTypeSelect.addEventListener('change', function() {
+        toggleProductFields();
+        updateUnitPrice();
     });
+    
+    retailItemSelect.addEventListener('change', updateUnitPrice);
+    wholesaleItemSelect.addEventListener('change', updateUnitPrice);
+    
+    // Initialize field visibility
+    toggleProductFields();
+    updateUnitPrice();
 });
 </script>
 {% endblock %}

@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% load humanize querystring %}
 
-{% block page_title %}Stationery Items{% endblock %}
+{% block page_title %}Retail Sale Products{% endblock %}
 
 {% block page_actions %}
 <div class="btn-group" role="group">
     <a href="{% url 'create_stationery_item' %}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Add Item
+        <i class="fas fa-plus"></i> Add Retail Product
     </a>
 
     <div class="btn-group ms-2" role="group" aria-label="Quick toggles">
@@ -73,10 +73,74 @@
     </div>
 </div>
 
-<!-- Stationery Items Table -->
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ total_products }}</h4>
+                        <p class="mb-0">Total Products</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-box fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ low_stock_products }}</h4>
+                        <p class="mb-0">Low Stock</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">TZS {{ total_stock_value|floatformat:0|intcomma }}</h4>
+                        <p class="mb-0">Stock Value</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ categories.count }}</h4>
+                        <p class="mb-0">Categories</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-tags fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Retail Sale Products Table -->
 <div class="card">
     <div class="card-header">
-        <h6 class="m-0 font-weight-bold text-primary">Stationery Items ({{ items.paginator.count }})</h6>
+        <h6 class="m-0 font-weight-bold text-primary">Retail Sale Products ({{ items.paginator.count }})</h6>
     </div>
     <div class="card-body">
         {% if items %}

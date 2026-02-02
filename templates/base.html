@@ -119,8 +119,18 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'product_list' %}">
+                                <i class="fas fa-box"></i> Whole Sale Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'supplier' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'supplier_list' %}">
+                                <i class="fas fa-truck"></i> Suppliers
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {% if 'stationery' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'stationery_list' %}">
-                                <i class="fas fa-box"></i> Stationery Items
+                                <i class="fas fa-cube"></i> Retail Sale Products
                             </a>
                         </li>
                         <li class="nav-item">
@@ -147,6 +157,7 @@
                             <a class="nav-link" href="/admin/">
                                 <i class="fas fa-cog"></i> Admin Panel
                             </a>
+                        </li>
                         </li>
                         <li class="nav-item">
                             <form method="post" action="{% url 'logout' %}" style="display: inline;">

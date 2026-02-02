@@ -8,6 +8,17 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     
+    # Products
+    path('products/', views.product_list, name='product_list'),
+    path('products/<int:pk>/', views.product_detail, name='product_detail'),
+    path('products/create/', views.product_create, name='product_create'),
+    path('products/<int:pk>/update/', views.product_update, name='product_update'),
+    
+    # Suppliers
+    path('suppliers/', views.supplier_list, name='supplier_list'),
+    path('suppliers/create/', views.supplier_create, name='supplier_create'),
+    path('suppliers/<int:pk>/update/', views.supplier_update, name='supplier_update'),
+    
     # Stationery items
     path('stationery/', views.stationery_list, name='stationery_list'),
     path('stationery/<int:pk>/', views.stationery_detail, name='stationery_detail'),

@@ -9,8 +9,8 @@ from django.db.models.functions import TruncDate
 from django.utils import timezone
 from django.core.paginator import Paginator
 from datetime import datetime, timedelta
-from .models import StationeryItem, Sale, SaleItem, Debt, Customer, Category
-from .forms import SaleForm, SaleItemForm, DebtForm, PaymentForm, StationeryItemForm, CustomerForm, LoginForm, RegistrationForm
+from .models import StationeryItem, Sale, SaleItem, Debt, Customer, Category, Product, Supplier
+from .forms import SaleForm, SaleItemForm, DebtForm, PaymentForm, StationeryItemForm, CustomerForm, LoginForm, RegistrationForm, ProductForm, SupplierForm
 from django.contrib.auth import authenticate, login
 
 from .forms import ExpenditureForm
@@ -30,6 +30,182 @@ try:
 except Exception:
     REPORTLAB_AVAILABLE = False
 
+
+@login_required
+def product_list(request):
+    """Display all products with supplier pricing and carton information"""
+    products = Product.objects.select_related('category', 'supplier').filter(is_active=True)
+    
+    # Filter by category
+    category_id = request.GET.get('category')
+    if category_id:
+        products = products.filter(category_id=category_id)
+    
+    # Filter by supplier
+    supplier_id = request.GET.get('supplier')
+    if supplier_id:
+        products = products.filter(supplier_id=supplier_id)
+    
+    # Search
+    search_query = request.GET.get('search')
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) |
+            Q(sku__icontains=search_query) |
+            Q(supplier__name__icontains=search_query)
+        )
+    
+    # Pagination
+    paginator = Paginator(products, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get filter options
+    categories = Category.objects.all()
+    suppliers = Supplier.objects.filter(is_active=True)
+    
+    # Calculate statistics
+    total_products = products.count()
+    low_stock_products = products.filter(cartons_in_stock__lte=models.F('minimum_cartons')).count()
+    total_stock_value = sum(product.get_total_value() for product in products)
+    
+    context = {
+        'page_obj': page_obj,
+        'categories': categories,
+        'suppliers': suppliers,
+        'total_products': total_products,
+        'low_stock_products': low_stock_products,
+        'total_stock_value': total_stock_value,
+        'search_query': search_query or '',
+        'selected_category': category_id or '',
+        'selected_supplier': supplier_id or '',
+    }
+    
+    return render(request, 'tracker/product_list.html', context)
+
+
+@login_required
+def product_detail(request, pk):
+    """Display detailed product information"""
+    product = get_object_or_404(Product, pk=pk)
+    
+    # Get recent sales for this product (only wholesale sales)
+    recent_sales = Sale.objects.filter(
+        items__wholesale_item=product
+    ).order_by('-sale_date')[:10]
+    
+    context = {
+        'product': product,
+        'recent_sales': recent_sales,
+    }
+    
+    return render(request, 'tracker/product_detail.html', context)
+
+
+@login_required
+def product_create(request):
+    """Create a new product"""
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            product = form.save()
+            messages.success(request, f'Product "{product.name}" has been created successfully.')
+            return redirect('product_detail', pk=product.pk)
+    else:
+        form = ProductForm()
+    
+    return render(request, 'tracker/product_form.html', {
+        'form': form,
+        'title': 'Create Whole Sale Product',
+    })
+
+
+@login_required
+def product_update(request, pk):
+    """Update an existing product"""
+    product = get_object_or_404(Product, pk=pk)
+    
+    if request.method == 'POST':
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            product = form.save()
+            messages.success(request, f'Whole sale product "{product.name}" has been updated successfully.')
+            return redirect('product_detail', pk=product.pk)
+    else:
+        form = ProductForm(instance=product)
+    
+    return render(request, 'tracker/product_form.html', {
+        'form': form,
+        'product': product,
+        'title': 'Update Whole Sale Product',
+    })
+
+
+@login_required
+def supplier_list(request):
+    """Display all suppliers"""
+    suppliers = Supplier.objects.filter(is_active=True)
+    
+    # Search
+    search_query = request.GET.get('search')
+    if search_query:
+        suppliers = suppliers.filter(
+            Q(name__icontains=search_query) |
+            Q(contact_person__icontains=search_query) |
+            Q(phone__icontains=search_query)
+        )
+    
+    # Calculate statistics
+    total_suppliers = suppliers.count()
+    total_products = sum(supplier.products.count() for supplier in suppliers)
+    
+    context = {
+        'suppliers': suppliers,
+        'total_suppliers': total_suppliers,
+        'total_products': total_products,
+        'search_query': search_query or '',
+    }
+    
+    return render(request, 'tracker/supplier_list.html', context)
+
+
+@login_required
+def supplier_create(request):
+    """Create a new supplier"""
+    if request.method == 'POST':
+        form = SupplierForm(request.POST)
+        if form.is_valid():
+            supplier = form.save()
+            messages.success(request, f'Supplier "{supplier.name}" has been created successfully.')
+            return redirect('supplier_list')
+    else:
+        form = SupplierForm()
+    
+    return render(request, 'tracker/supplier_form.html', {
+        'form': form,
+        'title': 'Create Supplier',
+    })
+
+
+@login_required
+def supplier_update(request, pk):
+    """Update an existing supplier"""
+    supplier = get_object_or_404(Supplier, pk=pk)
+    
+    if request.method == 'POST':
+        form = SupplierForm(request.POST, instance=supplier)
+        if form.is_valid():
+            supplier = form.save()
+            messages.success(request, f'Supplier "{supplier.name}" has been updated successfully.')
+            return redirect('supplier_list')
+    else:
+        form = SupplierForm(instance=supplier)
+    
+    return render(request, 'tracker/supplier_form.html', {
+        'form': form,
+        'supplier': supplier,
+        'title': 'Update Supplier',
+    })
 
 
 def login_view(request):
@@ -70,7 +246,7 @@ def dashboard(request):
     # Get recent **paid** sales (exclude unpaid sales and sales with no items)
     recent_sales = (
         Sale.objects.select_related('customer')
-        .prefetch_related('items__item')
+        .prefetch_related('items__retail_item', 'items__wholesale_item')
         .annotate(item_count=Count('items'))
         .filter(is_paid=True, item_count__gt=0)
         .order_by('-sale_date')[:10]
@@ -196,6 +372,11 @@ def stationery_list(request):
     
     categories = Category.objects.all()
     
+    # Calculate statistics (similar to product_list)
+    total_products = items.count()
+    low_stock_products = items.filter(stock_quantity__lte=models.F('minimum_stock')).count()
+    total_stock_value = sum(item.get_total_value() for item in items)
+    
     # Paginate
     page = request.GET.get('page')
     paginator = Paginator(items, 20)
@@ -212,6 +393,9 @@ def stationery_list(request):
         'low_stock_count': low_stock_count,
         'selected_inactive': selected_inactive,
         'inactive_count': inactive_count,
+        'total_products': total_products,
+        'low_stock_products': low_stock_products,
+        'total_stock_value': total_stock_value,
     }
     
     return render(request, 'tracker/stationery_list.html', context)
@@ -221,7 +405,11 @@ def stationery_list(request):
 def stationery_detail(request, pk):
     """Detail view for a stationery item"""
     item = get_object_or_404(StationeryItem, pk=pk)
-    recent_sales = Sale.objects.filter(items__item=item).order_by('-sale_date')[:10]
+    
+    # Get recent sales for this stationery item (only retail sales)
+    recent_sales = Sale.objects.filter(
+        items__retail_item=item
+    ).order_by('-sale_date')[:10]
     
     context = {
         'item': item,
@@ -236,7 +424,7 @@ def sales_list(request):
     """List all sales"""
     # Show all sales including payment-related sales (those without items)
     # Payment sales are stored as sales with no items but notes like 'Payment for Debt #<id>'
-    sales = Sale.objects.select_related('customer', 'created_by').prefetch_related('items__item').annotate(
+    sales = Sale.objects.select_related('customer', 'created_by').prefetch_related('items__retail_item', 'items__wholesale_item').annotate(
         item_count=Count('items')
     ).filter(
         Q(item_count__gt=0) | Q(notes__contains='Payment for Debt')
@@ -283,22 +471,28 @@ def sales_list(request):
         product_search = str(product_search).strip() or None
     if product_search:
         has_product = SaleItem.objects.filter(
-            sale=OuterRef('pk'),
-            item__name__icontains=product_search,
+            sale=OuterRef('pk')
+        ).filter(
+            Q(retail_item__name__icontains=product_search) |
+            Q(wholesale_item__name__icontains=product_search)
         )
         sales = sales.filter(Exists(has_product))
 
+    # Paginate before converting to list
+    page = request.GET.get('page')
+    paginator = Paginator(sales, 20)
+    page_obj = paginator.get_page(page)
+
     # Annotate per-sale total_cost and profit to avoid N+1 queries in template
-    total_cost_expr = Sum(F('items__quantity') * F('items__item__cost_price'), output_field=DecimalField())
-    sales = sales.annotate(total_cost=total_cost_expr)
-    # Use a different name for the annotated profit so we don't shadow the model's `profit` property
-    sales = sales.annotate(annotated_profit=ExpressionWrapper(F('total_amount') - F('total_cost'), output_field=DecimalField()))
-    
-    # Calculate total amount and overall profit for filtered sales
-    agg = sales.aggregate(total_revenue=Sum('total_amount'), total_cost=Sum(F('items__quantity') * F('items__item__cost_price'), output_field=DecimalField()))
-    total_amount = agg.get('total_revenue') or Decimal('0')
-    overall_cost = agg.get('total_cost') or Decimal('0')
-    overall_profit = total_amount - overall_cost
+    # We'll calculate this in Python instead of using complex annotations
+    for sale in page_obj.object_list:
+        # Calculate total cost for this sale
+        total_cost = Decimal('0')
+        for item in sale.items.all():
+            if item.product_type == 'retail' and item.retail_item:
+                total_cost += item.quantity * (item.retail_item.cost_price or Decimal('0'))
+        sale.total_cost = total_cost
+        sale.annotated_profit = sale.total_amount - total_cost
 
     # Compute total expenditures for the same filter window (if date filters applied)
     exp_qs = Expenditure.objects.all()
@@ -308,25 +502,35 @@ def sales_list(request):
         exp_qs = exp_qs.filter(expense_date__date__lte=end_date)
     total_expenditure = exp_qs.aggregate(total=Sum('amount'))['total'] or Decimal('0')
 
-    # Net total amount after subtracting expenditures
-    total_amount_net = total_amount - total_expenditure
+    # Calculate total amount and overall profit for filtered sales (using full queryset)
+    # We need to get the full queryset without pagination for totals
+    # Reset the queryset to get all results for calculations
+    sales_queryset = sales
+    total_amount = sum(sale.total_amount or Decimal('0') for sale in sales_queryset)
+    
+    # Calculate costs for all sales
+    overall_cost = Decimal('0')
+    for sale in sales_queryset:
+        sale_cost = Decimal('0')
+        for item in sale.items.all():
+            if item.product_type == 'retail' and item.retail_item:
+                sale_cost += item.quantity * (item.retail_item.cost_price or Decimal('0'))
+        sale.total_cost = sale_cost  # Store for daily aggregates
+        overall_cost += sale_cost
+    
+    overall_profit = total_amount - overall_cost
 
     # Calculate daily aggregates (local timezone-aware) for the filtered sales.
     # We group sales by their *local* date (timezone.localtime(sale.sale_date).date()) so
     # daily buckets match what's shown in the dashboard and templates.
     daily_map = {}
-    # Use a separate queryset for aggregation to avoid confusing pagination (evaluate full set)
-    sales_for_agg = sales.select_related('customer').prefetch_related('items__item')
-
+    
     product_search_lower = (product_search or '').lower()
 
-    for sale in sales_for_agg:
+    for sale in sales_queryset:
         local_date = timezone.localtime(sale.sale_date).date()
         rev = sale.total_amount or Decimal('0')
-        try:
-            cost = sum((si.quantity * (si.item.cost_price or Decimal('0'))) for si in sale.items.all())
-        except Exception:
-            cost = Decimal('0')
+        cost = getattr(sale, 'total_cost', Decimal('0'))
 
         entry = daily_map.setdefault(local_date, {
             'revenue': Decimal('0'), 'cost': Decimal('0'), 'count': 0,
@@ -336,26 +540,30 @@ def sales_list(request):
         entry['revenue'] += rev
         entry['cost'] += cost
         entry['count'] += 1
+
+        # Product-specific aggregation
         if product_search_lower:
-            try:
-                match_qty = 0
-                match_revenue = Decimal('0')
-                match_cost = Decimal('0')
-                names = entry.get('product_names') or set()
-                for si in sale.items.all():
-                    if product_search_lower not in ((si.item.name or '').lower()):
-                        continue
-                    match_qty += si.quantity
-                    match_revenue += si.total_price or (si.quantity * (si.unit_price or Decimal('0')))
-                    match_cost += si.quantity * (si.item.cost_price or Decimal('0'))
-                    if si.item.name:
-                        names.add(si.item.name)
-                entry['product_qty'] = entry.get('product_qty', 0) + match_qty
-                entry['product_revenue'] = entry.get('product_revenue', Decimal('0')) + match_revenue
-                entry['product_cost'] = entry.get('product_cost', Decimal('0')) + match_cost
-                entry['product_names'] = names
-            except Exception:
-                pass
+            matching_item_revenue = Decimal('0')
+            matching_item_cost = Decimal('0')
+            for si in sale.items.all():
+                item_name = si.item_name.lower()
+                if product_search_lower in item_name:
+                    entry['product_qty'] += si.quantity
+                    # Calculate the actual revenue and cost for this specific item
+                    item_revenue = si.total_price or Decimal('0')
+                    matching_item_revenue += item_revenue
+                    
+                    # Calculate cost for this specific item
+                    item_cost = Decimal('0')
+                    if si.product_type == 'retail' and si.retail_item:
+                        item_cost = si.quantity * (si.retail_item.cost_price or Decimal('0'))
+                    matching_item_cost += item_cost
+                    
+                    entry['product_names'].add(si.item_name)
+            
+            # Add only the matching item revenue and cost
+            entry['product_revenue'] += matching_item_revenue
+            entry['product_cost'] += matching_item_cost
 
     # Convert map into sorted list (newest date first)
     daily_sales = []
@@ -396,11 +604,6 @@ def sales_list(request):
     daily_summary_total_profit = sum(d['profit'] for d in daily_sales)
     daily_summary_total_product_qty = sum(d.get('product_qty', 0) for d in daily_sales)
     
-    # Paginate
-    page = request.GET.get('page')
-    paginator = Paginator(sales, 20)
-    page_obj = paginator.get_page(page)
-
     # Ensure payment-sales (which have no SaleItem rows) display a sensible profit
     # annotated_profit may be NULL for such rows; compute from model property in Python
     for sale in page_obj.object_list:
@@ -411,14 +614,14 @@ def sales_list(request):
                 sale.annotated_profit = Decimal('0')
         # Build a products string for display on the sales list for payment-only sales
         try:
-            sale_items = list(sale.items.select_related('item').all())
+            sale_items = list(sale.items.select_related('retail_item', 'wholesale_item').all())
         except Exception:
             sale_items = []
 
         products_list = []
         if sale_items:
             for si in sale_items:
-                products_list.append(f"{si.item.name} ({si.quantity})")
+                products_list.append(f"{si.item_name} ({si.quantity})")
         else:
             import re
             m = re.search(r'Payment for Debt #(\d+)', (sale.notes or ''))
@@ -426,8 +629,8 @@ def sales_list(request):
                 try:
                     debt = Debt.objects.select_related('item', 'sale').get(pk=int(m.group(1)))
                     if debt.sale and debt.sale.items.exists():
-                        for si in debt.sale.items.select_related('item').all():
-                            products_list.append(f"{si.item.name} ({si.quantity})")
+                        for si in debt.sale.items.select_related('retail_item', 'wholesale_item').all():
+                            products_list.append(f"{si.item_name} ({si.quantity})")
                     elif debt.item:
                         products_list.append(f"{debt.item.name} ({debt.quantity})")
                 except Debt.DoesNotExist:
@@ -471,7 +674,6 @@ def sales_list(request):
         'payment_status': payment_status,
         'product_search': product_search or '',
         'total_amount': total_amount,
-        'total_amount_net': total_amount_net,
         'total_expenditure': total_expenditure,
         'daily_sales': daily_sales,
         'daily_summary_total_sold': daily_summary_total_sold,
@@ -489,7 +691,7 @@ def sales_list(request):
 def sale_detail(request, pk):
     """Detail view for a sale"""
     sale = get_object_or_404(Sale, pk=pk)
-    sale_items = sale.items.select_related('item')
+    sale_items = sale.items.select_related('retail_item', 'wholesale_item')
     
     context = {
         'sale': sale,
@@ -503,11 +705,11 @@ def sale_detail(request, pk):
 def print_invoice(request, pk):
     """Render a printable invoice for a single sale."""
     sale = get_object_or_404(Sale, pk=pk)
-    sale_items = sale.items.select_related('item')
+    sale_items = sale.items.select_related('retail_item', 'wholesale_item')
 
     # Calculate totals and cost
     try:
-        total_cost = sum((si.quantity * (si.item.cost_price or Decimal('0'))) for si in sale_items)
+        total_cost = sum((si.quantity * (si.retail_item.cost_price if si.product_type == 'retail' and si.retail_item else Decimal('0'))) for si in sale_items)
     except Exception:
         total_cost = Decimal('0')
     revenue = sale.total_amount or Decimal('0')
@@ -609,12 +811,15 @@ def sales_daily_export_csv(request):
         product_search = str(product_search).strip()
         has_product = SaleItem.objects.filter(
             sale=OuterRef('pk'),
-            item__name__icontains=product_search,
+            retail_item__name__icontains=product_search,
+        ) | SaleItem.objects.filter(
+            sale=OuterRef('pk'),
+            wholesale_item__name__icontains=product_search,
         )
         sales = sales.filter(Exists(has_product))
 
     # Export all matching sales (row per sale) as CSV
-    sales = sales.select_related('customer').prefetch_related('items__item')
+    sales = sales.select_related('customer').prefetch_related('items__retail_item', 'items__wholesale_item')
 
     try:
         response = HttpResponse(content_type='text/csv')
@@ -707,7 +912,7 @@ def sales_daily_export_pdf(request):
 
     # Export all matching sales (no two-day cap) as a PDF listing individual sales
     # Build list of sales respecting filters
-    sales = sales.select_related('customer').prefetch_related('items__item')
+    sales = sales.select_related('customer').prefetch_related('items__retail_item', 'items__wholesale_item')
 
     buffer = BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
@@ -804,12 +1009,15 @@ def sales_daily_print(request):
         )
         sales = sales.filter(Exists(has_product))
 
-    sales = sales.select_related('customer').prefetch_related('items__item')
+    sales = sales.select_related('customer').prefetch_related('items__retail_item', 'items__wholesale_item')
 
     rows = []
     for sale in sales:
         try:
-            total_cost = sum((si.quantity * (si.item.cost_price or Decimal('0'))) for si in sale.items.all())
+            total_cost = sum(
+                (si.quantity * (si.retail_item.cost_price if si.product_type == 'retail' and si.retail_item else Decimal('0'))) 
+                for si in sale.items.all()
+            )
         except Exception:
             total_cost = Decimal('0')
         revenue = sale.total_amount or Decimal('0')
@@ -905,10 +1113,18 @@ def delete_sale(request, pk):
     sale = get_object_or_404(Sale, pk=pk)
 
     if request.method == 'POST':
-        # Capture restored items info before deletion
+        # Capture restored items info before deletion and restore stock
         restored_items = []
         for si in sale.items.all():
-            restored_items.append(f"{si.item.name} (+{si.quantity})")
+            # Restore stock based on product type
+            if si.product_type == 'retail' and si.retail_item:
+                si.retail_item.stock_quantity += si.quantity
+                si.retail_item.save(update_fields=['stock_quantity'])
+                restored_items.append(f"{si.retail_item.name} (+{si.quantity} units)")
+            elif si.product_type == 'wholesale' and si.wholesale_item:
+                si.wholesale_item.cartons_in_stock += si.quantity
+                si.wholesale_item.save(update_fields=['cartons_in_stock'])
+                restored_items.append(f"{si.wholesale_item.name} (+{si.quantity} cartons)")
 
         # Check if this is a payment sale for a debt
         if not sale.items.exists() and sale.notes and 'Payment for Debt #' in sale.notes:
@@ -920,9 +1136,10 @@ def delete_sale(request, pk):
                     from .models import Debt
                     debt = Debt.objects.get(pk=debt_id)
                     # Restore stock for the debt's item and quantity
-                    debt.item.stock_quantity += debt.quantity
-                    debt.item.save(update_fields=['stock_quantity'])
-                    restored_items.append(f"{debt.item.name} (+{debt.quantity})")
+                    if debt.item:
+                        debt.item.stock_quantity += debt.quantity
+                        debt.item.save(update_fields=['stock_quantity'])
+                        restored_items.append(f"{debt.item.name} (+{debt.quantity})")
                     # Reverse the payment
                     debt.paid_amount -= sale.total_amount
                     if debt.paid_amount < 0:
@@ -972,9 +1189,19 @@ def create_sale(request):
                     sale_item = item_form.save(commit=False)
                     sale_item.sale = sale
                     
-                    # Check stock availability
-                    if sale_item.item.stock_quantity < sale_item.quantity:
-                        messages.error(request, f'Insufficient stock! Available: {sale_item.item.stock_quantity}, Requested: {sale_item.quantity}')
+                    # Check stock availability based on product type
+                    stock_error = None
+                    if sale_item.product_type == 'retail' and sale_item.retail_item:
+                        if sale_item.retail_item.stock_quantity < sale_item.quantity:
+                            stock_error = f'Insufficient stock for {sale_item.retail_item.name}! Available: {sale_item.retail_item.stock_quantity}, Requested: {sale_item.quantity}'
+                    elif sale_item.product_type == 'wholesale' and sale_item.wholesale_item:
+                        if sale_item.wholesale_item.cartons_in_stock < sale_item.quantity:
+                            stock_error = f'Insufficient stock for {sale_item.wholesale_item.name}! Available: {sale_item.wholesale_item.cartons_in_stock}, Requested: {sale_item.quantity}'
+                    else:
+                        stock_error = 'Please select a valid product.'
+                    
+                    if stock_error:
+                        messages.error(request, stock_error)
                         sale.delete()  # Clean up the sale since no items were added
                         context = {
                             'sale_form': sale_form,
@@ -1026,13 +1253,24 @@ def add_sale_item(request, sale_id):
                     # Check if this sale already has the same item
                     existing_item = None
                     try:
-                        existing_item = SaleItem.objects.get(sale=sale, item=sale_item.item)
+                        if sale_item.product_type == 'retail' and sale_item.retail_item:
+                            existing_item = SaleItem.objects.get(sale=sale, product_type='retail', retail_item=sale_item.retail_item)
+                        elif sale_item.product_type == 'wholesale' and sale_item.wholesale_item:
+                            existing_item = SaleItem.objects.get(sale=sale, product_type='wholesale', wholesale_item=sale_item.wholesale_item)
                     except SaleItem.DoesNotExist:
                         existing_item = None
 
-                    # If it's a new line item, ensure stock exists for the requested quantity
-                    if existing_item is None and sale_item.item.stock_quantity < sale_item.quantity:
-                        messages.error(request, f'Insufficient stock! Available: {sale_item.item.stock_quantity}, Requested: {sale_item.quantity}')
+                    # Check stock availability based on product type
+                    stock_error = None
+                    if sale_item.product_type == 'retail' and sale_item.retail_item:
+                        if existing_item is None and sale_item.retail_item.stock_quantity < sale_item.quantity:
+                            stock_error = f'Insufficient stock for {sale_item.retail_item.name}! Available: {sale_item.retail_item.stock_quantity}, Requested: {sale_item.quantity}'
+                    elif sale_item.product_type == 'wholesale' and sale_item.wholesale_item:
+                        if existing_item is None and sale_item.wholesale_item.cartons_in_stock < sale_item.quantity:
+                            stock_error = f'Insufficient stock for {sale_item.wholesale_item.name}! Available: {sale_item.wholesale_item.cartons_in_stock}, Requested: {sale_item.quantity}'
+                    
+                    if stock_error:
+                        messages.error(request, stock_error)
                         context = {
                             'form': form,
                             'sale': sale,
@@ -1045,8 +1283,17 @@ def add_sale_item(request, sale_id):
                         additional = 0
                         if existing_item:
                             additional = sale_item.quantity
-                            if sale_item.item.stock_quantity < additional:
-                                messages.error(request, f'Insufficient stock! Available: {sale_item.item.stock_quantity}, Requested additional: {additional}')
+                            # Check stock for additional quantity
+                            stock_error = None
+                            if sale_item.product_type == 'retail' and sale_item.retail_item:
+                                if sale_item.retail_item.stock_quantity < additional:
+                                    stock_error = f'Insufficient stock for {sale_item.retail_item.name}! Available: {sale_item.retail_item.stock_quantity}, Requested additional: {additional}'
+                            elif sale_item.product_type == 'wholesale' and sale_item.wholesale_item:
+                                if sale_item.wholesale_item.cartons_in_stock < additional:
+                                    stock_error = f'Insufficient stock for {sale_item.wholesale_item.name}! Available: {sale_item.wholesale_item.cartons_in_stock}, Requested additional: {additional}'
+                            
+                            if stock_error:
+                                messages.error(request, stock_error)
                                 context = {
                                     'form': form,
                                     'sale': sale,
