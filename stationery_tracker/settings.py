@@ -130,5 +130,6 @@ AFRICASTALKING_USERNAME = os.getenv('AFRICASTALKING_USERNAME', 'paul.sanane@gmai
 AFRICASTALKING_API_KEY = os.getenv('AFRICASTALKING_API_KEY', 'atsk_70aca8c7d14163b27fc4b28bf3e6576855879ed56d7a8968ca176b64fa86364009e1aacc')
 AFRICASTALKING_SENDER_ID = os.getenv('AFRICASTALKING_SENDER_ID', 'your_sender_id')
 
-# Activate Django-Heroku.
-django_heroku.settings(locals())
+# Activate Django-Heroku only on Heroku platform
+if 'DYNO' in os.environ:
+    django_heroku.settings(locals())
