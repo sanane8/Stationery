@@ -106,9 +106,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Handle form submission with loading effect
     paymentForm.addEventListener('submit', function(e) {
+        // Prevent default form submission
+        e.preventDefault();
+        
         // Validate amount before submission
         if (!validateAmount()) {
-            e.preventDefault();
             return;
         }
         

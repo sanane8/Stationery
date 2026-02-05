@@ -35,7 +35,14 @@ def _sync_debt_for_sale(sale):
         return
 
     if sale.is_paid:
-        # Mark any linked debt as paid
+        # Mark any linked debt as paid, but ONLY if this is not a payment sale
+        # Payment sales have notes like 'Payment for Debt #<id>'
+        if sale.notes and 'Payment for Debt #' in sale.notes:
+            # This is a payment sale, don't auto-update the debt status
+            # The debt status is handled by the Payment model's save method
+            return
+        
+        # This is a regular sale being marked as paid, update the debt
         try:
             d = Debt.objects.filter(sale=sale).first()
             if d:

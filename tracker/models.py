@@ -529,7 +529,8 @@ class Payment(models.Model):
             self.debt.status = 'paid'
         elif self.debt.paid_amount > 0:
             self.debt.status = 'partial'
-        self.debt.save()
+        # Use update_fields to avoid triggering unnecessary signals/cascades
+        self.debt.save(update_fields=['paid_amount', 'status'])
 
 
 class Expenditure(models.Model):
