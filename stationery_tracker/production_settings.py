@@ -11,7 +11,10 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key-here-change-in
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.100', '0.0.0.0', 'spmsabila.pythonanywhere.com']
+ALLOWED_HOSTS = [
+    'localhost', '127.0.0.1', '192.168.1.100', '0.0.0.0',
+    'spmsabila.pythonanywhere.com', '.pythonanywhere.com',
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -21,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'tracker',
 ]
 
@@ -55,11 +59,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'stationery_tracker.wsgi.application'
 
-# Database - PythonAnywhere uses SQLite
+# Database - PythonAnywhere uses SQLite (str() for path compatibility)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': str(BASE_DIR / 'db.sqlite3'),
     }
 }
 
@@ -87,14 +91,22 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
+STATIC_ROOT = str(BASE_DIR / 'staticfiles')
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Auth URLs (required for login redirects)
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'login'
+
+# Media files (used by main urls.py)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Security settings for production (relaxed for PythonAnywhere)
 SECURE_BROWSER_XSS_FILTER = True
