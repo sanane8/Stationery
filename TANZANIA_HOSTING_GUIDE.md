@@ -82,7 +82,6 @@
 | HostAfrica | TZS 20,000-50,000 | ✅ | ✅ |
 | Habari | TZS 30,000-80,000 | ✅ | ✅ |
 | ZanHost | TZS 15,000-40,000 | ✅ | ✅ |
-| PythonAnywhere | $0 (free) | ❌ | ✅ |
 | Railway | $0 (free credits) | ✅ (via Flutterwave) | ✅ |
 
 ## 📞 Recommended Contact Process

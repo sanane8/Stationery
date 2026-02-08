@@ -11,9 +11,12 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key-here-change-in
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    'localhost', '127.0.0.1', '192.168.1.100', '0.0.0.0',
-    'spmsabila.pythonanywhere.com', '.pythonanywhere.com',
+    'localhost', '127.0.0.1', '0.0.0.0',
 ]
+# Railway: allow *.railway.app and custom domain
+if os.environ.get('RAILWAY_PUBLIC_DOMAIN'):
+    ALLOWED_HOSTS.append(os.environ.get('RAILWAY_PUBLIC_DOMAIN'))
+ALLOWED_HOSTS.extend(['.railway.app', '.up.railway.app'])
 
 # Application definition
 INSTALLED_APPS = [
@@ -58,13 +61,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'stationery_tracker.wsgi.application'
 
-# Database - PythonAnywhere uses SQLite (str() for path compatibility)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': str(BASE_DIR / 'db.sqlite3'),
+# Database - use DATABASE_URL on Railway (PostgreSQL), else SQLite
+if os.environ.get('DATABASE_URL'):
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=not os.environ.get('DISABLE_DATABASE_SSL'),
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': str(BASE_DIR / 'db.sqlite3'),
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -107,16 +120,16 @@ LOGOUT_REDIRECT_URL = 'login'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Security settings for production (relaxed for PythonAnywhere)
+# Security settings for production
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
-# Disable HTTPS-only settings for PythonAnywhere (they handle SSL)
+# Disable HTTPS-only settings for environments that handle SSL externally
 SECURE_HSTS_SECONDS = 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
 
-# Session security (relaxed for PythonAnywhere)
+# Session security
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_HTTPONLY = True
@@ -131,7 +144,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@stationery.co.tz')
 
-# Logging: disabled in production so WSGI does not crash (PythonAnywhere Error/Server log still show errors).
+# Logging: disabled in production so WSGI does not crash
 LOGGING_CONFIG = None
 
 # Backup settings

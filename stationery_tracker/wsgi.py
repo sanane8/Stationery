@@ -1,12 +1,11 @@
 """
 WSGI config for stationery_tracker project.
-PythonAnywhere: ensure project root is on sys.path (add your path in the Web tab if needed).
 """
 
 import os
 import sys
 
-# Add project root to path (required on PythonAnywhere and some servers)
+# Add project root to path (required on some servers)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)

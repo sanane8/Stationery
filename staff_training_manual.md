@@ -13,7 +13,7 @@ The Stationery Management System helps you:
 
 ### 1. Access the System
 1. **Open browser** (Chrome, Firefox, Safari)
-2. **Go to**: `https://192.168.1.100`
+2. **Go to**: `https://your-domain.com`
 3. **Login**: Use your username and password
 4. **First time**: Click "Register" to create account
 
