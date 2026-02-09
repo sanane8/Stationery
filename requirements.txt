@@ -38,7 +38,7 @@ certifi==2025.1.31
 africastalking==1.2.7
 
 # Environment variables
-python-decouple==3.8
+python-dotenv==1.0.1
 
 # Utilities
 python-dateutil==2.9.0.post0
