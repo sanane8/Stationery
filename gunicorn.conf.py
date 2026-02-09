@@ -9,13 +9,15 @@ keepalive = 2
 max_requests = 1000
 max_requests_jitter = 100
 preload_app = True
-# Railway: Use stdout/stderr instead of file paths
+# Use stdout/stderr for all environments to prevent file permission issues
 accesslog = "-"
 errorlog = "-"
 loglevel = "info"
 daemon = False
-# Railway: Remove pidfile and user/group (not needed in container)
+# Remove pidfile and user/group (not needed in container)
 # pidfile = "/var/run/gunicorn/gunicorn.pid"
 # user = "www-data"
 # group = "www-data"
 tmp_upload_dir = None
+# Ensure logging goes to stdout/stderr even if systemd overrides
+capture_output = False

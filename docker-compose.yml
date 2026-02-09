@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=stationery_tracker.production_settings
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: gunicorn --config gunicorn.conf.py stationery_tracker.wsgi:application
+    restart: unless-stopped

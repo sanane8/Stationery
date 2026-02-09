@@ -4,15 +4,19 @@ After=network.target
 
 [Service]
 Type=notify
-User=www-data
-Group=www-data
-WorkingDirectory=C:\Users\pauls\Desktop\Stationery
+# Use dynamic user for better compatibility in containerized environments
+DynamicUser=yes
+WorkingDirectory=/app
 Environment=DJANGO_SETTINGS_MODULE=stationery_tracker.production_settings
-EnvironmentFile=/etc/environment
+EnvironmentFile=-/etc/environment
 ExecStart=/usr/local/bin/gunicorn --config gunicorn.conf.py stationery_tracker.wsgi:application
 ExecReload=/bin/kill -s HUP $MAINPID
 Restart=on-failure
 RestartSec=5
+StandardOutput=journal
+StandardError=journal
+# Add supplementary groups for filesystem access if needed
+SupplementaryGroups=www-data
 
 [Install]
 WantedBy=multi-user.target
