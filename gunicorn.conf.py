@@ -21,3 +21,7 @@ daemon = False
 tmp_upload_dir = None
 # Ensure logging goes to stdout/stderr even if systemd overrides
 capture_output = False
+# Explicitly disable any file-based logging
+syslog = False
+syslog_prefix = None
+syslog_facility = "user"
