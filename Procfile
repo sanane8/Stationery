@@ -1,1 +1,1 @@
-web: gunicorn stationery_tracker.wsgi:application --bind 0.0.0.0:${PORT:-8000}
+pipweb: gunicorn stationery_tracker.wsgi:application --bind 0.0.0.0:${PORT:-8000}
