@@ -1,0 +1,113 @@
+/* Custom styles for Stationery Tracker */
+
+/* Additional customizations can be added here */
+.sidebar .nav-link.active {
+    background-color: #3498db !important;
+    color: #fff !important;
+}
+
+.stat-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        min-height: auto;
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+}
+
+/* Filter controls styling */
+.filter-actions {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.filter-actions .btn {
+    display: inline-flex;
+    align-items: center;
+}
+.filter-actions .badge {
+    font-size: 0.75rem;
+    vertical-align: middle;
+}
+
+@media (max-width: 576px) {
+    .filter-actions .d-none.d-sm-inline {
+        display: none !important;
+    }
+    .filter-actions .action-buttons {
+        display: flex;
+        gap: .5rem;
+        margin-top: .5rem;
+    }
+}
+
+/* Previously forced blue headers globally — make it opt-in using .force-header-blue */
+.force-header-blue table thead th,
+.force-header-blue table thead {
+    background-color: #007bff !important;
+    color: #ffffff !important;
+    border-color: rgba(0,0,0,0.08) !important;
+}
+
+/* Slightly increase header font-weight and size for clarity when the blue header is used */
+.force-header-blue table thead th {
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+}
+
+/* Improve header legibility on browsers with rendering quirks (Edge) */
+.table thead th {
+    text-shadow: 0 1px 0 rgba(0,0,0,0.25) !important;
+}
+
+/* Numeric column helpers: prevent wrapping and ensure right alignment */
+.numeric-col {
+    white-space: nowrap !important;
+    text-align: right !important;
+    /* Desktop: allow at least 7 digits plus separators and currency */
+    min-width: 200px !important;
+}
+
+/* Slightly larger numeric font for visibility on amount/profit */
+.numeric-col strong {
+    font-size: 0.98rem;
+}
+
+/* Responsive: reduce minimum on smaller screens to avoid overflow */
+@media (max-width: 768px) {
+    .numeric-col {
+        min-width: 120px !important;
+        font-size: 0.95rem;
+    }
+}
+
+/* Money column: used on stationery unit/cost and sales profit/amount columns */
+.money-col {
+    white-space: nowrap !important;
+    text-align: right !important;
+    min-width: 220px !important; /* wider to comfortably fit 7+ digits */
+    overflow: visible !important;
+}
+
+@media (max-width: 768px) {
+    .money-col {
+        min-width: 130px !important;
+    }
+}

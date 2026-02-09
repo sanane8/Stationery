@@ -1,0 +1,18 @@
+[Unit]
+Description=Stationery Management System
+After=network.target
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=C:\Users\pauls\Desktop\Stationery
+Environment=DJANGO_SETTINGS_MODULE=stationery_tracker.production_settings
+EnvironmentFile=/etc/environment
+ExecStart=/usr/local/bin/gunicorn --config gunicorn.conf.py stationery_tracker.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
