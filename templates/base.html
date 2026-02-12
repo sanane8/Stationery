@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Stationery Tracker (TZS){% endblock %}</title>
+    <title>{% block title %}Stationery Tracker{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     {% load static tz %}
@@ -54,6 +54,21 @@
         .badge {
             font-size: 0.75em;
         }
+        /* Session timeout warning styles */
+        .session-warning {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+        }
+        .countdown-timer {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
         /* Mobile sidebar overlay */
         @media (max-width: 767.98px) {
             .sidebar {
@@ -97,6 +112,20 @@
     {% localtime on %}
     <!-- Mobile sidebar overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Session Timeout Warning -->
+    {% if messages %}
+        {% for message in messages %}
+            {% if 'session_timeout' in message.tags %}
+                <div class="session-warning">
+                    <div class="alert alert-warning countdown-timer">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {{ message }}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
     
     <div class="container-fluid">
         <div class="row">
@@ -287,6 +316,84 @@
         })();
     </script>
     {% block extra_js %}{% endblock %}
+    {% if user.is_authenticated %}
+    <script>
+        // Session timeout warning system
+        let warningShown = false;
+        let timeoutWarning = 8 * 60; // 8 minutes in seconds
+        let sessionTimeout = 10 * 60; // 10 minutes in seconds
+        let lastActivity = Date.now();
+        
+        // Update last activity on user interaction
+        document.addEventListener('click', updateActivity);
+        document.addEventListener('keypress', updateActivity);
+        document.addEventListener('scroll', updateActivity);
+        document.addEventListener('mousemove', updateActivity);
+        
+        function updateActivity() {
+            lastActivity = Date.now();
+            warningShown = false;
+            hideWarning();
+        }
+        
+        // Check for inactivity every 30 seconds
+        setInterval(checkInactivity, 30000);
+        
+        function checkInactivity() {
+            const currentTime = Date.now();
+            const inactiveTime = Math.floor((currentTime - lastActivity) / 1000);
+            
+            // Show warning after 8 minutes of inactivity
+            if (inactiveTime >= timeoutWarning && !warningShown) {
+                showWarning();
+                warningShown = true;
+            }
+            
+            // Auto-logout after 10 minutes (handled by middleware)
+            // This is just a visual countdown since middleware handles actual logout
+            if (inactiveTime >= timeoutWarning && warningShown) {
+                updateCountdown(sessionTimeout - inactiveTime);
+            }
+        }
+        
+        function showWarning() {
+            const warningDiv = document.createElement('div');
+            warningDiv.className = 'session-warning';
+            warningDiv.innerHTML = `
+                <div class="alert alert-warning countdown-timer">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Session Timeout Warning!</strong><br>
+                    You have been inactive for 8 minutes. You will be logged out in 2 minutes.<br>
+                    <small>Click anywhere to extend your session.</small>
+                </div>
+            `;
+            document.body.appendChild(warningDiv);
+        }
+        
+        function hideWarning() {
+            const warning = document.querySelector('.session-warning');
+            if (warning) {
+                warning.remove();
+            }
+        }
+        
+        function updateCountdown(remainingSeconds) {
+            const warning = document.querySelector('.session-warning .countdown-timer');
+            if (warning) {
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
+                warning.innerHTML = `
+                    <div class="alert alert-warning countdown-timer">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Session Timeout Warning!</strong><br>
+                        You will be logged out in <span id="countdown">${minutes}:${seconds.toString().padStart(2, '0')}</span>.<br>
+                        <small>Click anywhere to extend your session.</small>
+                    </div>
+                `;
+            }
+        }
+    </script>
+    {% endif %}
     {% endlocaltime %}
         <!-- Site footer -->
         <footer class="text-center text-white" style="background-color:#2c3e50;">
