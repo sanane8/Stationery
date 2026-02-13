@@ -102,7 +102,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Media files
@@ -132,6 +131,23 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'SP Msabila Stationery <nor
 AFRICASTALKING_USERNAME = os.getenv('AFRICASTALKING_USERNAME', 'paul.sanane@gmail.com')
 AFRICASTALKING_API_KEY = os.getenv('AFRICASTALKING_API_KEY', 'atsk_70aca8c7d14163b27fc4b28bf3e6576855879ed56d7a8968ca176b64fa86364009e1aacc')
 AFRICASTALKING_SENDER_ID = os.getenv('AFRICASTALKING_SENDER_ID', 'your_sender_id')
+
+# Django Admin Customization
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 # Disable custom logging so WSGI never crashes
 LOGGING_CONFIG = None
