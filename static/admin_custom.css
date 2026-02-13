@@ -1,0 +1,577 @@
+/* Enhanced Django Admin Styles - Modern and Professional */
+
+/* ========================================
+   ADMIN SITE HEADER
+   ======================================== */
+
+.admin-layout .header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-bottom: 3px solid #3498db !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+    padding: 20px 30px !important;
+    margin: 0 !important;
+}
+
+.admin-layout #header h1,
+.admin-layout #header .branding a {
+    color: #ffffff !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+}
+
+.admin-layout #header .branding a:hover {
+    color: #f8f9fa !important;
+}
+
+/* ========================================
+   ADMIN NAVIGATION
+   ======================================== */
+
+.admin-layout #nav-sidebar {
+    background: #ffffff !important;
+    border-right: 1px solid #e9ecef !important;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05) !important;
+}
+
+.admin-layout #nav-sidebar .nav-item {
+    border-bottom: 1px solid #e9ecef !important;
+    margin: 0 !important;
+}
+
+.admin-layout #nav-sidebar .nav-item a {
+    color: #495057 !important;
+    padding: 12px 20px !important;
+    display: block !important;
+    transition: all 0.3s ease !important;
+    border-radius: 0 !important;
+}
+
+.admin-layout #nav-sidebar .nav-item a:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+.admin-layout #nav-sidebar .nav-item.active a {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: #ffffff !important;
+    border-left: 4px solid #28a745 !important;
+    font-weight: 600 !important;
+}
+
+/* ========================================
+   ADMIN BREADCRUMBS
+   ======================================== */
+
+.admin-layout .breadcrumbs {
+    background: #f8f9fa !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 8px !important;
+    padding: 15px 20px !important;
+    margin-bottom: 20px !important;
+}
+
+.admin-layout .breadcrumbs a {
+    color: #667eea !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+}
+
+.admin-layout .breadcrumbs a:hover {
+    color: #764ba2 !important;
+}
+
+/* ========================================
+   ADMIN MAIN CONTENT
+   ======================================== */
+
+.admin-layout #content {
+    background: #f8f9fa !important;
+    min-height: calc(100vh - 80px) !important;
+    padding: 30px !important;
+}
+
+/* ========================================
+   ADMIN FORMS
+   ======================================== */
+
+.admin-layout .form-row {
+    background: #ffffff !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 12px !important;
+    padding: 30px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+}
+
+.admin-layout .form-row h2 {
+    color: #495057 !important;
+    font-size: 1.5rem !important;
+    margin-bottom: 20px !important;
+    font-weight: 600 !important;
+}
+
+.admin-layout .form-row .form-group {
+    margin-bottom: 20px !important;
+}
+
+.admin-layout .form-row label {
+    color: #495057 !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+    display: block !important;
+}
+
+.admin-layout .form-row input,
+.admin-layout .form-row select,
+.admin-layout .form-row textarea {
+    background: #ffffff !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.admin-layout .form-row input:focus,
+.admin-layout .form-row select:focus,
+.admin-layout .form-row textarea:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
+    outline: none !important;
+}
+
+.admin-layout .submit-row {
+    background: #f8f9fa !important;
+    padding: 20px 30px !important;
+    text-align: right !important;
+}
+
+.admin-layout .submit-row input[type="submit"],
+.admin-layout .submit-row input[type="button"],
+.admin-layout .submit-row .default {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 14px 28px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.admin-layout .submit-row input[type="submit"]:hover,
+.admin-layout .submit-row input[type="button"]:hover,
+.admin-layout .submit-row .default:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2) !important;
+}
+
+/* ========================================
+   ADMIN TABLES
+   ======================================== */
+
+.admin-layout .results {
+    background: #ffffff !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+    margin-bottom: 30px !important;
+}
+
+.admin-layout .results thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.admin-layout .results th {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    padding: 15px 12px !important;
+    border: none !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    font-size: 0.875rem !important;
+}
+
+.admin-layout .results tbody tr:nth-child(even) {
+    background: #f8f9fa !important;
+}
+
+.admin-layout .results tbody tr:hover {
+    background: rgba(102, 126, 234, 0.05) !important;
+}
+
+.admin-layout .results td {
+    padding: 15px 12px !important;
+    border-bottom: 1px solid #e9ecef !important;
+    vertical-align: middle !important;
+}
+
+/* ========================================
+   ADMIN BUTTONS AND ACTIONS
+   ======================================== */
+
+.admin-layout .object-tools a {
+    background: #667eea !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    padding: 10px 16px !important;
+    border-radius: 6px !important;
+    font-size: 0.875rem !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
+}
+
+.admin-layout .object-tools a:hover {
+    background: #764ba2 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(118, 75, 162, 0.2) !important;
+}
+
+.admin-layout .addlink {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
+}
+
+.admin-layout .addlink:hover {
+    background: linear-gradient(135deg, #20c997 0%, #28a745 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2) !important;
+}
+
+/* ========================================
+   ADMIN PAGINATION
+   ======================================== */
+
+.admin-layout .paginator {
+    background: #ffffff !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+    text-align: center !important;
+}
+
+.admin-layout .paginator a {
+    color: #667eea !important;
+    text-decoration: none !important;
+    padding: 8px 16px !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+}
+
+.admin-layout .paginator a:hover {
+    background: #764ba2 !important;
+    color: #ffffff !important;
+}
+
+.admin-layout .paginator .this-page {
+    background: #667eea !important;
+    color: #ffffff !important;
+}
+
+/* ========================================
+   ADMIN FILTERS
+   ======================================== */
+
+.admin-layout .changelist-filter {
+    background: #ffffff !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 12px !important;
+    padding: 25px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+}
+
+.admin-layout .changelist-filter h2 {
+    color: #495057 !important;
+    font-size: 1.25rem !important;
+    margin-bottom: 15px !important;
+    font-weight: 600 !important;
+}
+
+/* ========================================
+   ADMIN SEARCH
+   ======================================== */
+
+.admin-layout #searchbar {
+    background: #f8f9fa !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 8px !important;
+    padding: 15px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+}
+
+.admin-layout #searchbar input {
+    background: #ffffff !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 6px !important;
+    padding: 10px 15px !important;
+    font-size: 0.875rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.admin-layout #searchbar input:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
+    outline: none !important;
+}
+
+/* ========================================
+   ADMIN LOGIN PAGE
+   ======================================== */
+
+.admin-layout .login {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.admin-layout .login .form-container {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    padding: 40px !important;
+    max-width: 450px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.admin-layout .login .form-container h1 {
+    color: #ffffff !important;
+    text-align: center !important;
+    margin-bottom: 30px !important;
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+}
+
+.admin-layout .login .form-container input {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px !important;
+    padding: 14px 16px !important;
+    font-size: 1rem !important;
+    margin-bottom: 15px !important;
+    transition: all 0.3s ease !important;
+}
+
+.admin-layout .login .form-container input[type="submit"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 16px 32px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    width: 100% !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    cursor: pointer !important;
+}
+
+.admin-layout .login .form-container input[type="submit"]:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(118, 75, 162, 0.2) !important;
+}
+
+/* ========================================
+   ADMIN MESSAGES
+   ======================================== */
+
+.admin-layout .messagelist {
+    background: #ffffff !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+}
+
+.admin-layout .messagelist .warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 15px 20px !important;
+    border-radius: 8px !important;
+    margin-bottom: 10px !important;
+}
+
+.admin-layout .messagelist .info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 15px 20px !important;
+    border-radius: 8px !important;
+    margin-bottom: 10px !important;
+}
+
+.admin-layout .messagelist .success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 15px 20px !important;
+    border-radius: 8px !important;
+    margin-bottom: 10px !important;
+}
+
+/* ========================================
+   ADMIN FOOTER
+   ======================================== */
+
+.admin-layout #footer {
+    background: #f8f9fa !important;
+    border-top: 1px solid #e9ecef !important;
+    color: #6c757d !important;
+    text-align: center !important;
+    padding: 20px !important;
+}
+
+.admin-layout #footer a {
+    color: #667eea !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+}
+
+.admin-layout #footer a:hover {
+    color: #764ba2 !important;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+    .admin-layout #content {
+        padding: 20px !important;
+    }
+    
+    .admin-layout .form-row {
+        padding: 20px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .admin-layout .results {
+        overflow-x: auto !important;
+    }
+    
+    .admin-layout .results th,
+    .admin-layout .results td {
+        padding: 10px 8px !important;
+        font-size: 0.875rem !important;
+    }
+    
+    .admin-layout .login .form-container {
+        padding: 30px 20px !important;
+        margin: 20px !important;
+    }
+    
+    .admin-layout .paginator {
+        padding: 15px !important;
+    }
+    
+    .admin-layout .changelist-filter {
+        padding: 20px !important;
+        margin-bottom: 15px !important;
+    }
+}
+
+/* ========================================
+   ANIMATIONS AND TRANSITIONS
+   ======================================== */
+
+.admin-layout .results tbody tr {
+    transition: background-color 0.3s ease !important;
+}
+
+.admin-layout .object-tools a {
+    transition: all 0.3s ease !important;
+}
+
+.admin-layout .addlink {
+    transition: all 0.3s ease !important;
+}
+
+.admin-layout .submit-row input[type="submit"] {
+    transition: all 0.3s ease !important;
+}
+
+/* ========================================
+   ACCESSIBILITY IMPROVEMENTS
+   ======================================== */
+
+.admin-layout .results th {
+    text-align: left !important;
+}
+
+.admin-layout .results td {
+    text-align: left !important;
+}
+
+@media (min-width: 769px) {
+    .admin-layout .results th.numeric-col,
+    .admin-layout .results td.numeric-col {
+        text-align: right !important;
+    }
+}
+
+/* ========================================
+   ENHANCED VISUAL ELEMENTS
+   ======================================== */
+
+.admin-layout .form-row .help {
+    background: #e3f2fd !important;
+    color: #495057 !important;
+    padding: 10px 15px !important;
+    border-radius: 6px !important;
+    font-size: 0.875rem !important;
+    margin-top: 10px !important;
+    border-left: 4px solid #f093fb !important;
+}
+
+.admin-layout .results .field-__help {
+    font-style: italic !important;
+    color: #6c757d !important;
+    font-size: 0.875rem !important;
+}
+
+/* ========================================
+   DARK MODE SUPPORT (Optional)
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    .admin-layout #content {
+        background: #1a1a1a !important;
+        color: #ffffff !important;
+    }
+    
+    .admin-layout .form-row {
+        background: #2d2d2d !important;
+        border-color: #404040 !important;
+    }
+    
+    .admin-layout .results {
+        background: #2d2d2d !important;
+        border-color: #404040 !important;
+    }
+}
