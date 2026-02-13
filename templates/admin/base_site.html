@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}{{ block.super }}{% load static tz %}<link href="{% static 'custom.css' %}" rel="stylesheet">{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <i class="fas fa-store"></i> Stationery Tracker
+    </a>
+</h1>
+{% endblock %}
