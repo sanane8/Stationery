@@ -138,8 +138,8 @@ class SessionManager {
             this.logout();
         });
 
-        // Prevent clicks on modal content from closing it
-        modal.querySelector('.session-warning-content').addEventListener('click', (e) => {
+        // Prevent clicks on backdrop from closing modal
+        modal.querySelector('.session-warning-backdrop').addEventListener('click', (e) => {
             e.stopPropagation();
         });
 
