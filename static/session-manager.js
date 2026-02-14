@@ -108,11 +108,11 @@ class SessionManager {
                     <p>You will be automatically logged out for security reasons.</p>
                 </div>
                 <div class="session-warning-footer">
-                    <button id="extend-session-btn" class="btn btn-primary">
-                        Continue Session
+                    <button id="extend-session-btn" class="btn btn-primary btn-lg">
+                        <i class="fas fa-clock"></i> Stay Logged In
                     </button>
                     <button id="logout-now-btn" class="btn btn-secondary">
-                        Logout Now
+                        <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 </div>
             </div>
@@ -374,42 +374,58 @@ class SessionManager {
             }
 
             .session-warning-footer {
-                padding: 20px;
+                padding: 25px;
                 background: #f8f9fa;
                 border-radius: 0 0 8px 8px;
                 display: flex;
-                gap: 10px;
+                gap: 15px;
                 justify-content: center;
+                align-items: center;
             }
 
             .session-warning-footer .btn {
-                padding: 10px 20px;
+                padding: 15px 30px;
                 border: none;
-                border-radius: 4px;
+                border-radius: 6px;
                 cursor: pointer;
-                font-size: 14px;
-                font-weight: 500;
+                font-size: 16px;
+                font-weight: 600;
                 transition: all 0.3s ease;
                 text-decoration: none;
-                display: inline-block;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 160px;
+                justify-content: center;
             }
 
             .session-warning-footer .btn-primary {
-                background: #007bff;
+                background: linear-gradient(135deg, #007bff, #0056b3);
                 color: white;
+                box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+                border: 2px solid transparent;
             }
 
             .session-warning-footer .btn-primary:hover {
-                background: #0056b3;
+                background: linear-gradient(135deg, #0056b3, #004085);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
             }
 
             .session-warning-footer .btn-secondary {
                 background: #6c757d;
                 color: white;
+                border: 2px solid #6c757d;
             }
 
             .session-warning-footer .btn-secondary:hover {
                 background: #545b62;
+                border-color: #545b62;
+                transform: translateY(-1px);
+            }
+
+            .session-warning-footer .btn i {
+                font-size: 18px;
             }
 
             .session-notification {
@@ -483,11 +499,20 @@ class SessionManager {
 
                 .session-warning-footer {
                     flex-direction: column;
+                    gap: 12px;
+                    padding: 20px;
                 }
 
                 .session-warning-footer .btn {
                     width: 100%;
-                    margin: 5px 0;
+                    margin: 0;
+                    padding: 18px 25px;
+                    font-size: 16px;
+                    min-width: auto;
+                }
+
+                .session-warning-footer .btn i {
+                    font-size: 20px;
                 }
 
                 .session-notification {
