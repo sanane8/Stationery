@@ -391,23 +391,47 @@ class SessionManager {
                 background: linear-gradient(135deg, #dc3545, #c82333);
                 color: white;
                 border-radius: 10px;
-                padding: 20px;
+                padding: 25px;
                 margin-bottom: 20px;
-                box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+                box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+                border: 2px solid #a71e2a;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .countdown-container::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: linear-gradient(90deg, #ffc107, #ff6b6b, #dc3545);
+                animation: countdownPulse 2s infinite;
             }
 
             .countdown-number {
-                font-size: 48px;
-                font-weight: 700;
+                font-size: 56px;
+                font-weight: 900;
                 line-height: 1;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                text-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+                color: #ffffff;
+                letter-spacing: 2px;
+                position: relative;
+                z-index: 2;
             }
 
             .countdown-label {
-                font-size: 14px;
-                font-weight: 500;
-                margin-top: 5px;
-                opacity: 0.9;
+                font-size: 16px;
+                font-weight: 700;
+                margin-top: 8px;
+                opacity: 1;
+                color: #ffffff;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+                position: relative;
+                z-index: 2;
             }
 
             .warning-message {
@@ -560,6 +584,25 @@ class SessionManager {
                 color: #333;
             }
 
+            /* Animations */
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.02); }
+                100% { transform: scale(1); }
+            }
+
+            @keyframes warningPulse {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+
+            @keyframes countdownPulse {
+                0% { opacity: 0.8; }
+                50% { opacity: 1; }
+                100% { opacity: 0.8; }
+            }
+
             /* Mobile responsive */
             @media (max-width: 480px) {
                 .session-warning-content {
@@ -583,6 +626,21 @@ class SessionManager {
 
                 .session-warning-footer .btn i {
                     font-size: 20px;
+                }
+
+                .countdown-container {
+                    padding: 30px 20px;
+                    margin-bottom: 25px;
+                }
+
+                .countdown-number {
+                    font-size: 48px;
+                    letter-spacing: 1px;
+                }
+
+                .countdown-label {
+                    font-size: 14px;
+                    letter-spacing: 0.5px;
                 }
 
                 .session-notification {
