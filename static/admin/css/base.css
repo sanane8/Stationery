@@ -1,0 +1,221 @@
+/* Django Admin Base CSS - Default styling */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+/* Ensure Django admin uses default styling */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', 'Lucida Grande', 'DejaVu Sans', 'Bitstream Vera Sans', Verdana, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+    background-color: #fff;
+}
+
+/* Reset any custom overrides */
+#header,
+#branding,
+#user-tools,
+.breadcrumbs,
+.content-main,
+.object-tools,
+#content {
+    all: unset;
+}
+
+/* Ensure default Django admin colors */
+#header {
+    background: #0c4b33 !important;
+    border-bottom: 1px solid #0c3d2f !important;
+}
+
+#branding h1, #branding h1 a {
+    color: #fff !important;
+    font-size: 18px !important;
+    font-weight: normal !important;
+    text-decoration: none !important;
+}
+
+#user-tools a {
+    color: #fff !important;
+}
+
+.breadcrumbs a {
+    color: #666 !important;
+    text-decoration: none !important;
+}
+
+.breadcrumbs a:hover {
+    color: #333 !important;
+}
+
+/* Ensure default table styling */
+.results table {
+    border: 1px solid #ddd !important;
+    border-collapse: collapse !important;
+    background: #fff !important;
+}
+
+.results th {
+    background: #f8f8f8 !important;
+    border: 1px solid #ddd !important;
+    color: #666 !important;
+    font-weight: bold !important;
+}
+
+.results td {
+    border: 1px solid #ddd !important;
+    padding: 8px !important;
+}
+
+/* Ensure default button styling */
+.button, input[type="submit"], input[type="button"] {
+    background: #79aec8 !important;
+    border: 1px solid #467834 !important;
+    color: #fff !important;
+    padding: 10px 15px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+}
+
+.button:hover, input[type="submit"]:hover, input[type="button"]:hover {
+    background: #467834 !important;
+}
+
+.button.default, input[type="submit"].default {
+    background: #79aec8 !important;
+    border: 1px solid #467834 !important;
+}
+
+/* Ensure default form styling */
+.form-row {
+    overflow: hidden;
+}
+
+.form-row label {
+    float: left;
+    width: 10em;
+    padding: 4px 10px 4px 0;
+    margin: 0;
+    line-height: 2;
+}
+
+/* Ensure default sidebar styling */
+#nav-sidebar {
+    background: #f8f8f8 !important;
+    border: 1px solid #eaeaea !important;
+}
+
+#nav-sidebar .module {
+    border-bottom: 1px solid #eaeaea !important;
+}
+
+#nav-sidebar .module h2 {
+    background: #f8f8f8 !important;
+    color: #666 !important;
+    font-size: 14px !important;
+    padding: 5px 10px !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #eaeaea !important;
+}
+
+#nav-sidebar .current-model {
+    background: #79aec8 !important;
+    color: #fff !important;
+}
+
+/* Ensure default content area */
+.content-main {
+    background: #fff !important;
+    border: 1px solid #eaeaea !important;
+    border-radius: 4px !important;
+}
+
+/* Ensure default pagination */
+.paginator {
+    margin: 20px 0 !important;
+}
+
+.paginator a {
+    background: #f8f8f8 !important;
+    border: 1px solid #ddd !important;
+    color: #666 !important;
+    padding: 5px 10px !important;
+    text-decoration: none !important;
+}
+
+.paginator a:hover {
+    background: #79aec8 !important;
+    color: #fff !important;
+}
+
+/* Ensure default messages styling */
+.messagelist {
+    margin: 20px 0 !important;
+}
+
+.messagelist .warning {
+    background: #ffefd1 !important;
+    border: 1px solid #ffeaa7 !important;
+}
+
+.messagelist .error {
+    background: #f2dede !important;
+    border: 1px solid #fcdcdc !important;
+}
+
+.messagelist .success {
+    background: #e6ffec !important;
+    border: 1px solid #c8e6c9 !important;
+}
+
+/* Ensure default tabs */
+.tabular {
+    border: 1px solid #ddd !important;
+    background: #fff !important;
+}
+
+.tabular th {
+    background: #f8f8f8 !important;
+    border: 1px solid #ddd !important;
+    color: #666 !important;
+    font-weight: bold !important;
+}
+
+.tabular td {
+    border: 1px solid #ddd !important;
+    padding: 8px !important;
+}
+
+/* Ensure default field styling */
+.form-row .field-box {
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    background: #fff !important;
+    padding: 10px !important;
+    margin: 5px 0 !important;
+}
+
+.form-row .field-box label {
+    font-weight: bold !important;
+    color: #333 !important;
+}
+
+/* Ensure default input styling */
+input[type="text"], input[type="password"], input[type="email"], 
+input[type="number"], input[type="url"], textarea, select {
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    padding: 8px !important;
+    font-size: 14px !important;
+    background: #fff !important;
+    color: #333 !important;
+}
+
+input[type="text"]:focus, input[type="password"]:focus, 
+input[type="email"]:focus, input[type="number"]:focus, 
+input[type="url"]:focus, textarea:focus, select:focus {
+    border-color: #79aec8 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(121, 174, 200, 0.2) !important;
+}

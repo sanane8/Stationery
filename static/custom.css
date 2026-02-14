@@ -38,12 +38,10 @@
     gap: 0.5rem;
     flex-wrap: wrap;
 }
-
 .filter-actions .btn {
     display: inline-flex;
     align-items: center;
 }
-
 .filter-actions .badge {
     font-size: 0.75rem;
     vertical-align: middle;

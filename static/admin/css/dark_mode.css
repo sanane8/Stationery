@@ -1,0 +1,104 @@
+/* Django Admin Dark Mode - Optional dark theme */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a !important;
+        color: #e0e0e0 !important;
+    }
+    
+    #header {
+        background: #2d2d2d !important;
+        border-bottom: 1px solid #404040 !important;
+    }
+    
+    #branding h1, #branding h1 a {
+        color: #fff !important;
+    }
+    
+    #user-tools a {
+        color: #fff !important;
+    }
+    
+    .breadcrumbs a {
+        color: #b0b0b0 !important;
+    }
+    
+    .breadcrumbs a:hover {
+        color: #fff !important;
+    }
+    
+    .results table {
+        background: #2d2d2d !important;
+        border-color: #404040 !important;
+    }
+    
+    .results th {
+        background: #404040 !important;
+        color: #e0e0e0 !important;
+        border-color: #404040 !important;
+    }
+    
+    .results td {
+        border-color: #404040 !important;
+        color: #e0e0e0 !important;
+    }
+    
+    .results tr:nth-child(even) {
+        background: #2a2a2a !important;
+    }
+    
+    .button, input[type="submit"], input[type="button"] {
+        background: #404040 !important;
+        border-color: #606060 !important;
+        color: #e0e0e0 !important;
+    }
+    
+    .button:hover, input[type="submit"]:hover, input[type="button"]:hover {
+        background: #606060 !important;
+    }
+    
+    #nav-sidebar {
+        background: #2d2d2d !important;
+        border-color: #404040 !important;
+    }
+    
+    #nav-sidebar .module h2 {
+        background: #2d2d2d !important;
+        color: #e0e0e0 !important;
+        border-color: #404040 !important;
+    }
+    
+    #nav-sidebar .module li a {
+        color: #b0b0b0 !important;
+    }
+    
+    #nav-sidebar .module li a:hover {
+        background: #404040 !important;
+        color: #e0e0e0 !important;
+    }
+    
+    #nav-sidebar .module li.current-model a {
+        background: #404040 !important;
+        color: #fff !important;
+        border-left-color: #606060 !important;
+    }
+    
+    .content-main {
+        background: #2d2d2d !important;
+        border-color: #404040 !important;
+        color: #e0e0e0 !important;
+    }
+    
+    input[type="text"], input[type="password"], input[type="email"], 
+    input[type="number"], input[type="url"], textarea, select {
+        background: #2d2d2d !important;
+        border-color: #404040 !important;
+        color: #e0e0e0 !important;
+    }
+    
+    input[type="text"]:focus, input[type="password"]:focus, 
+    input[type="email"]:focus, input[type="number"]:focus, 
+    input[type="url"]:focus, textarea:focus, select:focus {
+        border-color: #606060 !important;
+        box-shadow: 0 0 0 2px rgba(96, 96, 96, 0.2) !important;
+    }
+}
