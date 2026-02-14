@@ -320,7 +320,6 @@ class SessionManager {
                 opacity: 0;
                 transition: opacity 0.3s ease;
                 background: rgba(0, 0, 0, 0.8);
-                backdrop-filter: blur(5px);
             }
 
             .session-warning-modal.show {
@@ -334,7 +333,6 @@ class SessionManager {
                 width: 100%;
                 height: 100%;
                 background: rgba(0, 0, 0, 0.7);
-                backdrop-filter: blur(3px);
             }
 
             .session-warning-content {
