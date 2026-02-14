@@ -1,8 +1,8 @@
 // Session Manager - Automatic logout after 10 minutes of inactivity
 class SessionManager {
     constructor() {
-        this.timeoutMinutes = 10; // 10 minutes
-        this.warningSeconds = 60; // Show warning 60 seconds before logout
+        this.timeoutMinutes = 5; // 5 minutes
+        this.warningSeconds = 120; // Show warning 2 minutes before logout
         this.timeoutId = null;
         this.warningId = null;
         this.logoutUrl = '/logout/';
@@ -80,9 +80,11 @@ class SessionManager {
         const modal = this.createWarningModal();
         document.body.appendChild(modal);
 
-        // Show modal with animation
+        // Show modal with animation and ensure it's visible
         setTimeout(() => {
             modal.classList.add('show');
+            // Add pulse animation to draw attention
+            modal.style.animation = 'pulse 2s infinite';
         }, 100);
 
         // Start countdown
@@ -104,8 +106,15 @@ class SessionManager {
                     <h3>⚠️ Session Timeout Warning</h3>
                 </div>
                 <div class="session-warning-body">
-                    <p>Your session will expire in <span id="countdown">60</span> seconds due to inactivity.</p>
-                    <p>You will be automatically logged out for security reasons.</p>
+                    <div class="countdown-container">
+                        <div class="countdown-number" id="countdown">120</div>
+                        <div class="countdown-label">seconds remaining</div>
+                    </div>
+                    <p class="warning-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Your session will expire due to inactivity!
+                    </p>
+                    <p class="action-message">Choose an option below:</p>
                 </div>
                 <div class="session-warning-footer">
                     <button id="extend-session-btn" class="btn btn-primary btn-lg">
@@ -310,6 +319,8 @@ class SessionManager {
                 justify-content: center;
                 opacity: 0;
                 transition: opacity 0.3s ease;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(5px);
             }
 
             .session-warning-modal.show {
@@ -322,43 +333,104 @@ class SessionManager {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                backdrop-filter: blur(2px);
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(3px);
             }
 
             .session-warning-content {
                 position: relative;
                 background: white;
-                border-radius: 8px;
+                border-radius: 12px;
                 padding: 0;
-                max-width: 400px;
-                width: 90%;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-                transform: scale(0.9);
+                max-width: 450px;
+                width: 95%;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+                transform: scale(0.8);
                 transition: transform 0.3s ease;
+                border: 3px solid #dc3545;
+                overflow: hidden;
             }
 
             .session-warning-modal.show .session-warning-content {
                 transform: scale(1);
+                box-shadow: 0 25px 50px rgba(220, 53, 69, 0.5);
             }
 
             .session-warning-header {
-                background: #dc3545;
+                background: linear-gradient(135deg, #dc3545, #c82333);
                 color: white;
-                padding: 20px;
-                border-radius: 8px 8px 0 0;
+                padding: 25px;
+                border-radius: 12px 12px 0 0;
                 text-align: center;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .session-warning-header::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #ffc107, #dc3545, #dc3545);
+                animation: warningPulse 2s infinite;
             }
 
             .session-warning-header h3 {
                 margin: 0;
-                font-size: 18px;
-                font-weight: 600;
+                font-size: 22px;
+                font-weight: 700;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             }
 
             .session-warning-body {
-                padding: 20px;
+                padding: 25px;
                 text-align: center;
+            }
+
+            .countdown-container {
+                background: linear-gradient(135deg, #dc3545, #c82333);
+                color: white;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+            }
+
+            .countdown-number {
+                font-size: 48px;
+                font-weight: 700;
+                line-height: 1;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            }
+
+            .countdown-label {
+                font-size: 14px;
+                font-weight: 500;
+                margin-top: 5px;
+                opacity: 0.9;
+            }
+
+            .warning-message {
+                font-size: 18px;
+                font-weight: 600;
+                color: #dc3545;
+                margin-bottom: 15px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .warning-message i {
+                font-size: 24px;
+            }
+
+            .action-message {
+                color: #666;
+                font-size: 16px;
+                margin-bottom: 20px;
             }
 
             .session-warning-body p {
