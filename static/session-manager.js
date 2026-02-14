@@ -108,7 +108,7 @@ class SessionManager {
                 <div class="session-warning-body">
                     <div class="countdown-container">
                         <div class="countdown-number" id="countdown">120</div>
-                        <div class="countdown-label">LOG OUT</div>
+                        <div class="countdown-label">seconds remaining</div>
                     </div>
                     <p class="warning-message">
                         <i class="fas fa-exclamation-triangle"></i>
@@ -414,8 +414,8 @@ class SessionManager {
                 font-size: 56px;
                 font-weight: 900;
                 line-height: 1;
-                text-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
-                color: #ffffff;
+                text-shadow: 0 3px 6px rgba(0, 0, 0, 0.8);
+                color: #ffffff !important;
                 letter-spacing: 2px;
                 position: relative;
                 z-index: 2;
