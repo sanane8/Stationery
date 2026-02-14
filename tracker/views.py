@@ -12,6 +12,10 @@ from datetime import datetime, timedelta
 from .models import StationeryItem, Sale, SaleItem, Debt, Customer, Category, Product, Supplier
 from .forms import SaleForm, SaleItemForm, DebtForm, PaymentForm, StationeryItemForm, CustomerForm, LoginForm, RegistrationForm, ProductForm, SupplierForm
 from django.contrib.auth import authenticate, login
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.contrib.auth import logout as auth_logout
 
 from .forms import ExpenditureForm
 from .models import Expenditure
@@ -1976,3 +1980,76 @@ def send_bulk_debt_whatsapp(request):
     }
 
     return render(request, 'tracker/send_bulk_debt_whatsapp.html', context)
+
+
+# Session Management Views
+@require_POST
+@csrf_exempt
+def extend_session(request):
+    """
+    Extend the user's session timeout
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Not authenticated'}, status=401)
+    
+    try:
+        # Update the session to extend its lifetime
+        request.session.set_expiry(600)  # 10 minutes
+        request.session.modified = True
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Session extended',
+            'new_expiry': request.session.get_expiry_age()
+        })
+    except Exception as e:
+        logger.error(f"Error extending session: {e}")
+        return JsonResponse({'success': False, 'error': 'Failed to extend session'}, status=500)
+
+
+@require_POST
+@csrf_exempt
+def logout_session(request):
+    """
+    Logout the user and clear session
+    """
+    try:
+        if request.user.is_authenticated:
+            # Log the user out
+            auth_logout(request)
+            
+            # Clear session data
+            request.session.flush()
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Logged out successfully',
+                'redirect_url': '/login/'
+            })
+        else:
+            return JsonResponse({'success': True, 'redirect_url': '/login/'})
+    except Exception as e:
+        logger.error(f"Error during logout: {e}")
+        # Even if there's an error, try to redirect to login
+        return JsonResponse({
+            'success': True, 
+            'message': 'Redirecting to login',
+            'redirect_url': '/login/'
+        })
+
+
+def check_session_status(request):
+    """
+    Check if user session is still valid
+    """
+    if request.user.is_authenticated:
+        return JsonResponse({
+            'authenticated': True,
+            'username': request.user.username,
+            'session_age': request.session.get_expiry_age() if hasattr(request, 'session') else None
+        })
+    else:
+        return JsonResponse({
+            'authenticated': False,
+            'redirect_url': '/login/'
+        })

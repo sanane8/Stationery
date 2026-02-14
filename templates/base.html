@@ -8,6 +8,10 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     {% load static tz %}
     <link href="{% static 'custom.css' %}" rel="stylesheet">
+    <!-- Session Manager -->
+    {% if user.is_authenticated %}
+        <script src="{% static 'session-manager.js' %}"></script>
+    {% endif %}
     <style>
         .sidebar {
             min-height: 100vh;
@@ -93,7 +97,7 @@
         }
     </style>
 </head>
-<body>
+<body {% if user.is_authenticated %}class="logged-in" data-user-logged-in="true"{% endif %}>
     {% localtime on %}
     <!-- Mobile sidebar overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>

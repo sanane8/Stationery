@@ -1,0 +1,131 @@
+{% extends "admin/login.html" %}
+{% load static %}
+
+{% block extrastyle %}{{ block.super }}
+<!-- Session Manager -->
+<script src="{% static 'session-manager.js' %}"></script>
+<style>
+/* Ensure Django admin login uses default styling */
+.login {
+    background: #f8f8f8 !important;
+    border: 1px solid #eaeaea !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.login #header {
+    background: #0c4b33 !important;
+    border-bottom: 1px solid #0c3d2f !important;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+.login #header h1, .login #header h1 a {
+    color: #fff !important;
+    font-size: 18px !important;
+    font-weight: normal !important;
+    text-decoration: none !important;
+}
+
+.login .form-row {
+    margin-bottom: 15px !important;
+}
+
+.login .form-row label {
+    display: block !important;
+    margin-bottom: 5px !important;
+    font-weight: bold !important;
+    color: #333 !important;
+}
+
+.login .form-row input[type="text"],
+.login .form-row input[type="password"] {
+    width: 100% !important;
+    padding: 10px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+    background: #fff !important;
+    color: #333 !important;
+    box-sizing: border-box !important;
+}
+
+.login .form-row input[type="text"]:focus,
+.login .form-row input[type="password"]:focus {
+    border-color: #79aec8 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(121, 174, 200, 0.2) !important;
+}
+
+.login .submit-row {
+    margin-top: 20px !important;
+    text-align: center !important;
+}
+
+.login .submit-row input[type="submit"] {
+    background: #79aec8 !important;
+    border: 1px solid #467834 !important;
+    color: #fff !important;
+    padding: 12px 30px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.login .submit-row input[type="submit"]:hover {
+    background: #467834 !important;
+    border-color: #2d5a2d !important;
+}
+
+.login .password-reset-link {
+    text-align: center !important;
+    margin-top: 15px !important;
+}
+
+.login .password-reset-link a {
+    color: #79aec8 !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+}
+
+.login .password-reset-link a:hover {
+    color: #467834 !important;
+    text-decoration: underline !important;
+}
+
+/* Ensure proper form container styling */
+.login #container {
+    max-width: 400px !important;
+    margin: 50px auto !important;
+    background: #fff !important;
+    border: 1px solid #eaeaea !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+    padding: 20px !important;
+}
+
+/* Ensure proper error message styling */
+.login .errornote {
+    background: #f2dede !important;
+    border: 1px solid #fcdcdc !important;
+    color: #a94442 !important;
+    padding: 10px !important;
+    border-radius: 4px !important;
+    margin-bottom: 15px !important;
+    font-size: 13px !important;
+}
+
+/* Ensure proper success message styling */
+.login .successnote {
+    background: #e6ffec !important;
+    border: 1px solid #c8e6c9 !important;
+    color: #3c763d !important;
+    padding: 10px !important;
+    border-radius: 4px !important;
+    margin-bottom: 15px !important;
+    font-size: 13px !important;
+}
+</style>
+{% endblock %}

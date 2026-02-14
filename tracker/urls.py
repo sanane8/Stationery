@@ -73,4 +73,9 @@ urlpatterns = [
     
     # Dashboard (moved to root URLconf)
     path('dashboard/', views.dashboard, name='dashboard'),
+    
+    # Session Management
+    path('extend-session/', views.extend_session, name='extend_session'),
+    path('logout-session/', views.logout_session, name='logout_session'),
+    path('check-session/', views.check_session_status, name='check_session'),
 ]
