@@ -108,7 +108,7 @@ class SessionManager {
                 <div class="session-warning-body">
                     <div class="countdown-container">
                         <div class="countdown-number" id="countdown">120</div>
-                        <div class="countdown-label">seconds remaining</div>
+                        <div class="countdown-label">LOG OUT</div>
                     </div>
                     <p class="warning-message">
                         <i class="fas fa-exclamation-triangle"></i>
