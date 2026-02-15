@@ -1994,7 +1994,7 @@ def extend_session(request):
     
     try:
         # Update the session to extend its lifetime
-        request.session.set_expiry(600)  # 10 minutes
+        request.session.set_expiry(300)  # 5 minutes
         request.session.modified = True
         
         return JsonResponse({

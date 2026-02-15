@@ -129,13 +129,36 @@ class SessionManager {
         `;
 
         // Add event listeners
-        modal.querySelector('#extend-session-btn').addEventListener('click', () => {
-            this.extendSession();
-            this.removeModal(modal);
+        const extendBtn = modal.querySelector('#extend-session-btn');
+        const logoutBtn = modal.querySelector('#logout-now-btn');
+        
+        extendBtn.addEventListener('click', async () => {
+            // Disable button and show loading state
+            extendBtn.disabled = true;
+            extendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extending...';
+            
+            try {
+                await this.extendSession();
+                this.removeModal(modal);
+            } catch (error) {
+                // Re-enable button on error
+                extendBtn.disabled = false;
+                extendBtn.innerHTML = '<i class="fas fa-clock"></i> Stay Logged In';
+            }
         });
 
-        modal.querySelector('#logout-now-btn').addEventListener('click', () => {
-            this.logout();
+        logoutBtn.addEventListener('click', async () => {
+            // Disable button and show loading state
+            logoutBtn.disabled = true;
+            logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
+            
+            try {
+                await this.logout();
+            } catch (error) {
+                // Re-enable button on error
+                logoutBtn.disabled = false;
+                logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+            }
         });
 
         // Close on backdrop click
@@ -498,6 +521,17 @@ class SessionManager {
 
             .session-warning-footer .btn i {
                 font-size: 18px;
+            }
+
+            .session-warning-footer .btn:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+                transform: none !important;
+            }
+
+            .session-warning-footer .btn:disabled:hover {
+                transform: none !important;
+                box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3) !important;
             }
 
             .session-notification {
