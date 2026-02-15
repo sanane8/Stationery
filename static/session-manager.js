@@ -114,11 +114,14 @@ class SessionManager {
                         <i class="fas fa-exclamation-triangle"></i>
                         Your session will expire due to inactivity!
                     </p>
-                    <p class="action-message">Click the button below to continue your session:</p>
+                    <p class="action-message">Choose an option below:</p>
                 </div>
                 <div class="session-warning-footer">
                     <button id="extend-session-btn" class="btn btn-primary btn-lg">
-                        <i class="fas fa-clock"></i> Click here to stay logged in
+                        <i class="fas fa-clock"></i> Stay Logged In
+                    </button>
+                    <button id="logout-now-btn" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 </div>
             </div>
@@ -127,11 +130,12 @@ class SessionManager {
 
         // Add event listeners
         const extendBtn = modal.querySelector('#extend-session-btn');
+        const logoutBtn = modal.querySelector('#logout-now-btn');
         
         extendBtn.addEventListener('click', async () => {
             // Disable button and show loading state
             extendBtn.disabled = true;
-            extendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extending session...';
+            extendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extending...';
             
             try {
                 await this.extendSession();
@@ -139,7 +143,21 @@ class SessionManager {
             } catch (error) {
                 // Re-enable button on error
                 extendBtn.disabled = false;
-                extendBtn.innerHTML = '<i class="fas fa-clock"></i> Click here to stay logged in';
+                extendBtn.innerHTML = '<i class="fas fa-clock"></i> Stay Logged In';
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            // Disable button and show loading state
+            logoutBtn.disabled = true;
+            logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
+            
+            try {
+                await this.logout();
+            } catch (error) {
+                // Re-enable button on error
+                logoutBtn.disabled = false;
+                logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
             }
         });
 
@@ -318,7 +336,7 @@ class SessionManager {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                z-index: 9999;
+                z-index: 99999;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -338,6 +356,7 @@ class SessionManager {
                 width: 100%;
                 height: 100%;
                 background: rgba(0, 0, 0, 0.7);
+                z-index: -1;
             }
 
             .session-warning-content {
@@ -352,6 +371,7 @@ class SessionManager {
                 transition: transform 0.3s ease;
                 border: 3px solid #dc3545;
                 overflow: hidden;
+                z-index: 10;
             }
 
             .session-warning-modal.show .session-warning-content {
@@ -453,11 +473,13 @@ class SessionManager {
             .session-warning-footer {
                 padding: 25px;
                 background: #f8f9fa;
-                border-radius: 0 0 8px 8px;
+                border-radius: 0 0 12px 12px;
                 display: flex;
                 gap: 15px;
                 justify-content: center;
                 align-items: center;
+                position: relative;
+                z-index: 20;
             }
 
             .session-warning-footer .btn {
@@ -474,6 +496,8 @@ class SessionManager {
                 gap: 8px;
                 min-width: 160px;
                 justify-content: center;
+                position: relative;
+                z-index: 30;
             }
 
             .session-warning-footer .btn-primary {
