@@ -114,14 +114,11 @@ class SessionManager {
                         <i class="fas fa-exclamation-triangle"></i>
                         Your session will expire due to inactivity!
                     </p>
-                    <p class="action-message">Choose an option below:</p>
+                    <p class="action-message">Click the button below to continue your session:</p>
                 </div>
                 <div class="session-warning-footer">
                     <button id="extend-session-btn" class="btn btn-primary btn-lg">
-                        <i class="fas fa-clock"></i> Stay Logged In
-                    </button>
-                    <button id="logout-now-btn" class="btn btn-secondary">
-                        <i class="fas fa-sign-out-alt"></i> Logout
+                        <i class="fas fa-clock"></i> Click here to stay logged in
                     </button>
                 </div>
             </div>
@@ -130,12 +127,11 @@ class SessionManager {
 
         // Add event listeners
         const extendBtn = modal.querySelector('#extend-session-btn');
-        const logoutBtn = modal.querySelector('#logout-now-btn');
         
         extendBtn.addEventListener('click', async () => {
             // Disable button and show loading state
             extendBtn.disabled = true;
-            extendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extending...';
+            extendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extending session...';
             
             try {
                 await this.extendSession();
@@ -143,21 +139,7 @@ class SessionManager {
             } catch (error) {
                 // Re-enable button on error
                 extendBtn.disabled = false;
-                extendBtn.innerHTML = '<i class="fas fa-clock"></i> Stay Logged In';
-            }
-        });
-
-        logoutBtn.addEventListener('click', async () => {
-            // Disable button and show loading state
-            logoutBtn.disabled = true;
-            logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
-            
-            try {
-                await this.logout();
-            } catch (error) {
-                // Re-enable button on error
-                logoutBtn.disabled = false;
-                logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+                extendBtn.innerHTML = '<i class="fas fa-clock"></i> Click here to stay logged in';
             }
         });
 
