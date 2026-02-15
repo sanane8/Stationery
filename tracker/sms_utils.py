@@ -93,7 +93,50 @@ def send_whatsapp(phone_number, message):
                 "Africa's Talking dashboard or use a third-party WhatsApp service like Twilio."
     }
 
-def send_debt_reminder_sms(debt):
+def send_debt_reminder_sms_for_customer(customer, debts):
+    """
+    Send debt reminder SMS to customer with all their debts
+    
+    Args:
+        customer: Customer instance
+        debts: List of Debt instances for this customer
+        
+    Returns:
+        dict: SMS sending result
+    """
+    if not customer.phone:
+        return {
+            'success': False,
+            'error': 'Customer has no phone number'
+        }
+    
+    customer_name = customer.name
+    
+    # Calculate total amount across all debts
+    total_amount = sum(debt.amount for debt in debts)
+    total_remaining = sum(debt.remaining_amount for debt in debts)
+    
+    # Get earliest due date
+    earliest_due_date = min(debt.due_date for debt in debts)
+    earliest_due_str = earliest_due_date.strftime('%d/%m/%Y')
+    
+    # Check if any debt is overdue
+    has_overdue = any(debt.status == 'overdue' for debt in debts)
+    
+    # Count debts by status
+    overdue_count = sum(1 for debt in debts if debt.status == 'overdue')
+    pending_count = sum(1 for debt in debts if debt.status == 'pending')
+    partial_count = sum(1 for debt in debts if debt.status == 'partial')
+    
+    # Create message based on debt statuses
+    if has_overdue:
+        message = f"Habari {customer_name}, una deni la TZS {total_remaining:,.0f} kwa {len(debts)} madeni wake tarehe {earliest_due_str}. Kati {overdue_count} mademi yamekufa, {pending_count} inasubiri, na {partial_count} umeshalipa. Tafadhali lipa haraka ili tusiwe na shida."
+    elif pending_count > 0:
+        message = f"Habari {customer_name}, una deni la TZS {total_remaining:,.0f} kwa {len(debts)} madeni kabla ya {earliest_due_str}. Tafadhali lipa kwa wakati."
+    else:
+        message = f"Habari {customer_name}, asante kumekamilipa TZS {total_amount - total_remaining:,.0f} kwa {len(debts)} mademi. Asante kwa malipo yako!"
+    
+    return send_sms(customer.phone, message)
     """
     Send debt reminder SMS to customer
 

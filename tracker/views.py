@@ -1858,22 +1858,36 @@ def send_bulk_debt_sms(request):
                 customer__phone__isnull=False
             ).exclude(customer__phone='')
 
+            # Group debts by customer to send one SMS per customer
+            customers_with_debts = {}
+            for debt in debts:
+                customer_id = debt.customer.id
+                if customer_id not in customers_with_debts:
+                    customers_with_debts[customer_id] = {
+                        'customer': debt.customer,
+                        'debts': []
+                    }
+                customers_with_debts[customer_id]['debts'].append(debt)
+
             sent_count = 0
             failed_count = 0
             errors = []
 
-            for debt in debts:
+            for customer_id, customer_data in customers_with_debts.items():
+                customer = customer_data['customer']
+                customer_debts = customer_data['debts']
+                
                 try:
-                    result = send_debt_reminder_sms(debt)
+                    result = send_debt_reminder_sms_for_customer(customer, customer_debts)
                     if result.get('success'):
                         sent_count += 1
                     else:
                         failed_count += 1
-                        errors.append(f"{debt.customer.name}: {result.get('error', 'Unknown error')}")
+                        errors.append(f"{customer.name}: {result.get('error', 'Unknown error')}")
                 except Exception as e:
-                    logger.exception("Bulk SMS failed for debt id=%s: %s", debt.pk, e)
+                    logger.exception("Bulk SMS failed for customer %s: %s", customer.name, e)
                     failed_count += 1
-                    errors.append(f"{debt.customer.name}: {str(e)}")
+                    errors.append(f"{customer.name}: {str(e)}")
 
             if sent_count > 0:
                 messages.success(request, f'SMS sent to {sent_count} customers')
