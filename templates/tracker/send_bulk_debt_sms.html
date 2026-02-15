@@ -66,6 +66,34 @@
                         Select the debts you want to send SMS reminders to.
                     </div>
 
+                    <!-- Search Bar -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-search"></i>
+                                        </span>
+                                        <input type="text" 
+                                               id="debt-search" 
+                                               class="form-control" 
+                                               placeholder="Search by customer name, phone, or amount..."
+                                               onkeyup="filterDebts()">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <small class="text-muted">
+                                        <span id="filtered-count">{{ debts|length }}</span> of {{ debts|length }} debts shown
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <form method="post" id="bulk-sms-form">
                         {% csrf_token %}
 
@@ -175,6 +203,39 @@ function updateSelectedCount() {
 
     countSpan.textContent = `(${count} selected)`;
     sendBtn.disabled = count === 0;
+}
+
+function filterDebts() {
+    const searchInput = document.getElementById('debt-search').value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const customerName = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+        const phone = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
+        const amount = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
+        
+        if (customerName.includes(searchInput) || 
+            phone.includes(searchInput) || 
+            amount.includes(searchInput)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update filtered count
+    const filteredCountSpan = document.getElementById('filtered-count');
+    if (filteredCountSpan) {
+        filteredCountSpan.textContent = visibleCount;
+    }
+}
+
+function clearSearch() {
+    document.getElementById('debt-search').value = '';
+    filterDebts();
 }
 
 function showSmsLoading() {
