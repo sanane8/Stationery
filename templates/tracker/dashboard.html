@@ -3,6 +3,70 @@
 {% load humanize tz %}
 {% block page_title %}Dashboard{% endblock %}
 
+{% block extra_css %}
+<style>
+.product-list {
+    max-width: 280px;
+}
+
+.product-item {
+    line-height: 1.4;
+}
+
+.payment-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.payment-cash {
+    background-color: #28a745;
+    color: white;
+}
+
+.payment-mpesa {
+    background-color: #25d366;
+    color: white;
+}
+
+.payment-bank {
+    background-color: #6c757d;
+    color: white;
+}
+
+.payment-debt {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge {
+    font-size: 0.7rem;
+}
+
+.table th {
+    border-top: none !important;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.table td {
+    vertical-align: middle;
+    border-color: #dee2e6;
+}
+
+.text-end {
+    text-align: right;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.align-middle td {
+    vertical-align: middle;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <!-- Statistics Cards -->
@@ -111,48 +175,103 @@
             <div class="card-body">
                 {% if recent_sales %}
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
+                        <table class="table table-bordered table-hover align-middle">
                             <colgroup>
-                                <col style="width:140px;" />
-                                <col />
-                                <col style="width:220px;" />
-                                <col style="width:120px;" />
-                                <col style="width:120px;" />
-                                <col style="width:120px;" />
+                                <col style="width: 120px;" />
+                                <col style="width: 300px;" />
+                                <col style="width: 140px;" />
+                                <col style="width: 100px;" />
+                                <col style="width: 100px;" />
+                                <col style="width: 80px;" />
                             </colgroup>
-                            <thead>
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Products</th>
-                                    <th class="numeric-col money-col">Amount</th>
-                                    <th>Payment</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    <th class="border-0">
+                                        <i class="fas fa-calendar text-muted"></i>
+                                        <small class="d-block">Date</small>
+                                    </th>
+                                    <th class="border-0">
+                                        <i class="fas fa-box text-muted"></i>
+                                        <small class="d-block">Products</small>
+                                    </th>
+                                    <th class="border-0 text-end">
+                                        <i class="fas fa-money-bill-wave text-muted"></i>
+                                        <small class="d-block">Amount</small>
+                                    </th>
+                                    <th class="border-0 text-center">
+                                        <i class="fas fa-credit-card text-muted"></i>
+                                        <small class="d-block">Payment</small>
+                                    </th>
+                                    <th class="border-0 text-center">
+                                        <i class="fas fa-info-circle text-muted"></i>
+                                        <small class="d-block">Status</small>
+                                    </th>
+                                    <th class="border-0 text-center">
+                                        <i class="fas fa-cogs text-muted"></i>
+                                        <small class="d-block">Actions</small>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for sale in recent_sales %}
                                 <tr>
-                                    <td>{{ sale.sale_date|localtime|date:"M d, Y" }}</td>
                                     <td>
-                                        {% for item in sale.items.all %}
-                                            <span class="badge bg-light text-dark me-1">{{ item.item.name }} ({{ item.quantity }})</span>
-                                        {% empty %}
-                                            <span class="text-muted">No items</span>
-                                        {% endfor %}
+                                        <div class="d-flex flex-column">
+                                            <strong class="text-primary">{{ sale.sale_date|localtime|date:"M d" }}</strong>
+                                            <small class="text-muted">{{ sale.sale_date|localtime|date:"H:i" }}</small>
+                                        </div>
                                     </td>
-                                    <td class="numeric-col money-col"><strong>TZS {{ sale.total_amount|floatformat:0|intcomma }}</strong></td>
-                                    <td>{{ sale.get_payment_method_display }}</td>
                                     <td>
+                                        <div class="product-list">
+                                            {% for item in sale.items.all %}
+                                                <div class="product-item mb-1">
+                                                    <span class="badge bg-light text-dark me-1">
+                                                        <i class="fas fa-tag"></i> {{ item.item.name }}
+                                                    </span>
+                                                    <span class="badge bg-info text-white">
+                                                        <i class="fas fa-cubes"></i> {{ item.quantity }}
+                                                    </span>
+                                                    {% if not forloop.last %}<br>{% endif %}
+                                                </div>
+                                            {% empty %}
+                                                <span class="text-muted">
+                                                    <i class="fas fa-exclamation-triangle"></i> No items
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold text-success">TZS {{ sale.total_amount|floatformat:0|intcomma }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="payment-badge payment-{{ sale.payment_method }}">
+                                            {% if sale.payment_method == 'cash' %}
+                                                <i class="fas fa-money-bill"></i> Cash
+                                            {% elif sale.payment_method == 'mpesa' %}
+                                                <i class="fas fa-mobile-alt"></i> M-Pesa
+                                            {% elif sale.payment_method == 'bank' %}
+                                                <i class="fas fa-university"></i> Bank
+                                            {% elif sale.payment_method == 'debt' %}
+                                                <i class="fas fa-hand-holding-usd"></i> Debt
+                                            {% else %}
+                                                <i class="fas fa-question-circle"></i> {{ sale.get_payment_method_display }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
                                         {% if sale.is_paid %}
-                                            <span class="badge bg-success"><i class="fas fa-check"></i> Paid</span>
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle"></i> Paid
+                                            </span>
                                         {% else %}
-                                            <span class="badge bg-warning"><i class="fas fa-clock"></i> Unpaid</span>
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock"></i> Unpaid
+                                            </span>
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-sm btn-outline-primary" title="View Sale Details">
-                                            <i class="fas fa-eye"></i> View
+                                            <i class="fas fa-eye"></i>
                                         </a>
                                     </td>
                                 </tr>
