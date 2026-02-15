@@ -138,9 +138,10 @@ class SessionManager {
             this.logout();
         });
 
-        // Prevent clicks on backdrop from closing modal
-        modal.querySelector('.session-warning-backdrop').addEventListener('click', (e) => {
-            e.stopPropagation();
+        // Close on backdrop click
+        modal.querySelector('.session-warning-backdrop').addEventListener('click', () => {
+            this.extendSession();
+            this.removeModal(modal);
         });
 
         return modal;
@@ -387,19 +388,20 @@ class SessionManager {
             }
 
             .countdown-container {
-                background: linear-gradient(135deg, #dc3545, #c82333);
-                color: white;
+                background: linear-gradient(135deg, #25e7bdff, #f3eff0ff);
+                color: #000000 !important;
                 border-radius: 10px;
                 padding: 20px;
                 margin-bottom: 20px;
-                box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+                box-shadow: 0 4px 15px rgba(37, 231, 189, 0.3);
             }
 
             .countdown-number {
                 font-size: 48px;
                 font-weight: 700;
                 line-height: 1;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                color: #000000 !important;
+                text-shadow: 0 2px 4px rgba(12, 123, 250, 0.3);
             }
 
             .countdown-label {
