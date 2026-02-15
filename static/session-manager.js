@@ -388,12 +388,13 @@ class SessionManager {
             }
 
             .countdown-container {
-                background: linear-gradient(135deg, #25e7bdff, #f3eff0ff);
+                background: transparent;
                 color: #000000 !important;
                 border-radius: 10px;
                 padding: 20px;
                 margin-bottom: 20px;
-                box-shadow: 0 4px 15px rgba(37, 231, 189, 0.3);
+                border: 2px solid #dc3545;
+                box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
             }
 
             .countdown-number {
