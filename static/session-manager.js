@@ -342,7 +342,7 @@ class SessionManager {
                 justify-content: center;
                 opacity: 0;
                 transition: opacity 0.3s ease;
-                background: rgba(0, 0, 0, 0.8);
+                background: rgba(0, 0, 0, 0.4);
             }
 
             .session-warning-modal.show {
@@ -355,7 +355,7 @@ class SessionManager {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.7);
+                background: rgba(0, 0, 0, 0.3);
                 z-index: -1;
             }
 
@@ -366,7 +366,7 @@ class SessionManager {
                 padding: 0;
                 max-width: 450px;
                 width: 95%;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
                 transform: scale(0.8);
                 transition: transform 0.3s ease;
                 border: 3px solid #dc3545;
@@ -376,7 +376,7 @@ class SessionManager {
 
             .session-warning-modal.show .session-warning-content {
                 transform: scale(1);
-                box-shadow: 0 25px 50px rgba(220, 53, 69, 0.5);
+                box-shadow: 0 10px 25px rgba(220, 53, 69, 0.3);
             }
 
             .session-warning-header {
