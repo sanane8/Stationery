@@ -76,31 +76,73 @@
                 
                 <h6>Items Sold</h6>
                 <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
+                    <table class="table table-bordered align-middle">
+                        <colgroup>
+                            <col style="width: 35%;" />
+                            <col style="width: 15%;" />
+                            <col style="width: 12%;" />
+                            <col style="width: 19%;" />
+                            <col style="width: 19%;" />
+                        </colgroup>
+                        <thead class="table-light">
                             <tr>
-                                <th>Item</th>
-                                <th>SKU</th>
-                                <th>Quantity</th>
-                                <th>Unit Price</th>
-                                <th>Total</th>
+                                <th class="border-0">
+                                    <i class="fas fa-box text-muted"></i>
+                                    <small class="d-block">Item</small>
+                                </th>
+                                <th class="border-0">
+                                    <i class="fas fa-barcode text-muted"></i>
+                                    <small class="d-block">SKU</small>
+                                </th>
+                                <th class="border-0 text-center">
+                                    <i class="fas fa-cubes text-muted"></i>
+                                    <small class="d-block">Quantity</small>
+                                </th>
+                                <th class="border-0 text-end">
+                                    <i class="fas fa-tag text-muted"></i>
+                                    <small class="d-block">Unit Price</small>
+                                </th>
+                                <th class="border-0 text-end">
+                                    <i class="fas fa-calculator text-muted"></i>
+                                    <small class="d-block">Total</small>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for item in sale_items %}
                             <tr>
-                                <td>{{ item.item.name }}</td>
-                                <td><code>{{ item.item.sku }}</code></td>
-                                <td>{{ item.quantity }}</td>
-                                <td>TZS {{ item.unit_price|floatformat:0 |intcomma}}</td>
-                                <td>TZS {{ item.total_price|floatformat:0 |intcomma}}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-tag text-muted me-2"></i>
+                                        <span class="fw-medium">{{ item.item.name }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <code class="bg-light px-2 py-1 rounded">{{ item.item.sku }}</code>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-info text-white">
+                                        <i class="fas fa-cubes"></i> {{ item.quantity }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <span class="fw-bold text-primary">TZS {{ item.unit_price|floatformat:0|intcomma }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <span class="fw-bold text-success">TZS {{ item.total_price|floatformat:0|intcomma }}</span>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
-                        <tfoot>
-                            <tr class="table-active">
-                                <th colspan="4">Total Amount:</th>
-                                <th>TZS {{ sale.total_amount|floatformat:0 |intcomma}}</th>
+                        <tfoot class="table-primary">
+                            <tr>
+                                <th colspan="4" class="text-end">
+                                    <i class="fas fa-calculator me-2"></i>
+                                    <strong>Total Amount:</strong>
+                                </th>
+                                <th class="text-end">
+                                    <strong class="text-success">TZS {{ sale.total_amount|floatformat:0|intcomma }}</strong>
+                                </th>
                             </tr>
                         </tfoot>
                     </table>

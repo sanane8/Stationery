@@ -145,58 +145,113 @@
     <div class="card-body">
         {% if items %}
             <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead>
+                <table class="table table-bordered table-hover align-middle">
+                    <colgroup>
+                        <col style="width: 25%;" />
+                        <col style="width: 12%;" />
+                        <col style="width: 15%;" />
+                        <col style="width: 12%;" />
+                        <col style="width: 12%;" />
+                        <col style="width: 8%;" />
+                        <col style="width: 8%;" />
+                        <col style="width: 8%;" />
+                    </colgroup>
+                    <thead class="table-light">
                         <tr>
-                            <th>Name</th>
-                            <th>SKU</th>
-                            <th>Category</th>
-                            <th class="money-col">Unit Price</th>
-                            <th class="money-col">Cost Price</th>
-                            <th>Stock</th>
-                            <th>Profit Margin</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th class="border-0">
+                                <i class="fas fa-box text-muted"></i>
+                                <small class="d-block">Name</small>
+                            </th>
+                            <th class="border-0">
+                                <i class="fas fa-barcode text-muted"></i>
+                                <small class="d-block">SKU</small>
+                            </th>
+                            <th class="border-0">
+                                <i class="fas fa-tags text-muted"></i>
+                                <small class="d-block">Category</small>
+                            </th>
+                            <th class="border-0 text-end">
+                                <i class="fas fa-tag text-muted"></i>
+                                <small class="d-block">Unit Price</small>
+                            </th>
+                            <th class="border-0 text-end">
+                                <i class="fas fa-receipt text-muted"></i>
+                                <small class="d-block">Cost Price</small>
+                            </th>
+                            <th class="border-0 text-center">
+                                <i class="fas fa-cubes text-muted"></i>
+                                <small class="d-block">Stock</small>
+                            </th>
+                            <th class="border-0 text-center">
+                                <i class="fas fa-chart-line text-muted"></i>
+                                <small class="d-block">Margin</small>
+                            </th>
+                            <th class="border-0 text-center">
+                                <i class="fas fa-info-circle text-muted"></i>
+                                <small class="d-block">Status</small>
+                            </th>
+                            <th class="border-0 text-center">
+                                <i class="fas fa-cogs text-muted"></i>
+                                <small class="d-block">Actions</small>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in items %}
                         <tr>
                             <td>
-                                <strong>{{ item.name }}</strong>
-                                {% if item.description %}
-                                    <br><small class="text-muted">{{ item.description|truncatechars:50 }}</small>
-                                {% endif %}
+                                <div class="d-flex flex-column">
+                                    <strong class="text-primary">{{ item.name }}</strong>
+                                    {% if item.description %}
+                                        <small class="text-muted">{{ item.description|truncatechars:40 }}</small>
+                                    {% endif %}
+                                </div>
                             </td>
-                            <td><code>{{ item.sku }}</code></td>
-                            <td>{{ item.category.name }}</td>
-                            <td class="money-col">TZS {{ item.unit_price|floatformat:0|intcomma }}</td>
-                            <td class="money-col">TZS {{ item.cost_price|floatformat:0|intcomma }}</td>
                             <td>
-                                <span class="{% if item.is_low_stock %}text-warning{% else %}text-success{% endif %}">
-                                    {{ item.stock_quantity }}
+                                <code class="bg-light px-2 py-1 rounded text-center d-block">{{ item.sku }}</code>
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-white">{{ item.category.name }}</span>
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-bold text-success">TZS {{ item.unit_price|floatformat:0|intcomma }}</span>
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-bold text-warning">TZS {{ item.cost_price|floatformat:0|intcomma }}</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex flex-column align-items-center">
+                                    <span class="{% if item.is_low_stock %}text-warning{% else %}text-success{% endif %} fw-bold">
+                                        {{ item.stock_quantity }}
+                                    </span>
+                                    {% if item.is_low_stock %}
+                                        <small class="text-warning">Min: {{ item.minimum_stock }}</small>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge {% if item.profit_margin >= 20 %}bg-success{% elif item.profit_margin >= 10 %}bg-warning{% else %}bg-danger{% endif %} text-white">
+                                    {{ item.profit_margin|floatformat:1 }}%
                                 </span>
-                                {% if item.is_low_stock %}
-                                    <br><small class="text-warning">Min: {{ item.minimum_stock }}</small>
-                                {% endif %}
                             </td>
-                            <td>{{ item.profit_margin|floatformat:1 }}%</td>
-                            <td>
-                                {% if item.is_active %}
-                                    <span class="badge bg-success">Active</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">Inactive</span>
-                                {% endif %}
-                                {% if item.is_low_stock %}
-                                    <br><span class="badge bg-warning">Low Stock</span>
-                                {% endif %}
+                            <td class="text-center">
+                                <div class="d-flex flex-column align-items-center gap-1">
+                                    {% if item.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                    {% if item.is_low_stock %}
+                                        <span class="badge bg-warning">Low Stock</span>
+                                    {% endif %}
+                                </div>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{% url 'stationery_detail' item.pk %}" class="btn btn-outline-primary">
+                                    <a href="{% url 'stationery_detail' item.pk %}" class="btn btn-outline-primary" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="/admin/tracker/stationeryitem/{{ item.pk }}/change/" class="btn btn-outline-secondary">
+                                    <a href="/admin/tracker/stationeryitem/{{ item.pk }}/change/" class="btn btn-outline-secondary" title="Edit Item">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 </div>

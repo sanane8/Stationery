@@ -63,15 +63,20 @@ class StationeryItemAdmin(RestrictedModelAdmin):
     search_fields = ['name', 'sku', 'supplier']
     list_editable = ['unit_price', 'cost_price', 'stock_quantity', 'is_active']
     readonly_fields = ['profit_margin_display', 'is_low_stock_display']
+    ordering = ['name']
 
     def profit_margin_display(self, obj):
-        return f"{obj.profit_margin:.1f}%"
+        if obj and hasattr(obj, 'profit_margin'):
+            return f"{obj.profit_margin:.1f}%"
+        return "0.0%"
     profit_margin_display.short_description = "Profit Margin"
 
     def is_low_stock_display(self, obj):
-        if obj.is_low_stock:
-            return format_html('<span style="color: red;">LOW STOCK</span>')
-        return format_html('<span style="color: green;">OK</span>')
+        if obj and hasattr(obj, 'is_low_stock'):
+            if obj.is_low_stock:
+                return format_html('<span style="color: red;">LOW STOCK</span>')
+            return format_html('<span style="color: green;">OK</span>')
+        return format_html('<span style="color: gray;">N/A</span>')
     is_low_stock_display.short_description = "Stock Status"
 
 
