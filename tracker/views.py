@@ -9,7 +9,7 @@ from django.db.models.functions import TruncDate
 from django.utils import timezone
 from django.core.paginator import Paginator
 from datetime import datetime, timedelta
-from .models import StationeryItem, Sale, SaleItem, Debt, Customer, Category, Product, Supplier
+from .models import StationeryItem, Sale, SaleItem, Debt, Customer, Category, Product, Supplier, UserProfile
 from .forms import SaleForm, SaleItemForm, DebtForm, PaymentForm, StationeryItemForm, CustomerForm, LoginForm, RegistrationForm, ProductForm, SupplierForm
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse, HttpResponseBadRequest
@@ -26,6 +26,43 @@ from io import BytesIO
 import json
 
 logger = logging.getLogger(__name__)
+
+# Role-based decorators
+def admin_required(view_func):
+    """Decorator to require admin role"""
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        
+        try:
+            profile = request.user.profile
+            if not profile.is_admin():
+                messages.error(request, 'Admin access required.')
+                return redirect('dashboard')
+        except UserProfile.DoesNotExist:
+            messages.error(request, 'User profile not found.')
+            return redirect('dashboard')
+        
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+def shop_seller_required(view_func):
+    """Decorator to require shop_seller role (or admin)"""
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        
+        try:
+            profile = request.user.profile
+            if not (profile.is_shop_seller() or profile.is_admin()):
+                messages.error(request, 'Shop seller access required.')
+                return redirect('dashboard')
+        except UserProfile.DoesNotExist:
+            messages.error(request, 'User profile not found.')
+            return redirect('dashboard')
+        
+        return view_func(request, *args, **kwargs)
+    return wrapper
 try:
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas
@@ -106,7 +143,7 @@ def product_detail(request, pk):
     return render(request, 'tracker/product_detail.html', context)
 
 
-@login_required
+@admin_required
 def product_create(request):
     """Create a new product"""
     if request.method == 'POST':
@@ -124,7 +161,7 @@ def product_create(request):
     })
 
 
-@login_required
+@admin_required
 def product_update(request, pk):
     """Update an existing product"""
     product = get_object_or_404(Product, pk=pk)
@@ -235,6 +272,14 @@ def register_view(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            role = form.cleaned_data.get('role')
+            
+            # Create UserProfile with role
+            UserProfile.objects.create(
+                user=user,
+                role=role
+            )
+            
             username = form.cleaned_data.get('username')
             messages.success(request, f'Account created for {username}! You can now log in.')
             return redirect('login')
@@ -1111,7 +1156,7 @@ def sales_daily_print(request):
     return render(request, 'tracker/sales_all_print.html', context)
 
 
-@login_required
+@admin_required
 def delete_sale(request, pk):
     """Delete a sale and inform the user about restored stock."""
     sale = get_object_or_404(Sale, pk=pk)
@@ -1172,7 +1217,7 @@ def delete_sale(request, pk):
     return render(request, 'tracker/confirm_delete_sale.html', {'sale': sale})
 
 
-@login_required
+@shop_seller_required
 def create_sale(request):
     """Create a new sale with items"""
     if request.method == 'POST':
@@ -1724,7 +1769,7 @@ def customers_list(request):
     customers = Customer.objects.filter(is_active=True).order_by('name')
     
     # Search functionality
-    search_query = request.GET.get('search')
+    search_query = request.GET.get('search', '').strip()
     if search_query:
         customers = customers.filter(
             Q(name__icontains=search_query) |
@@ -1832,7 +1877,7 @@ def send_bulk_debt_sms(request):
     if request.method == 'POST':
         try:
             try:
-                from .sms_utils import send_debt_reminder_sms
+                from .sms_utils import send_debt_reminder_sms_for_customer
             except Exception as e:
                 logger.exception("Failed to import sms_utils: %s", e)
                 messages.error(request, 'SMS module could not be loaded. Check configuration.')
@@ -1890,7 +1935,7 @@ def send_bulk_debt_sms(request):
                     errors.append(f"{customer.name}: {str(e)}")
 
             if sent_count > 0:
-                messages.success(request, f'SMS sent to {sent_count} customers')
+                messages.success(request, f'SMS sent to {sent_count} customers for {len(debt_ids)} selected debts')
 
             if failed_count > 0:
                 messages.warning(request, f'Failed to send SMS to {failed_count} customers')

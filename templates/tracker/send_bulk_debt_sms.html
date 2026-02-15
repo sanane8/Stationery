@@ -66,26 +66,26 @@
                         Select the debts you want to send SMS reminders to.
                     </div>
 
-                    <!-- Search Bar -->
+                    <!-- Customer Search Bar -->
                     <div class="card mb-3">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-8">
                                     <div class="input-group">
                                         <span class="input-group-text">
-                                            <i class="fas fa-search"></i>
+                                            <i class="fas fa-user"></i>
                                         </span>
                                         <input type="text" 
-                                               id="debt-search" 
+                                               id="customer-search" 
                                                class="form-control" 
-                                               placeholder="Search by customer name, phone, or amount..."
-                                               onkeyup="filterDebts()">
-                                        <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()">
+                                               placeholder="Search by customer name..."
+                                               onkeyup="filterByCustomer()">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="clearCustomerSearch()">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <div class="col-md-6 text-end">
+                                <div class="col-md-4 text-end">
                                     <small class="text-muted">
                                         <span id="filtered-count">{{ debts|length }}</span> of {{ debts|length }} debts shown
                                     </small>
@@ -190,8 +190,15 @@
 <script>
 function toggleAllCheckboxes() {
     const selectAll = document.getElementById('select-all');
-    const checkboxes = document.querySelectorAll('.debt-checkbox');
-    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    const checkboxes = document.querySelectorAll('.debt-checkbox:not(:disabled)');
+    
+    // Only toggle checkboxes that are visible (not hidden by search)
+    checkboxes.forEach(cb => {
+        const row = cb.closest('tr');
+        if (row && row.style.display !== 'none') {
+            cb.checked = selectAll.checked;
+        }
+    });
     updateSelectedCount();
 }
 
@@ -203,22 +210,48 @@ function updateSelectedCount() {
 
     countSpan.textContent = `(${count} selected)`;
     sendBtn.disabled = count === 0;
+    
+    // Update Select All checkbox state based on visible checkboxes
+    updateSelectAllState();
 }
 
-function filterDebts() {
-    const searchInput = document.getElementById('debt-search').value.toLowerCase();
+function updateSelectAllState() {
+    const selectAll = document.getElementById('select-all');
+    const visibleCheckboxes = Array.from(document.querySelectorAll('.debt-checkbox:not(:disabled)'))
+        .filter(cb => {
+            const row = cb.closest('tr');
+            return row && row.style.display !== 'none';
+        });
+    
+    const checkedVisibleCheckboxes = visibleCheckboxes.filter(cb => cb.checked);
+    
+    if (visibleCheckboxes.length === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+    } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
+        selectAll.checked = true;
+        selectAll.indeterminate = false;
+    } else if (checkedVisibleCheckboxes.length > 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = true;
+    } else {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+    }
+}
+
+function filterByCustomer() {
+    const searchInput = document.getElementById('customer-search').value.toLowerCase();
     const rows = document.querySelectorAll('tbody tr');
     let visibleCount = 0;
     
     rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
         const customerName = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
-        const phone = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
-        const amount = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
         
-        if (customerName.includes(searchInput) || 
-            phone.includes(searchInput) || 
-            amount.includes(searchInput)) {
+        // Check if customer name matches search
+        const matchesCustomer = !searchInput || customerName.includes(searchInput);
+        
+        if (matchesCustomer) {
             row.style.display = '';
             visibleCount++;
         } else {
@@ -231,11 +264,15 @@ function filterDebts() {
     if (filteredCountSpan) {
         filteredCountSpan.textContent = visibleCount;
     }
+    
+    // Update Select All checkbox state and selected count
+    updateSelectAllState();
+    updateSelectedCount();
 }
 
-function clearSearch() {
-    document.getElementById('debt-search').value = '';
-    filterDebts();
+function clearCustomerSearch() {
+    document.getElementById('customer-search').value = '';
+    filterByCustomer();
 }
 
 function showSmsLoading() {

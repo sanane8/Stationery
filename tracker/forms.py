@@ -266,10 +266,18 @@ class RegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
     first_name = forms.CharField(max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
     last_name = forms.CharField(max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    role = forms.ChoiceField(
+        choices=[
+            ('shop_seller', 'Shop Seller'),
+            ('admin', 'Administrator'),
+        ],
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
     
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+        fields = ('username', 'first_name', 'last_name', 'email', 'role', 'password1', 'password2')
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -281,3 +289,4 @@ class RegistrationForm(UserCreationForm):
         self.fields['username'].help_text = 'Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'
         self.fields['password1'].help_text = 'Your password must contain at least 8 characters.'
         self.fields['password2'].help_text = 'Enter the same password as before, for verification.'
+        self.fields['role'].help_text = 'Select your role in the system.'

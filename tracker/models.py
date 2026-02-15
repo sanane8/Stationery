@@ -5,6 +5,33 @@ from django.core.validators import MinValueValidator
 from decimal import Decimal
 
 
+class UserProfile(models.Model):
+    """Extended user profile with role-based access control"""
+    ROLE_CHOICES = [
+        ('admin', 'Administrator'),
+        ('shop_seller', 'Shop Seller'),
+    ]
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='shop_seller')
+    phone = models.CharField(max_length=20, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.get_role_display()}"
+    
+    def is_admin(self):
+        return self.role == 'admin'
+    
+    def is_shop_seller(self):
+        return self.role == 'shop_seller'
+
+
 class Supplier(models.Model):
     """Supplier information for products"""
     name = models.CharField(max_length=200)

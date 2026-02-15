@@ -137,6 +137,8 @@ def send_debt_reminder_sms_for_customer(customer, debts):
         message = f"Habari {customer_name}, asante kumekamilipa TZS {total_amount - total_remaining:,.0f} kwa {len(debts)} mademi. Asante kwa malipo yako!"
     
     return send_sms(customer.phone, message)
+
+def send_debt_reminder_sms(debt):
     """
     Send debt reminder SMS to customer
 

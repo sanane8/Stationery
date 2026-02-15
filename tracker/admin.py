@@ -3,11 +3,50 @@ from django.utils.html import format_html
 from django.contrib import messages
 from django.utils import timezone
 from .models import Category, StationeryItem, Customer, Sale, SaleItem, Debt, Payment
-from .models import Expenditure
+from .models import Expenditure, UserProfile
 
 
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class RestrictedModelAdmin(admin.ModelAdmin):
+    """Custom ModelAdmin that bypasses Django permissions for our role system"""
+    
+    def has_view_permission(self, request, obj=None):
+        """Allow admin users to view"""
+        try:
+            return request.user.profile.is_admin()
+        except:
+            return False
+    
+    def has_change_permission(self, request, obj=None):
+        """Allow admin users to change"""
+        try:
+            return request.user.profile.is_admin()
+        except:
+            return False
+    
+    def has_add_permission(self, request):
+        """Allow admin users to add"""
+        try:
+            return request.user.profile.is_admin()
+        except:
+            return False
+    
+    def has_delete_permission(self, request, obj=None):
+        """Allow admin users to delete"""
+        try:
+            return request.user.profile.is_admin()
+        except:
+            return False
+    
+    def has_module_permission(self, request):
+        """Allow admin users to see module"""
+        try:
+            return request.user.profile.is_admin()
+        except:
+            return False
+
+
+# Regular admin classes for registration
+class CategoryAdmin(RestrictedModelAdmin):
     list_display = ['name', 'description', 'created_at']
     search_fields = ['name', 'description']
     list_filter = ['created_at']
@@ -18,8 +57,7 @@ class SaleItemInline(admin.TabularInline):
     extra = 1
 
 
-@admin.register(StationeryItem)
-class StationeryItemAdmin(admin.ModelAdmin):
+class StationeryItemAdmin(RestrictedModelAdmin):
     list_display = ['name', 'sku', 'category', 'unit_price', 'cost_price', 'stock_quantity', 'profit_margin_display', 'is_low_stock_display', 'is_active']
     list_filter = ['category', 'is_active']
     search_fields = ['name', 'sku', 'supplier']
@@ -37,16 +75,14 @@ class StationeryItemAdmin(admin.ModelAdmin):
     is_low_stock_display.short_description = "Stock Status"
 
 
-@admin.register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
+class CustomerAdmin(RestrictedModelAdmin):
     list_display = ['name', 'email', 'phone', 'created_at', 'is_active']
     list_filter = ['is_active', 'created_at']
     search_fields = ['name', 'email', 'phone']
     list_editable = ['is_active']
 
 
-@admin.register(Sale)
-class SaleAdmin(admin.ModelAdmin):
+class SaleAdmin(RestrictedModelAdmin):
     list_display = ['id', 'customer', 'sale_date_local', 'total_amount', 'payment_method', 'is_paid', 'profit_display', 'created_by']
     list_filter = ['payment_method', 'is_paid', 'sale_date', 'created_by']
     search_fields = ['customer__name', 'notes']
@@ -88,14 +124,12 @@ class SaleAdmin(admin.ModelAdmin):
     delete_and_restore_stock.short_description = "Delete selected sales and restore stock (show restored items)"
 
 
-@admin.register(SaleItem)
-class SaleItemAdmin(admin.ModelAdmin):
+class SaleItemAdmin(RestrictedModelAdmin):
     list_display = ['sale', 'item', 'quantity', 'unit_price', 'total_price']
     list_filter = ['sale__sale_date']
 
 
-@admin.register(Debt)
-class DebtAdmin(admin.ModelAdmin):
+class DebtAdmin(RestrictedModelAdmin):
     list_display = ['customer', 'amount', 'paid_amount', 'remaining_amount', 'due_date', 'status', 'is_overdue_display']
     list_filter = ['status', 'due_date', 'created_at']
     search_fields = ['customer__name', 'description']
@@ -108,16 +142,35 @@ class DebtAdmin(admin.ModelAdmin):
     is_overdue_display.short_description = "Overdue Status"
 
 
-@admin.register(Payment)
-class PaymentAdmin(admin.ModelAdmin):
+class PaymentAdmin(RestrictedModelAdmin):
     list_display = ['debt', 'amount', 'payment_date', 'payment_method']
     list_filter = ['payment_method', 'payment_date']
     search_fields = ['debt__customer__name', 'notes']
 
 
-@admin.register(Expenditure)
-class ExpenditureAdmin(admin.ModelAdmin):
+class ExpenditureAdmin(RestrictedModelAdmin):
     list_display = ['id', 'category', 'amount', 'expense_date', 'created_by']
     list_filter = ['category', 'expense_date']
     search_fields = ['description']
     readonly_fields = ['created_at']
+
+
+class UserProfileAdmin(RestrictedModelAdmin):
+    list_display = ['user', 'role', 'phone', 'created_at', 'updated_at']
+    list_filter = ['role', 'created_at']
+    search_fields = ['user__username', 'user__email', 'phone']
+    list_editable = ['role', 'phone']
+
+
+# Function to register models with restricted admin site
+def register_with_restricted_admin(admin_site):
+    """Register all models with the restricted admin site"""
+    admin_site.register(Category, CategoryAdmin)
+    admin_site.register(StationeryItem, StationeryItemAdmin)
+    admin_site.register(Customer, CustomerAdmin)
+    admin_site.register(Sale, SaleAdmin)
+    admin_site.register(SaleItem, SaleItemAdmin)
+    admin_site.register(Debt, DebtAdmin)
+    admin_site.register(Payment, PaymentAdmin)
+    admin_site.register(Expenditure, ExpenditureAdmin)
+    admin_site.register(UserProfile, UserProfileAdmin)

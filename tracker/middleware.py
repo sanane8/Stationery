@@ -5,8 +5,35 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.contrib.auth import logout
 from django.core.exceptions import MiddlewareNotUsed
+from django.utils.deprecation import MiddlewareMixin
+from django.contrib.auth.models import User
+from .models import UserProfile
 
 logger = logging.getLogger(__name__)
+
+
+class UserProfileMiddleware(MiddlewareMixin):
+    """Middleware to ensure user profiles exist and add role info to requests"""
+    
+    def process_request(self, request):
+        # Check if user is authenticated and has user attribute
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            try:
+                profile = request.user.profile
+            except UserProfile.DoesNotExist:
+                # Create profile for existing users without one
+                UserProfile.objects.create(
+                    user=request.user,
+                    role='shop_seller'  # Default role for existing users
+                )
+                profile = request.user.profile
+            
+            # Add role info to request for easy access
+            request.user_role = profile.role
+            request.is_admin = profile.is_admin()
+            request.is_shop_seller = profile.is_shop_seller()
+        
+        return None
 
 
 class SessionManagementMiddleware:

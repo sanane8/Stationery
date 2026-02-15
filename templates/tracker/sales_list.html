@@ -3,6 +3,114 @@
 
 {% block page_title %}Sales{% endblock %}
 
+{% block extra_css %}
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.product-list {
+    max-width: 300px;
+}
+
+.product-item {
+    line-height: 1.4;
+}
+
+.payment-item {
+    line-height: 1.4;
+}
+
+.payment-badge {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.payment-cash {
+    background-color: #28a745;
+    color: white;
+}
+
+.payment-mpesa {
+    background-color: #25d366;
+    color: white;
+}
+
+.payment-bank {
+    background-color: #6c757d;
+    color: white;
+}
+
+.payment-debt {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.fw-medium {
+    font-weight: 500;
+}
+
+.empty-state {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.table th {
+    border-top: none !important;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.table td {
+    vertical-align: middle;
+    border-color: #dee2e6;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.card-header {
+    border-bottom: 2px solid #667eea;
+}
+
+.table-warning {
+    background-color: #fff3cd !important;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.text-end {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.align-middle td {
+    vertical-align: middle;
+}
+
+.profit-column {
+    min-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
+{% endblock %}
+
 {% block page_actions %}
 <div class="d-flex justify-content-between align-items-center">
     <div class="btn-group" role="group">
@@ -123,102 +231,195 @@
 {% endif %}
 
 <!-- Sales Table -->
-<div class="card">
-    <div class="card-header">
-        <h6 class="m-0 font-weight-bold text-primary">Sales ({{ sales.paginator.count }})</h6>
-    </div>
-    <div class="card-body">
-        <div class="mb-3 text-end">
-            <a href="{% url 'sales_daily_export' %}?start_date={{ start_date|default:'' }}&end_date={{ end_date|default:'' }}&payment_status={{ payment_status }}{% if product_search %}&product={{ product_search|urlencode }}{% endif %}" class="btn btn-sm btn-outline-secondary me-2">
-                <i class="fas fa-file-csv"></i> Export All Sales (CSV)
-            </a>
-            <a href="{% url 'sales_daily_print' %}?start_date={{ start_date|default:'' }}&end_date={{ end_date|default:'' }}&payment_status={{ payment_status }}{% if product_search %}&product={{ product_search|urlencode }}{% endif %}" target="_blank" class="btn btn-sm btn-outline-primary">
-                <i class="fas fa-print"></i> Print All Sales
-            </a>
+<div class="card shadow-sm">
+    <div class="card-header bg-gradient-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="m-0 font-weight-bold mb-1">
+                    <i class="fas fa-shopping-cart me-2"></i>Sales Records
+                </h6>
+                <small class="opacity-75">Showing {{ sales.paginator.count }} sales</small>
+            </div>
+            <div class="d-flex gap-2">
+                <span class="badge bg-white text-primary">
+                    <i class="fas fa-filter"></i> 
+                    {% if payment_status != 'all' %}{{ payment_status|title }}{% else %}All{% endif %}
+                </span>
+                {% if product_search %}
+                <span class="badge bg-white text-info">
+                    <i class="fas fa-box"></i> {{ product_search }}
+                </span>
+                {% endif %}
+            </div>
         </div>
+    </div>
+    <div class="card-body p-0">
         {% if sales %}
             <div class="table-responsive">
-                <table class="table table-bordered table-hover">
+                <table class="table table-hover table-striped align-middle mb-0">
                     <colgroup>
-                        <col style="width:80px;" />
-                        <col style="width:150px;" />
-                        <col />
-                        <col style="width:180px;" />
-                        <col style="width:220px;" />
-                        <col style="width:120px;" />
-                        <col style="width:100px;" />
-                        <col style="width:160px;" />
-                        <col style="width:120px;" />
+                        <col style="width: 80px;" />
+                        <col style="width: 140px;" />
+                        <col style="width: 320px;" />
+                        <col style="width: 160px;" />
+                        <col style="width: 140px;" />
+                        <col style="width: 120px;" />
+                        <col style="width: 160px;" />
+                        <col style="width: 100px;" />
                     </colgroup>
-                    <thead>
+                    <thead class="table-light">
                         <tr>
-                            <th>Sale #</th>
-                            <th>Date</th>
-                            <th>Products</th>
-                            <th class="numeric-col money-col">Profit</th>
-                            <th class="numeric-col money-col">Amount</th>
-                            <th>Payment Method</th>
-                            <th>Status</th>
-                            <th>Created By</th>
-                            <th>Actions</th>
+                            <th class="border-0 text-center">
+                                <i class="fas fa-hashtag text-muted"></i>
+                                <small class="d-block">ID</small>
+                            </th>
+                            <th class="border-0">
+                                <i class="fas fa-calendar text-muted"></i>
+                                <small class="d-block">Date</small>
+                            </th>
+                            <th class="border-0">
+                                <i class="fas fa-box text-muted"></i>
+                                <small class="d-block">Products</small>
+                            </th>
+                            <th class="border-0 text-end profit-column">
+                                <i class="fas fa-chart-line text-muted"></i>
+                                <small class="d-block">Profit</small>
+                            </th>
+                            <th class="border-0 text-end">
+                                <i class="fas fa-money-bill-wave text-muted"></i>
+                                <small class="d-block">Amount</small>
+                            </th>
+                            <th class="border-0">
+                                <i class="fas fa-credit-card text-muted"></i>
+                                <small class="d-block">Payment</small>
+                            </th>
+                            <th class="border-0 text-center">
+                                <i class="fas fa-info-circle text-muted"></i>
+                                <small class="d-block">Status</small>
+                            </th>
+                            <th class="border-0">
+                                <i class="fas fa-user text-muted"></i>
+                                <small class="d-block">Created By</small>
+                            </th>
+                            <th class="border-0 text-center">
+                                <i class="fas fa-cogs text-muted"></i>
+                                <small class="d-block">Actions</small>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for sale in sales %}
-                        <tr>
-                            <td><strong>#{{ sale.id }}</strong></td>
-                            <td>{{ sale.sale_date|localtime|date:"M d, Y H:i" }}</td>
+                        <tr class="{% if not sale.is_paid %}table-warning{% endif %}">
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark fw-bold">#{{ sale.id }}</span>
+                            </td>
                             <td>
-                                {% for item in sale.items.all %}
-                                    <span class="badge bg-light text-dark me-1">{{ item.item.name }} ({{ item.quantity }})</span>
-                                {% empty %}
-                                    {% if "Payment for" in sale.notes %}
-                                        <span class="badge bg-info text-white me-1">
-                                            <i class="fas fa-money-bill-wave"></i> Payment
-                                        </span>
-                                        <div class="small text-muted mt-1">
-                                            {{ sale.notes }}
+                                <div class="d-flex flex-column">
+                                    <strong class="text-primary">{{ sale.sale_date|localtime|date:"M d, Y" }}</strong>
+                                    <small class="text-muted">{{ sale.sale_date|localtime|date:"H:i" }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="product-list">
+                                    {% for item in sale.items.all %}
+                                        <div class="product-item mb-1">
+                                            <span class="badge bg-light text-dark me-1">
+                                                <i class="fas fa-tag"></i> {{ item.item.name }}
+                                            </span>
+                                            <span class="badge bg-info text-white">
+                                                <i class="fas fa-cubes"></i> {{ item.quantity }}
+                                            </span>
+                                            {% if not forloop.last %}<br>{% endif %}
                                         </div>
-                                    {% elif sale.products %}
-                                        <span class="badge bg-light text-dark me-1">{{ sale.products }}</span>
+                                    {% empty %}
+                                        {% if "Payment for" in sale.notes %}
+                                            <div class="payment-item">
+                                                <span class="badge bg-success text-white">
+                                                    <i class="fas fa-money-bill-wave"></i> Payment
+                                                </span>
+                                                <div class="small text-muted mt-1">
+                                                    <i class="fas fa-sticky-note"></i> {{ sale.notes }}
+                                                </div>
+                                            </div>
+                                        {% elif sale.products %}
+                                            <span class="badge bg-light text-dark">
+                                                <i class="fas fa-box"></i> {{ sale.products }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">
+                                                <i class="fas fa-exclamation-triangle"></i> No items
+                                            </span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="text-end profit-column">
+                                <span class="fw-bold {% if sale.annotated_profit > 0 %}text-success{% else %}text-danger{% endif %}">
+                                    TZS {{ sale.annotated_profit|default:0|floatformat:0|intcomma }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-bold text-primary">
+                                    TZS {{ sale.total_amount|floatformat:0|intcomma }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="payment-badge payment-{{ sale.payment_method }}">
+                                    {% if sale.payment_method == 'cash' %}
+                                        <i class="fas fa-money-bill"></i> Cash
+                                    {% elif sale.payment_method == 'mpesa' %}
+                                        <i class="fas fa-mobile-alt"></i> M-Pesa
+                                    {% elif sale.payment_method == 'bank' %}
+                                        <i class="fas fa-university"></i> Bank
+                                    {% elif sale.payment_method == 'debt' %}
+                                        <i class="fas fa-hand-holding-usd"></i> Debt
                                     {% else %}
-                                        <span class="text-muted">No items</span>
+                                        <i class="fas fa-question-circle"></i> {{ sale.get_payment_method_display }}
                                     {% endif %}
-                                {% endfor %}
+                                </span>
                             </td>
-                            <td class="numeric-col money-col">TZS {{ sale.annotated_profit|default:0|floatformat:0|intcomma }}</td>
-                            <td class="numeric-col money-col"><strong>TZS {{ sale.total_amount|floatformat:0|intcomma }}</strong></td>
-                            <td>{{ sale.get_payment_method_display }}</td>
-                            <td>
+                            <td class="text-center">
                                 {% if sale.is_paid %}
-                                    <span class="badge bg-success"><i class="fas fa-check"></i> Paid</span>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Paid
+                                    </span>
                                 {% else %}
-                                    <span class="badge bg-warning"><i class="fas fa-clock"></i> Unpaid</span>
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-clock"></i> Unpaid
+                                    </span>
                                 {% endif %}
                             </td>
                             <td>
-                                {% if sale.created_by_display %}
-                                    {{ sale.created_by_display }}
-                                {% elif sale.created_by %}
-                                    {{ sale.created_by.get_full_name|default:sale.created_by.username }}
-                                {% else %}
-                                    -
-                                {% endif %}
+                                <div class="user-info">
+                                    {% if sale.created_by_display %}
+                                        <i class="fas fa-user-circle text-muted"></i>
+                                        <span class="fw-medium">{{ sale.created_by_display }}</span>
+                                    {% elif sale.created_by %}
+                                        <i class="fas fa-user-circle text-muted"></i>
+                                        <span class="fw-medium">{{ sale.created_by.get_full_name|default:sale.created_by.username }}</span>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-user-slash"></i> System
+                                        </span>
+                                    {% endif %}
+                                </div>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-outline-primary" title="View Sale Details">
+                                    <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-outline-primary btn-sm" title="View Sale Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{% url 'print_invoice' sale.pk %}" target="_blank" class="btn btn-outline-secondary" title="Print Invoice">
+                                    <a href="{% url 'print_invoice' sale.pk %}" target="_blank" class="btn btn-outline-secondary btn-sm" title="Print Invoice">
                                         <i class="fas fa-print"></i>
                                     </a>
+                                    {% if is_admin %}
                                     <form method="post" action="{% url 'delete_sale' sale.pk %}" class="d-inline">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-outline-danger" title="Delete Sale" onclick="return confirm('Delete sale and restore stock?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Sale" onclick="return confirm('Delete sale and restore stock?');">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>
@@ -227,15 +428,48 @@
                 </table>
             </div>
         {% else %}
-            <div class="text-center py-4">
-                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No sales found</h5>
-                <p class="text-muted">Start by creating your first sale.</p>
-                <a href="{% url 'create_sale' %}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Create First Sale
-                </a>
+            <div class="text-center py-5">
+                <div class="empty-state">
+                    <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Sales Found</h5>
+                    <p class="text-muted mb-4">
+                        {% if start_date or end_date or payment_status != 'all' or product_search %}
+                            No sales match your current filters.
+                        {% else %}
+                            Start by creating your first sale to track your business performance.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'create_sale' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>Create Your First Sale
+                    </a>
+                </div>
             </div>
         {% endif %}
+    </div>
+    <div class="card-footer bg-light">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i>
+                    {% if start_date or end_date or payment_status != 'all' or product_search %}
+                        Showing filtered results. 
+                        <a href="{% url 'sales_list' %}" class="text-primary">Clear all filters</a>
+                    {% else %}
+                        Showing all sales records.
+                    {% endif %}
+                </small>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="btn-group" role="group">
+                    <a href="{% url 'sales_daily_export' %}?start_date={{ start_date|default:'' }}&end_date={{ end_date|default:'' }}&payment_status={{ payment_status }}{% if product_search %}&product={{ product_search|urlencode }}{% endif %}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-file-csv me-1"></i> Export CSV
+                    </a>
+                    <a href="{% url 'sales_daily_print' %}?start_date={{ start_date|default:'' }}&end_date={{ end_date|default:'' }}&payment_status={{ payment_status }}{% if product_search %}&product={{ product_search|urlencode }}{% endif %}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-print me-1"></i> Print Report
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% if page_obj.has_other_pages %}
