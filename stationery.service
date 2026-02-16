@@ -7,7 +7,7 @@ Type=notify
 # Use dynamic user for better compatibility in containerized environments
 DynamicUser=yes
 WorkingDirectory=/app
-Environment=DJANGO_SETTINGS_MODULE=stationery_tracker.production_settings
+Environment=DJANGO_SETTINGS_MODULE=stationery_tracker.settings
 EnvironmentFile=-/etc/environment
 ExecStart=/usr/local/bin/gunicorn --config gunicorn.conf.py stationery_tracker.wsgi:application
 ExecReload=/bin/kill -s HUP $MAINPID

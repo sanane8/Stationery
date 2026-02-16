@@ -1,0 +1,37 @@
+# Render configuration for Django Stationery Management System
+services:
+  # Web Service
+  - type: web
+    name: stationery-management
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "bash start.sh"
+    healthCheckPath: /
+    healthCheckTimeout: 30
+    autoDeploy: true
+    
+    # Environment variables (configure these in Render dashboard)
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: stationery_tracker.settings
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: PORT
+        value: 10000
+        
+    # Addons
+    addons:
+      - type: postgres
+        name: stationery-db
+        plan: free
+        
+    # Static files
+    staticPublishPath: staticfiles
+    staticPublishDir: staticfiles
+    
+# Disk storage (if needed for file uploads)
+disk:
+  name: stationery-storage
+  sizeGB: 1
+  mountPath: /app/media
