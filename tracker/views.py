@@ -535,7 +535,38 @@ def sales_list(request):
     # Annotate per-sale total_cost and profit to avoid N+1 queries in template
     # We'll calculate this in Python instead of using complex annotations
     for sale in page_obj.object_list:
-        # Calculate total cost for this sale
+        # Check if sale already has correct profit calculated (e.g., from payment sales)
+        if hasattr(sale, 'total_cost') and hasattr(sale, 'annotated_profit'):
+            # Sale already has correct profit (from payment logic), don't recalculate
+            continue
+        
+        # Check if this is a payment sale and try to extract original cost from notes
+        if sale.notes and 'Payment for Debt #' in sale.notes:
+            try:
+                # Parse debt information from payment notes
+                # Example: "Payment for Debt #151: Printing (Qty: 9) - Total: TZS 4,500"
+                import re
+                
+                # Extract debt ID
+                debt_match = re.search(r'Payment for Debt #(\d+)', sale.notes)
+                if debt_match:
+                    debt_id = debt_match.group(1)
+                    
+                    # Try to get the original debt
+                    try:
+                        original_debt = Debt.objects.get(pk=debt_id)
+                        if original_debt.item:
+                            # Calculate original cost from debt item
+                            original_cost = original_debt.quantity * (original_debt.item.cost_price or Decimal('0'))
+                            sale.total_cost = original_cost
+                            sale.annotated_profit = sale.total_amount - original_cost
+                            continue
+                    except Debt.DoesNotExist:
+                        pass
+            except Exception:
+                pass
+        
+        # Calculate total cost for this sale (only for regular sales with items)
         total_cost = Decimal('0')
         for item in sale.items.all():
             if item.product_type == 'retail' and item.retail_item:
@@ -560,11 +591,17 @@ def sales_list(request):
     # Calculate costs for all sales
     overall_cost = Decimal('0')
     for sale in sales_queryset:
-        sale_cost = Decimal('0')
-        for item in sale.items.all():
-            if item.product_type == 'retail' and item.retail_item:
-                sale_cost += item.quantity * (item.retail_item.cost_price or Decimal('0'))
-        sale.total_cost = sale_cost  # Store for daily aggregates
+        # Check if sale already has correct profit calculated (e.g., from payment sales)
+        if hasattr(sale, 'total_cost') and hasattr(sale, 'annotated_profit'):
+            # Use the already calculated cost from payment logic
+            sale_cost = sale.total_cost
+        else:
+            # Calculate cost for regular sales with items
+            sale_cost = Decimal('0')
+            for item in sale.items.all():
+                if item.product_type == 'retail' and item.retail_item:
+                    sale_cost += item.quantity * (item.retail_item.cost_price or Decimal('0'))
+            sale.total_cost = sale_cost  # Store for daily aggregates
         overall_cost += sale_cost
     
     overall_profit = total_amount - overall_cost
@@ -597,15 +634,15 @@ def sales_list(request):
             for si in sale.items.all():
                 item_name = si.item_name.lower()
                 if product_search_lower in item_name:
-                    entry['product_qty'] += si.quantity
-                    # Calculate the actual revenue and cost for this specific item
-                    item_revenue = si.total_price or Decimal('0')
-                    matching_item_revenue += item_revenue
-                    
-                    # Calculate cost for this specific item
-                    item_cost = Decimal('0')
-                    if si.product_type == 'retail' and si.retail_item:
-                        item_cost = si.quantity * (si.retail_item.cost_price or Decimal('0'))
+                    # Check if sale already has correct profit calculated
+                    if hasattr(sale, 'total_cost') and hasattr(sale, 'annotated_profit'):
+                        # Use already calculated cost from payment logic
+                        item_cost = sale.total_cost / sale.items.count() if sale.items.count() > 0 else Decimal('0')
+                    else:
+                        # Calculate cost for regular sales with items
+                        item_cost = Decimal('0')
+                        if si.product_type == 'retail' and si.retail_item:
+                            item_cost = si.quantity * (si.retail_item.cost_price or Decimal('0'))
                     matching_item_cost += item_cost
                     
                     entry['product_names'].add(si.item_name)
@@ -758,7 +795,13 @@ def print_invoice(request, pk):
 
     # Calculate totals and cost
     try:
-        total_cost = sum((si.quantity * (si.retail_item.cost_price if si.product_type == 'retail' and si.retail_item else Decimal('0'))) for si in sale_items)
+        # Check if sale already has correct profit calculated (e.g., from payment sales)
+        if hasattr(sale, 'total_cost') and hasattr(sale, 'annotated_profit'):
+            # Use already calculated cost from payment logic
+            total_cost = sale.total_cost
+        else:
+            # Calculate cost for regular sales with items
+            total_cost = sum((si.quantity * (si.retail_item.cost_price if si.product_type == 'retail' and si.retail_item else Decimal('0'))) for si in sale_items)
     except Exception:
         total_cost = Decimal('0')
     revenue = sale.total_amount or Decimal('0')
@@ -880,7 +923,13 @@ def sales_daily_export_csv(request):
         for sale in sales:
             # compute total cost for the sale
             try:
-                total_cost = sum((si.quantity * (si.item.cost_price or Decimal('0'))) for si in sale.items.all())
+                # Check if sale already has correct profit calculated (e.g., from payment sales)
+                if hasattr(sale, 'total_cost') and hasattr(sale, 'annotated_profit'):
+                    # Use already calculated cost from payment logic
+                    total_cost = sale.total_cost
+                else:
+                    # Calculate cost for regular sales with items
+                    total_cost = sum((si.quantity * (si.item.cost_price or Decimal('0'))) for si in sale.items.all())
             except Exception:
                 total_cost = Decimal('0')
             revenue = sale.total_amount or Decimal('0')
@@ -991,7 +1040,13 @@ def sales_daily_export_pdf(request):
 
         # Compute cost for the sale by summing related items
         try:
-            total_cost = sum((si.quantity * (si.item.cost_price or Decimal('0'))) for si in sale.items.all())
+            # Check if sale already has correct profit calculated (e.g., from payment sales)
+            if hasattr(sale, 'total_cost') and hasattr(sale, 'annotated_profit'):
+                # Use already calculated cost from payment logic
+                total_cost = sale.total_cost
+            else:
+                # Calculate cost for regular sales with items
+                total_cost = sum((si.quantity * (si.item.cost_price or Decimal('0'))) for si in sale.items.all())
         except Exception:
             total_cost = Decimal('0')
         revenue = sale.total_amount or Decimal('0')
@@ -1732,6 +1787,12 @@ def add_payment(request, debt_id):
                 if debt.description:
                     debt_items_info += f" - {debt.description}"
                 
+                # Calculate the original cost of items that created this debt
+                original_cost = Decimal('0')
+                if debt.item:
+                    original_cost = debt.quantity * (debt.item.cost_price or Decimal('0'))
+                
+                # Create sale with proper profit calculation
                 sale = Sale.objects.create(
                     customer=debt.customer,
                     total_amount=payment.amount,
@@ -1740,6 +1801,11 @@ def add_payment(request, debt_id):
                     notes=f'Payment for {debt_items_info}',
                     created_by=request.user
                 )
+                
+                # Store the original cost and calculate profit correctly
+                sale.total_cost = original_cost
+                sale.annotated_profit = payment.amount - original_cost
+                
                 # Only link the created sale to the debt if the debt had no originating sale
                 # (we don't want to overwrite an original sale that generated the debt)
                 if not debt.sale:
