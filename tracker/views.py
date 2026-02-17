@@ -631,9 +631,14 @@ def sales_list(request):
         if product_search_lower:
             matching_item_revenue = Decimal('0')
             matching_item_cost = Decimal('0')
+            matching_item_qty = 0
             for si in sale.items.all():
                 item_name = si.item_name.lower()
                 if product_search_lower in item_name:
+                    # Calculate revenue for matching item
+                    matching_item_revenue += si.total_price or Decimal('0')
+                    matching_item_qty += si.quantity
+                    
                     # Check if sale already has correct profit calculated
                     if hasattr(sale, 'total_cost') and hasattr(sale, 'annotated_profit'):
                         # Use already calculated cost from payment logic
@@ -650,6 +655,7 @@ def sales_list(request):
             # Add only the matching item revenue and cost
             entry['product_revenue'] += matching_item_revenue
             entry['product_cost'] += matching_item_cost
+            entry['product_qty'] += matching_item_qty
 
     # Convert map into sorted list (newest date first)
     daily_sales = []
