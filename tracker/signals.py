@@ -153,22 +153,33 @@ def restore_stock_on_sale_item_delete(sender, instance, **kwargs):
     it sets `instance._stock_restored = True` and this handler will skip.
     Additionally, recompute the parent Sale.total_amount to reflect deletion.
     """
+    # Debug logging to understand the issue
+    print(f"SIGNAL DEBUG: SaleItem {instance.pk} deleted - _stock_restored: {getattr(instance, '_stock_restored', False)}")
+    print(f"SIGNAL DEBUG: Item: {instance.item_name} - Type: {instance.product_type} - Quantity: {instance.quantity}")
+    
     if getattr(instance, '_stock_restored', False):
         # Stock was already restored in the model's delete; continue to adjust totals
+        print(f"SIGNAL DEBUG: Stock already restored, skipping restoration")
         pass
     else:
         # Restore stock based on product type
+        print(f"SIGNAL DEBUG: Restoring stock from signal")
         if instance.product_type == 'retail' and instance.retail_item:
+            old_stock = instance.retail_item.stock_quantity
             instance.retail_item.stock_quantity += instance.quantity
             instance.retail_item.save(update_fields=['stock_quantity'])
+            print(f"SIGNAL DEBUG: Restored retail item {instance.retail_item.name} from {old_stock} to {instance.retail_item.stock_quantity}")
         elif instance.product_type == 'wholesale' and instance.wholesale_item:
+            old_stock = instance.wholesale_item.cartons_in_stock
             instance.wholesale_item.cartons_in_stock += instance.quantity
             instance.wholesale_item.save(update_fields=['cartons_in_stock'])
+            print(f"SIGNAL DEBUG: Restored wholesale item {instance.wholesale_item.name} from {old_stock} to {instance.wholesale_item.cartons_in_stock}")
 
     # Recompute the sale total if the sale still exists (it may be being deleted)
     try:
         total = SaleItem.objects.filter(sale=instance.sale).aggregate(total=Sum('total_price'))['total'] or Decimal('0')
         Sale.objects.filter(pk=instance.sale.pk).update(total_amount=total)
+        print(f"SIGNAL DEBUG: Updated sale {instance.sale.pk} total to {total}")
         # Sync debts after updating total
         try:
             sale = Sale.objects.get(pk=instance.sale.pk)

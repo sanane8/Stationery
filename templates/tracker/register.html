@@ -180,6 +180,35 @@
         .strength-weak { background-color: #dc3545; width: 33%; }
         .strength-medium { background-color: #ffc107; width: 66%; }
         .strength-strong { background-color: #28a745; width: 100%; }
+        
+        .password-input-group {
+            position: relative;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .password-toggle:hover {
+            color: #667eea;
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+        
+        .password-toggle:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
+        }
     </style>
 </head>
 <body>
@@ -287,7 +316,12 @@
                     
                     <div class="mb-3">
                         <label for="{{ form.password1.id_for_label }}" class="form-label">Password *</label>
-                        {{ form.password1 }}
+                        <div class="password-input-group">
+                            {{ form.password1 }}
+                            <button type="button" class="password-toggle" onclick="togglePassword('id_password1')">
+                                <i class="fas fa-eye" id="password1-icon"></i>
+                            </button>
+                        </div>
                         {% if form.password1.errors %}
                             <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
                         {% endif %}
@@ -297,7 +331,12 @@
                     
                     <div class="mb-4">
                         <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password *</label>
-                        {{ form.password2 }}
+                        <div class="password-input-group">
+                            {{ form.password2 }}
+                            <button type="button" class="password-toggle" onclick="togglePassword('id_password2')">
+                                <i class="fas fa-eye" id="password2-icon"></i>
+                            </button>
+                        </div>
                         {% if form.password2.errors %}
                             <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
                         {% endif %}
@@ -383,6 +422,22 @@
                 registerBtn.style.animation = 'pulse 1s infinite';
             });
         });
+        
+        // Password visibility toggle function
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            const passwordIcon = document.getElementById(inputId + '-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
+        }
     </script>
 </body>
 </html>

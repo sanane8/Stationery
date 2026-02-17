@@ -1219,19 +1219,21 @@ def delete_sale(request, pk):
     if request.method == 'POST':
         # Capture restored items info before deletion and restore stock
         restored_items = []
-        for si in sale.items.all():
-            # Restore stock based on product type
-            if si.product_type == 'retail' and si.retail_item:
-                si.retail_item.stock_quantity += si.quantity
-                si.retail_item.save(update_fields=['stock_quantity'])
-                restored_items.append(f"{si.retail_item.name} (+{si.quantity} units)")
-            elif si.product_type == 'wholesale' and si.wholesale_item:
-                si.wholesale_item.cartons_in_stock += si.quantity
-                si.wholesale_item.save(update_fields=['cartons_in_stock'])
-                restored_items.append(f"{si.wholesale_item.name} (+{si.quantity} cartons)")
-
-        # Check if this is a payment sale for a debt
-        if not sale.items.exists() and sale.notes and 'Payment for Debt #' in sale.notes:
+        
+        # Debug: Log sale details to understand the issue
+        print(f"DEBUG: Sale ID {sale.pk} - Items count: {sale.items.count()} - Notes: {sale.notes}")
+        
+        # Check if this is a payment sale for a debt first
+        # Payment sales typically have no items AND contain "Payment for Debt #" in notes
+        is_payment_sale = (
+            sale.items.count() == 0 and 
+            sale.notes and 
+            'Payment for Debt #' in sale.notes
+        )
+        
+        print(f"DEBUG: Is payment sale: {is_payment_sale}")
+        
+        if is_payment_sale:
             import re
             match = re.search(r'Payment for Debt #(\d+)', sale.notes)
             if match:
@@ -1239,11 +1241,13 @@ def delete_sale(request, pk):
                 try:
                     from .models import Debt
                     debt = Debt.objects.get(pk=debt_id)
+                    print(f"DEBUG: Found debt {debt_id} - Item: {debt.item.name if debt.item else 'None'} - Quantity: {debt.quantity}")
                     # Restore stock for the debt's item and quantity
                     if debt.item:
                         debt.item.stock_quantity += debt.quantity
                         debt.item.save(update_fields=['stock_quantity'])
                         restored_items.append(f"{debt.item.name} (+{debt.quantity})")
+                        print(f"DEBUG: Restored stock for debt item: {debt.item.name} (+{debt.quantity})")
                     # Reverse the payment
                     debt.paid_amount -= sale.total_amount
                     if debt.paid_amount < 0:
@@ -1258,8 +1262,41 @@ def delete_sale(request, pk):
                     debt.save()
                 except Debt.DoesNotExist:
                     pass  # Debt might have been deleted already
+        else:
+            # This is a normal sale, restore stock from sale items
+            # Mark items as stock_restored to prevent signal from double-restoring
+            print(f"DEBUG: Processing normal sale with {sale.items.count()} items")
+            for si in sale.items.all():
+                print(f"DEBUG: Processing item: {si.item_name} - Type: {si.product_type} - Quantity: {si.quantity}")
+                # Mark this item as stock_restored to prevent signal double-restoration
+                si._stock_restored = True
+                print(f"DEBUG: Marked item {si.pk} as _stock_restored = True")
+                # Restore stock based on product type
+                if si.product_type == 'retail' and si.retail_item:
+                    old_stock = si.retail_item.stock_quantity
+                    si.retail_item.stock_quantity += si.quantity
+                    si.retail_item.save(update_fields=['stock_quantity'])
+                    restored_items.append(f"{si.retail_item.name} (+{si.quantity} units)")
+                    print(f"DEBUG: Restored retail item: {si.retail_item.name} from {old_stock} to {si.retail_item.stock_quantity}")
+                elif si.product_type == 'wholesale' and si.wholesale_item:
+                    old_stock = si.wholesale_item.cartons_in_stock
+                    si.wholesale_item.cartons_in_stock += si.quantity
+                    si.wholesale_item.save(update_fields=['cartons_in_stock'])
+                    restored_items.append(f"{si.wholesale_item.name} (+{si.quantity} cartons)")
+                    print(f"DEBUG: Restored wholesale item: {si.wholesale_item.name} from {old_stock} to {si.wholesale_item.cartons_in_stock}")
 
+        # Disable the signal temporarily to prevent double restoration
+        from django.db.models.signals import post_delete
+        from .signals import restore_stock_on_sale_item_delete
+        post_delete.disconnect(restore_stock_on_sale_item_delete, sender=SaleItem)
+        
+        print(f"DEBUG: DISABLED signal to prevent double restoration")
+        
         sale.delete()
+        print(f"DEBUG: Sale deleted. Restored items: {restored_items}")
+        
+        # Re-enable the signal after deletion
+        post_delete.connect(restore_stock_on_sale_item_delete, sender=SaleItem)
 
         if restored_items:
             messages.success(request, f"Sale deleted. Restored stock: {', '.join(restored_items)}")
