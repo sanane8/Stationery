@@ -175,3 +175,43 @@ class ErrorHandlingMiddleware:
                 status=500,
                 content_type='text/html'
             )
+
+
+class ShopSelectionMiddleware:
+    """
+    Middleware to handle shop selection and filtering
+    """
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+        
+    def __call__(self, request):
+        from django.core.cache import cache
+        from .models import Shop
+        
+        # Get selected shop from session or default
+        shop_id = request.session.get('selected_shop_id', 1)
+        
+        try:
+            # Get selected shop
+            selected_shop = Shop.objects.get(id=shop_id, is_active=True)
+            request.selected_shop = selected_shop
+            
+            # Add shop filtering helper to request
+            def filter_by_shop(queryset):
+                """Filter queryset by selected shop"""
+                if hasattr(queryset.model, 'shop'):
+                    return queryset.filter(shop=selected_shop)
+                return queryset
+            
+            request.filter_by_shop = filter_by_shop
+            
+        except Shop.DoesNotExist:
+            # Fallback to first available shop
+            default_shop = Shop.objects.filter(is_active=True).first()
+            request.selected_shop = default_shop or None
+            request.filter_by_shop = lambda queryset: queryset
+        
+        response = self.get_response(request)
+        
+        return response

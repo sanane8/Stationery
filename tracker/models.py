@@ -5,6 +5,50 @@ from django.core.validators import MinValueValidator
 from decimal import Decimal
 
 
+class Shop(models.Model):
+    """Shop/Store model for multi-shop management"""
+    SHOP_CHOICES = [
+        ('stationery', 'Stationery Shop'),
+        ('duka_la_vinywaji', 'Duka la Vinywaji'),
+    ]
+    
+    name = models.CharField(max_length=50, choices=SHOP_CHOICES, unique=True)
+    display_name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    address = models.TextField(blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Shop"
+        verbose_name_plural = "Shops"
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.display_name
+    
+    @property
+    def product_count(self):
+        """Get total number of products for this shop"""
+        return self.products.count()
+    
+    @property
+    def stationery_count(self):
+        """Get total number of stationery items for this shop"""
+        return self.stationery_items.count()
+    
+    @property
+    def total_sales_value(self):
+        """Get total sales value for this shop (paid sales only)"""
+        from django.db.models import Sum
+        total = self.sales.filter(is_paid=True).aggregate(
+            total=Sum('total_amount')
+        )['total'] or 0
+        return total
+
+
 class UserProfile(models.Model):
     """Extended user profile with role-based access control"""
     ROLE_CHOICES = [
@@ -15,6 +59,8 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='shop_seller')
     phone = models.CharField(max_length=20, blank=True)
+    assigned_shops = models.ManyToManyField(Shop, blank=True, help_text="Shops this user can access")
+    default_shop = models.ForeignKey(Shop, on_delete=models.SET_NULL, null=True, blank=True, related_name='default_users')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -30,6 +76,18 @@ class UserProfile(models.Model):
     
     def is_shop_seller(self):
         return self.role == 'shop_seller'
+    
+    def get_accessible_shops(self):
+        """Get shops this user can access"""
+        if self.is_admin():
+            return Shop.objects.filter(is_active=True)
+        return self.assigned_shops.filter(is_active=True)
+    
+    def can_access_shop(self, shop):
+        """Check if user can access a specific shop"""
+        if self.is_admin():
+            return shop.is_active
+        return self.assigned_shops.filter(id=shop.id, is_active=True).exists()
 
 
 class Supplier(models.Model):
@@ -39,6 +97,7 @@ class Supplier(models.Model):
     phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
     address = models.TextField(blank=True)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='suppliers', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
@@ -46,35 +105,39 @@ class Supplier(models.Model):
         ordering = ['name']
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.shop.display_name})"
 
 
 class ProductCategory(models.Model):
     """Product category for organizing products"""
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='product_categories', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name_plural = "Product Categories"
         ordering = ['name']
+        unique_together = ['name', 'shop']  # Category names should be unique per shop
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.shop.display_name})"
 
 
 class Category(models.Model):
     """Category for stationery items"""
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='categories', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name_plural = "Categories"
         ordering = ['name']
+        unique_together = ['name', 'shop']  # Category names should be unique per shop
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.shop.display_name})"
 
 
 class Product(models.Model):
@@ -88,10 +151,11 @@ class Product(models.Model):
 
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
-    sku = models.CharField(max_length=50, unique=True, help_text="Stock Keeping Unit")
+    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, related_name='products')
+    sku = models.CharField(max_length=50, help_text="Stock Keeping Unit")
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name='products')
     stationery_item = models.OneToOneField('StationeryItem', on_delete=models.CASCADE, related_name='product', blank=True, null=True, help_text="Link to corresponding stationery item")
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='products', default=1)
     
     # Pricing
     supplier_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))], help_text="Price from supplier")
@@ -114,9 +178,10 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['name']
+        unique_together = ['sku', 'shop']  # SKU should be unique per shop
 
     def __str__(self):
-        return f"{self.name} ({self.sku})"
+        return f"{self.name} ({self.sku}) - {self.shop.display_name}"
 
     @property
     def total_units_in_stock(self):
@@ -227,21 +292,23 @@ class StationeryItem(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='items')
-    sku = models.CharField(max_length=50, unique=True, help_text="Stock Keeping Unit")
+    sku = models.CharField(max_length=50, help_text="Stock Keeping Unit")
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     cost_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     stock_quantity = models.PositiveIntegerField(default=0)
     minimum_stock = models.PositiveIntegerField(default=0, help_text="Minimum stock level before reorder")
     supplier = models.CharField(max_length=200, blank=True)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='stationery_items', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['name']
+        unique_together = ['sku', 'shop']  # SKU should be unique per shop
 
     def __str__(self):
-        return f"{self.name} ({self.sku})"
+        return f"{self.name} ({self.sku}) - {self.shop.display_name}"
 
     @property
     def profit_margin(self):
@@ -312,6 +379,7 @@ class Customer(models.Model):
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='customers', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
@@ -319,7 +387,7 @@ class Customer(models.Model):
         ordering = ['name']
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.shop.display_name})"
 
 
 class Sale(models.Model):
@@ -338,6 +406,7 @@ class Sale(models.Model):
     is_paid = models.BooleanField(default=True)
     notes = models.TextField(blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='sales', default=1)
 
     class Meta:
         ordering = ['-sale_date']
@@ -509,6 +578,7 @@ class Debt(models.Model):
     # Use PROTECT to avoid accidental deletion of items referenced by debts
     item = models.ForeignKey(StationeryItem, on_delete=models.PROTECT, related_name='debts')
     quantity = models.PositiveIntegerField(default=1)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='debts', default=1)
 
     amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -576,10 +646,11 @@ class Expenditure(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     expense_date = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='expenditures', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-expense_date']
 
     def __str__(self):
-        return f"{self.get_category_display()} - TZS {self.amount:,.0f} on {self.expense_date.date()}"
+        return f"{self.get_category_display()} - TZS {self.amount:,.0f} on {self.expense_date.date()} ({self.shop.display_name})"

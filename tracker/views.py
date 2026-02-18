@@ -76,6 +76,7 @@ except Exception:
 def product_list(request):
     """Display all products with supplier pricing and carton information"""
     products = Product.objects.select_related('category', 'supplier').filter(is_active=True)
+    products = request.filter_by_shop(products)
     
     # Filter by category
     category_id = request.GET.get('category')
@@ -103,7 +104,9 @@ def product_list(request):
     
     # Get filter options
     categories = Category.objects.all()
+    categories = request.filter_by_shop(categories)
     suppliers = Supplier.objects.filter(is_active=True)
+    suppliers = request.filter_by_shop(suppliers)
     
     # Calculate statistics
     total_products = products.count()
@@ -186,6 +189,7 @@ def product_update(request, pk):
 def supplier_list(request):
     """Display all suppliers"""
     suppliers = Supplier.objects.filter(is_active=True)
+    suppliers = request.filter_by_shop(suppliers)
     
     # Search
     search_query = request.GET.get('search')
@@ -298,33 +302,37 @@ def dashboard(request):
         .prefetch_related('items__retail_item', 'items__wholesale_item')
         .annotate(item_count=Count('items'))
         .filter(is_paid=True, item_count__gt=0)
-        .order_by('-sale_date')[:10]
     )
+    recent_sales = request.filter_by_shop(recent_sales).order_by('-sale_date')[:10]
 
     # Get low stock items
     low_stock_items = StationeryItem.objects.filter(
         stock_quantity__lte=models.F('minimum_stock'),
         is_active=True
     )
+    low_stock_items = request.filter_by_shop(low_stock_items)
     
     # Get overdue debts
     overdue_debts = Debt.objects.filter(
         due_date__lt=timezone.now().date(),
         status__in=['pending', 'partial']
     ).select_related('customer')
+    overdue_debts = request.filter_by_shop(overdue_debts)
     
     # Calculate totals for today using timezone-aware range to avoid date-boundary issues
     now_local = timezone.localtime(timezone.now())
     today_start = now_local.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
     # Exclude unpaid sales from today's totals
-    today_sales = Sale.objects.filter(sale_date__gte=today_start, sale_date__lt=today_end, is_paid=True).aggregate(
+    today_sales = Sale.objects.filter(sale_date__gte=today_start, sale_date__lt=today_end, is_paid=True)
+    today_sales = request.filter_by_shop(today_sales).aggregate(
         total_sales=Sum('total_amount'),
         count_sales=Count('id')
     )
 
     # Today's expenditures (used to compute net sales)
-    exp_today = Expenditure.objects.filter(expense_date__gte=today_start, expense_date__lt=today_end).aggregate(
+    exp_today = Expenditure.objects.filter(expense_date__gte=today_start, expense_date__lt=today_end)
+    exp_today = request.filter_by_shop(exp_today).aggregate(
         total=Sum('amount'), count=Count('id')
     )
 
@@ -337,12 +345,14 @@ def dashboard(request):
     month_start = today_start.replace(day=1)
     # find start of next month
     next_month = (month_start + timedelta(days=32)).replace(day=1)
-    monthly_sales = Sale.objects.filter(sale_date__gte=month_start, sale_date__lt=next_month, is_paid=True).aggregate(
+    monthly_sales = Sale.objects.filter(sale_date__gte=month_start, sale_date__lt=next_month, is_paid=True)
+    monthly_sales = request.filter_by_shop(monthly_sales).aggregate(
         total_sales=Sum('total_amount'),
         count_sales=Count('id')
     )
 
-    exp_month = Expenditure.objects.filter(expense_date__gte=month_start, expense_date__lt=next_month).aggregate(
+    exp_month = Expenditure.objects.filter(expense_date__gte=month_start, expense_date__lt=next_month)
+    exp_month = request.filter_by_shop(exp_month).aggregate(
         total=Sum('amount'), count=Count('id')
     )
     month_total = monthly_sales.get('total_sales') or 0
@@ -350,7 +360,8 @@ def dashboard(request):
     net_monthly_sales = month_total - month_exp
     
     # Get total outstanding debt
-    total_debt = Debt.objects.filter(status__in=['pending', 'partial']).aggregate(
+    total_debt = Debt.objects.filter(status__in=['pending', 'partial'])
+    total_debt = request.filter_by_shop(total_debt).aggregate(
         total=Sum('amount') - Sum('paid_amount')
     )['total'] or 0
     
@@ -376,6 +387,7 @@ def stationery_list(request):
     # Include active items and any legacy items where is_active might be null
     # Start from all items; we'll restrict to active-only unless 'inactive' toggle is set
     items = StationeryItem.objects.select_related('category').all()
+    items = request.filter_by_shop(items)
 
     # Filter by category if specified
     category_id = request.GET.get('category')
@@ -420,6 +432,7 @@ def stationery_list(request):
         items = items.filter(is_active=False)
     
     categories = Category.objects.all()
+    categories = request.filter_by_shop(categories)
     
     # Calculate statistics (similar to product_list)
     total_products = items.count()
@@ -459,6 +472,7 @@ def stationery_detail(request, pk):
     recent_sales = Sale.objects.filter(
         items__retail_item=item
     ).order_by('-sale_date')[:10]
+    recent_sales = request.filter_by_shop(recent_sales)  # Filter by current shop
     
     context = {
         'item': item,
@@ -478,6 +492,7 @@ def sales_list(request):
     ).filter(
         Q(item_count__gt=0) | Q(notes__contains='Payment for Debt')
     ).order_by('-sale_date')
+    sales = request.filter_by_shop(sales)
     
     # Filter by date range
     start_date = request.GET.get('start_date')
@@ -830,6 +845,7 @@ def create_sale(request):
         if form.is_valid():
             sale = form.save(commit=False)
             sale.created_by = request.user
+            sale.shop = request.selected_shop  # Assign current shop
             sale.save()
             messages.success(request, 'Sale created successfully.')
             return redirect('sale_detail', pk=sale.pk)
@@ -846,6 +862,7 @@ def sales_chart(request):
     """Graphical representation of sales"""
     # Get sales data for chart
     sales = Sale.objects.filter(is_paid=True).order_by('sale_date')
+    sales = request.filter_by_shop(sales)  # Filter by current shop
     
     # Filter by date range if provided
     start_date = request.GET.get('start_date')
@@ -1329,6 +1346,7 @@ def create_sale(request):
                     # Create sale first
                     sale = sale_form.save(commit=False)
                     sale.created_by = request.user
+                    sale.shop = request.selected_shop  # Assign current shop
                     sale.total_amount = 0.00  # Will be calculated
                     sale.save()
                     
@@ -1373,6 +1391,22 @@ def create_sale(request):
     else:
         sale_form = SaleForm()
         item_form = SaleItemForm()
+        
+        # Filter form fields by current shop
+        if request.selected_shop:
+            # Filter retail items by shop
+            if 'retail_item' in item_form.fields:
+                item_form.fields['retail_item'].queryset = StationeryItem.objects.filter(
+                    shop=request.selected_shop, 
+                    is_active=True
+                )
+            
+            # Filter wholesale items by shop  
+            if 'wholesale_item' in item_form.fields:
+                item_form.fields['wholesale_item'].queryset = Product.objects.filter(
+                    shop=request.selected_shop,
+                    is_active=True
+                )
     
     context = {
         'sale_form': sale_form,
@@ -1482,6 +1516,22 @@ def add_sale_item(request, sale_id):
         # For GET, just fetch the sale for context
         sale = get_object_or_404(Sale, pk=sale_id)
         form = SaleItemForm()
+        
+        # Filter form fields by current shop
+        if request.selected_shop:
+            # Filter retail items by shop
+            if 'retail_item' in form.fields:
+                form.fields['retail_item'].queryset = StationeryItem.objects.filter(
+                    shop=request.selected_shop, 
+                    is_active=True
+                )
+            
+            # Filter wholesale items by shop  
+            if 'wholesale_item' in form.fields:
+                form.fields['wholesale_item'].queryset = Product.objects.filter(
+                    shop=request.selected_shop,
+                    is_active=True
+                )
 
     context = {
         'form': form,
@@ -1495,6 +1545,7 @@ def add_sale_item(request, sale_id):
 def debts_list(request):
     """List all debts"""
     debts = Debt.objects.select_related('customer').order_by('-created_at')
+    debts = request.filter_by_shop(debts)
     
     # Filter by status
     status = request.GET.get('status')
@@ -1567,6 +1618,7 @@ def debts_list(request):
 def expenditures_list(request):
     """List expenditures and totals"""
     expenditures = Expenditure.objects.all().order_by('-expense_date')
+    expenditures = request.filter_by_shop(expenditures)
 
     # Filter by date range
     start_date = request.GET.get('start_date')
@@ -1606,11 +1658,15 @@ def create_expenditure(request):
         if form.is_valid():
             exp = form.save(commit=False)
             exp.created_by = request.user
+            exp.shop = request.selected_shop
             exp.save()
             messages.success(request, 'Expenditure recorded successfully.')
             return redirect('expenditures_list')
     else:
         form = ExpenditureForm()
+        # Set default shop for form if shop field exists
+        if request.selected_shop and 'shop' in form.fields:
+            form.fields['shop'].initial = request.selected_shop.id
 
     return render(request, 'tracker/expenditure_form.html', {'form': form})
 
@@ -1799,6 +1855,14 @@ def create_debt(request):
             return redirect('debts_list')
     else:
         form = DebtForm()
+        # Filter form fields by current shop
+        if request.selected_shop:
+            # Filter items by shop
+            if 'item' in form.fields:
+                form.fields['item'].queryset = StationeryItem.objects.filter(
+                    shop=request.selected_shop,
+                    is_active=True
+                )
     
     context = {
         'form': form,
@@ -1876,6 +1940,7 @@ def add_payment(request, debt_id):
 def customers_list(request):
     """List all customers"""
     customers = Customer.objects.filter(is_active=True).order_by('name')
+    customers = request.filter_by_shop(customers)
     
     # Search functionality
     search_query = request.GET.get('search', '').strip()
@@ -1923,11 +1988,16 @@ def create_customer(request):
     if request.method == 'POST':
         form = CustomerForm(request.POST)
         if form.is_valid():
-            form.save()
+            customer = form.save(commit=False)
+            customer.shop = request.selected_shop
+            customer.save()
             messages.success(request, 'Customer created successfully!')
             return redirect('customers_list')
     else:
         form = CustomerForm()
+        # Set default shop for form if shop field exists
+        if request.selected_shop and 'shop' in form.fields:
+            form.fields['shop'].initial = request.selected_shop.id
     
     context = {
         'form': form,
@@ -1942,11 +2012,22 @@ def create_stationery_item(request):
     if request.method == 'POST':
         form = StationeryItemForm(request.POST)
         if form.is_valid():
-            form.save()
+            item = form.save(commit=False)
+            item.shop = request.selected_shop
+            item.save()
             messages.success(request, 'Stationery item created successfully!')
             return redirect('stationery_list')
     else:
         form = StationeryItemForm()
+        # Set default shop for form if shop field exists
+        if request.selected_shop and 'shop' in form.fields:
+            form.fields['shop'].initial = request.selected_shop.id
+        
+        # Filter categories by current shop
+        if request.selected_shop and 'category' in form.fields:
+            form.fields['category'].queryset = Category.objects.filter(
+                shop=request.selected_shop
+            )
     
     context = {
         'form': form,
@@ -2011,6 +2092,7 @@ def send_bulk_debt_sms(request):
                 id__in=debt_ids,
                 customer__phone__isnull=False
             ).exclude(customer__phone='')
+            debts = request.filter_by_shop(debts)  # Filter by current shop
 
             # Group debts by customer to send one SMS per customer
             customers_with_debts = {}
@@ -2069,6 +2151,7 @@ def send_bulk_debt_sms(request):
         status__in=['pending', 'partial', 'overdue'],
         customer__phone__isnull=False
     ).exclude(customer__phone='').order_by('due_date')
+    debts = request.filter_by_shop(debts)  # Filter by current shop
 
     context = {
         'debts': debts,
@@ -2114,6 +2197,7 @@ def send_bulk_debt_whatsapp(request):
             id__in=debt_ids,
             customer__phone__isnull=False
         ).exclude(customer__phone='')
+        debts = request.filter_by_shop(debts)  # Filter by current shop
 
         sent_count = 0
         failed_count = 0
@@ -2142,6 +2226,7 @@ def send_bulk_debt_whatsapp(request):
         status__in=['pending', 'partial', 'overdue'],
         customer__phone__isnull=False
     ).exclude(customer__phone='').order_by('due_date')
+    debts = request.filter_by_shop(debts)  # Filter by current shop
 
     context = {
         'debts': debts,
@@ -2221,3 +2306,75 @@ def check_session_status(request):
             'authenticated': False,
             'redirect_url': '/login/'
         })
+
+
+@login_required
+def switch_shop(request, shop_id):
+    """Switch the current shop context"""
+    from django.contrib import messages
+    from .models import Shop
+    
+    try:
+        shop = Shop.objects.get(id=shop_id, is_active=True)
+        
+        # Check if user has access to this shop
+        if hasattr(request.user, 'profile') and request.user.profile:
+            if not request.user.profile.can_access_shop(shop):
+                messages.error(request, f'You do not have access to {shop.display_name}')
+                return redirect('dashboard')
+        
+        # Set shop in session and ensure it's saved
+        request.session['selected_shop_id'] = shop.id
+        request.session.modified = True  # Ensure session is saved
+        messages.info(request, f'Switched to {shop.display_name}')
+        
+    except Shop.DoesNotExist:
+        messages.error(request, f'Shop with ID {shop_id} not found')
+    except Exception as e:
+        messages.error(request, f'Error switching shop: {str(e)}')
+    
+    # Redirect to referring page or dashboard
+    next_page = request.GET.get('next', 'dashboard')
+    return redirect(next_page)
+
+
+@admin_required
+def manage_user_shops(request):
+    """Manage shop assignments for users"""
+    from .models import UserProfile, Shop
+    
+    users = UserProfile.objects.select_related('user', 'default_shop').all()
+    shops = Shop.objects.filter(is_active=True)
+    
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        shop_ids = request.POST.getlist('shop_ids')
+        
+        if user_id:
+            user_profile = get_object_or_404(UserProfile, id=user_id)
+            user_profile.assigned_shops.set(shop_ids)
+            messages.success(request, f'Shop assignments updated for {user_profile.user.username}')
+            return redirect('manage_user_shops')
+    
+    context = {
+        'users': users,
+        'shops': shops,
+    }
+    
+    return render(request, 'tracker/manage_user_shops.html', context)
+
+
+@login_required
+def shop_list(request):
+    """List all shops the user can access"""
+    from .models import Shop
+    
+    if hasattr(request.user, 'profile') and request.user.profile:
+        accessible_shops = request.user.profile.get_accessible_shops()
+    else:
+        accessible_shops = Shop.objects.filter(is_active=True)
+    
+    return render(request, 'tracker/shop_list.html', {
+        'shops': accessible_shops,
+        'current_shop': request.selected_shop,
+    })

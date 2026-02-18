@@ -74,6 +74,11 @@ urlpatterns = [
     # Dashboard (moved to root URLconf)
     path('dashboard/', views.dashboard, name='dashboard'),
     
+    # Shop Management
+    path('shops/', views.shop_list, name='shop_list'),
+    path('shops/manage-users/', views.manage_user_shops, name='manage_user_shops'),
+    path('switch/<int:shop_id>/', views.switch_shop, name='switch_shop'),
+    
     # Session Management
     path('extend-session/', views.extend_session, name='extend_session'),
     path('logout-session/', views.logout_session, name='logout_session'),

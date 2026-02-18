@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}Manage User Shop Assignments{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-users-cog me-2"></i>
+                    Manage User Shop Assignments
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Role</th>
+                                <th>Current Default Shop</th>
+                                <th>Assigned Shops</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user_profile in users %}
+                            <tr>
+                                <td>{{ user_profile.user.username }}</td>
+                                <td>
+                                    <span class="badge bg-{{ user_profile.role|default:'secondary' }}">
+                                        {{ user_profile.get_role_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if user_profile.default_shop %}
+                                        <span class="badge bg-primary">
+                                            {{ user_profile.default_shop.display_name }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">No default</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% for shop in user_profile.assigned_shops.all %}
+                                        <span class="badge bg-info me-1">{{ shop.display_name }}</span>
+                                    {% empty %}
+                                        <span class="text-muted">No shops assigned</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editUserShops{{ user_profile.id }}">
+                                        <i class="fas fa-edit me-1"></i>
+                                        Edit Shops
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Shops Modal -->
+{% for user_profile in users %}
+<div class="modal fade" id="editUserShops{{ user_profile.id }}" tabindex="-1" aria-labelledby="editUserShopsLabel{{ user_profile.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUserShopsLabel{{ user_profile.id }}">
+                    <i class="fas fa-store me-2"></i>
+                    Edit Shop Assignments for {{ user_profile.user.username }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'manage_user_shops' %}">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" value="{{ user_profile.id }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Shops for {{ user_profile.user.username }}:</label>
+                        <div class="row">
+                            {% for shop in shops %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="shop_ids" 
+                                               value="{{ shop.id }}"
+                                               id="shop_{{ shop.id }}_{{ user_profile.id }}"
+                                               {% if shop in user_profile.assigned_shops.all %}checked{% endif %}>
+                                        <label class="form-check-label" for="shop_{{ shop.id }}_{{ user_profile.id }}">
+                                            {{ shop.display_name }}
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>
+                        Save Assignments
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+.badge {
+    font-size: 0.75rem;
+}
+.text-muted {
+    font-size: 0.875rem;
+}
+.form-check {
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    margin-bottom: 0.5rem;
+}
+.form-check-input:checked + .form-check-label {
+    font-weight: 600;
+    color: #0d6efd;
+}
+</style>
+{% endblock %}

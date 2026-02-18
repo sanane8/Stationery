@@ -68,6 +68,17 @@
 {% endblock %}
 
 {% block content %}
+{% if request.selected_shop %}
+<div class="alert alert-info d-flex align-items-center" role="alert">
+    <i class="fas fa-store me-2"></i>
+    <strong>{{ request.selected_shop.display_name }}</strong> - 
+    <span class="small">Viewing data for this shop only</span>
+    <button type="button" class="btn btn-sm btn-outline-primary ms-auto" data-bs-toggle="modal" data-bs-target="#shopSwitchModal">
+        <i class="fas fa-exchange-alt me-1"></i>Switch Shop
+    </button>
+</div>
+{% endif %}
+
 <div class="row">
     <!-- Statistics Cards -->
     <div class="col-xl-3 col-md-6 mb-4">
@@ -337,6 +348,72 @@
                 {% else %}
                     <p class="text-muted">No overdue debts!</p>
                 {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Shop Switch Modal -->
+<div class="modal fade" id="shopSwitchModal" tabindex="-1" aria-labelledby="shopSwitchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shopSwitchModalLabel">
+                    <i class="fas fa-store me-2"></i>Switch Shop
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Select a shop to switch to:</p>
+                <div class="list-group">
+                    {% if request.user.profile %}
+                        {% for shop in request.user.profile.get_accessible_shops %}
+                        <a href="{% url 'switch_shop' shop.id %}?next={{ request.path|urlencode }}" 
+                           class="list-group-item list-group-item-action {% if shop.id == request.selected_shop.id %}active{% endif %}">
+                            {% if shop.id == request.selected_shop.id %}
+                                <i class="fas fa-check text-success me-2"></i>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ shop.display_name }}</strong>
+                                    {% if shop.description %}
+                                        <br><small class="text-muted">{{ shop.description|truncatewords:10 }}</small>
+                                    {% endif %}
+                                </div>
+                                {% if shop.id == request.selected_shop.id %}
+                                    <span class="badge bg-success text-white">Current</span>
+                                {% endif %}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        {% for shop in shops %}
+                        <a href="{% url 'switch_shop' shop.id %}?next={{ request.path|urlencode }}" 
+                           class="list-group-item list-group-item-action {% if shop.id == request.selected_shop.id %}active{% endif %}">
+                            {% if shop.id == request.selected_shop.id %}
+                                <i class="fas fa-check text-success me-2"></i>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ shop.display_name }}</strong>
+                                    {% if shop.description %}
+                                        <br><small class="text-muted">{{ shop.description|truncatewords:10 }}</small>
+                                    {% endif %}
+                                </div>
+                                {% if shop.id == request.selected_shop.id %}
+                                    <span class="badge bg-success text-white">Current</span>
+                                {% endif %}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="{% url 'shop_list' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-list me-1"></i>Manage Shops
+                </a>
             </div>
         </div>
     </div>
