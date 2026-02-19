@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from django.contrib import messages
 from django.utils import timezone
 from .models import Category, StationeryItem, Customer, Sale, SaleItem, Debt, Payment
-from .models import Expenditure, UserProfile
+from .models import Expenditure, UserProfile, Shop
 
 
 class RestrictedModelAdmin(admin.ModelAdmin):
@@ -46,6 +46,13 @@ class RestrictedModelAdmin(admin.ModelAdmin):
 
 
 # Regular admin classes for registration
+class ShopAdmin(RestrictedModelAdmin):
+    list_display = ['name', 'display_name', 'description', 'is_active', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['name', 'display_name', 'description']
+    list_editable = ['is_active']
+    ordering = ['name']
+
 class CategoryAdmin(RestrictedModelAdmin):
     list_display = ['name', 'description', 'created_at']
     search_fields = ['name', 'description']
@@ -170,6 +177,7 @@ class UserProfileAdmin(RestrictedModelAdmin):
 # Function to register models with restricted admin site
 def register_with_restricted_admin(admin_site):
     """Register all models with the restricted admin site"""
+    admin_site.register(Shop, ShopAdmin)
     admin_site.register(Category, CategoryAdmin)
     admin_site.register(StationeryItem, StationeryItemAdmin)
     admin_site.register(Customer, CustomerAdmin)
