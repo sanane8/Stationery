@@ -1905,6 +1905,7 @@ def add_payment(request, debt_id):
                     total_amount=payment.amount,
                     payment_method=payment.payment_method,
                     is_paid=True,
+                    shop=debt.shop,  # Assign sale to the same shop as the debt
                     notes=f'Payment for {debt_items_info}',
                     created_by=request.user
                 )
@@ -1995,9 +1996,6 @@ def create_customer(request):
             return redirect('customers_list')
     else:
         form = CustomerForm()
-        # Set default shop for form if shop field exists
-        if request.selected_shop and 'shop' in form.fields:
-            form.fields['shop'].initial = request.selected_shop.id
     
     context = {
         'form': form,
