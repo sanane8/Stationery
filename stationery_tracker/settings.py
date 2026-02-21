@@ -29,8 +29,30 @@ if allowed_hosts == '*':
 else:
     ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(',') if host.strip()]
 
-# COMPLETELY remove all CSRF settings to disable origin checking
-# Remove all CSRF-related settings to prevent any origin checking
+# Re-enable CSRF middleware with proper configuration for Django 5.1
+# This is needed because templates use {% csrf_token %}
+
+# Add CSRF trusted origins for Railway and local development
+CSRF_TRUSTED_ORIGINS = [
+    'https://stationery-production.up.railway.app',
+    'https://*.up.railway.app',
+    'https://railway.app',
+    'http://stationery-production.up.railway.app',
+    'http://*.up.railway.app',
+    'http://railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://localhost:8000',
+    'https://127.0.0.1:8000',
+]
+
+# CSRF cookie settings for development
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False
+CSRF_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_DOMAIN = None
+CSRF_COOKIE_PATH = '/'
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Application definition
 INSTALLED_APPS = [
@@ -46,12 +68,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # 'tracker.middleware.ErrorHandlingMiddleware',
-    # 'tracker.middleware.SessionManagementMiddleware',
-    # 'tracker.middleware.SessionSecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',  # Keep CSRF disabled for now
+    'django.middleware.csrf.CsrfViewMiddleware',  # RE-ENABLED - needed for csrf_token
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tracker.middleware.ShopSelectionMiddleware',  # Re-enable this for shop filtering
     'tracker.middleware.UserProfileMiddleware',     # Re-enable this for user profiles

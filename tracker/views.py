@@ -13,7 +13,7 @@ from .models import StationeryItem, Sale, SaleItem, Debt, Customer, Category, Pr
 from .forms import SaleForm, SaleItemForm, DebtForm, PaymentForm, StationeryItemForm, CustomerForm, LoginForm, RegistrationForm, ProductForm, SupplierForm
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse, HttpResponseBadRequest
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.http import require_POST
 from django.contrib.auth import logout as auth_logout
 
@@ -253,6 +253,7 @@ def supplier_update(request, pk):
     })
 
 
+@csrf_protect
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -270,6 +271,7 @@ def login_view(request):
     return render(request, 'tracker/login.html', {'form': form})
 
 
+@csrf_protect
 def register_view(request):
     """User registration view"""
     if request.method == 'POST':
