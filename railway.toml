@@ -1,0 +1,10 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "gunicorn stationery_tracker.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 300 --access-logfile - --error-logfile - --log-level critical --capture-output"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[env]
+PYTHON_VERSION = "3.11"

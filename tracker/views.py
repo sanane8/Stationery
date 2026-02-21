@@ -1863,6 +1863,12 @@ def create_debt(request):
                     shop=request.selected_shop,
                     is_active=True
                 )
+            # Filter customers by shop
+            if 'customer' in form.fields:
+                form.fields['customer'].queryset = Customer.objects.filter(
+                    shop=request.selected_shop,
+                    is_active=True
+                )
     
     context = {
         'form': form,

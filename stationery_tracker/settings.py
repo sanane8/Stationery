@@ -12,12 +12,51 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here-change-in-production')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-stationery-tracker-default-key-for-development')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True  # Enable DEBUG to see full error
 
-ALLOWED_HOSTS = ['*']
+# Handle ALLOWED_HOSTS safely - add exact Railway domain
+allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*')
+if allowed_hosts == '*':
+    ALLOWED_HOSTS = [
+        'stationery-production.up.railway.app',
+        'localhost',
+        '127.0.0.1',
+        '*'
+    ]
+else:
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(',') if host.strip()]
+
+# TEMPORARY: Disable CSRF completely for testing - REMOVE IN PRODUCTION
+# This will confirm if CSRF is the issue
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False
+CSRF_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_DOMAIN = None
+CSRF_COOKIE_PATH = '/'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Comment out trusted origins temporarily
+# CSRF_TRUSTED_ORIGINS = [
+#     'https://stationery-production.up.railway.app',
+#     'https://*.up.railway.app',
+#     'https://railway.app',
+#     'http://stationery-production.up.railway.app',
+#     'http://*.up.railway.app',
+#     'http://railway.app',
+#     'http://localhost:8000',
+#     'http://127.0.0.1:8000',
+#     'https://localhost:8000',
+#     'https://127.0.0.1:8000',
+# ]
+
+# Also try environment variable approach
+# csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+# if csrf_origins:
+#     CSRF_TRUSTED_ORIGINS.extend([origin.strip() for origin in csrf_origins.split(',') if origin.strip()])
 
 # Application definition
 INSTALLED_APPS = [
@@ -27,21 +66,21 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.humanize',
     'tracker',  # Our main app
+    'django_humanize',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'tracker.middleware.ErrorHandlingMiddleware',
-    'tracker.middleware.SessionManagementMiddleware',
-    'tracker.middleware.SessionSecurityMiddleware',
+    # 'tracker.middleware.ErrorHandlingMiddleware',
+    # 'tracker.middleware.SessionManagementMiddleware',
+    # 'tracker.middleware.SessionSecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',  # Keep CSRF disabled for now
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'tracker.middleware.ShopSelectionMiddleware',
-    'tracker.middleware.UserProfileMiddleware',
+    'tracker.middleware.ShopSelectionMiddleware',  # Re-enable this for shop filtering
+    'tracker.middleware.UserProfileMiddleware',     # Re-enable this for user profiles
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -68,12 +107,39 @@ TEMPLATES = [
 WSGI_APPLICATION = 'stationery_tracker.wsgi.application'
 
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+import os
+import dj_database_url
+
+# Database configuration - Railway PostgreSQL or local SQLite fallback
+database_url = os.environ.get('DATABASE_URL', '').strip()
+if database_url and database_url.startswith(('postgresql://', 'postgres://', 'mysql://', 'sqlite://')):
+    # Railway PostgreSQL production database
+    try:
+        DATABASES = {
+            'default': dj_database_url.parse(database_url)
+        }
+        # Add connection pooling for Railway (only for PostgreSQL)
+        if database_url.startswith(('postgresql://', 'postgres://')):
+            DATABASES['default'].update({
+                'CONN_MAX_AGE': 60,
+            })
+    except Exception as e:
+        print(f"Database URL parsing error: {e}")
+        # Fallback to SQLite
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+else:
+    # Local development SQLite database
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 
 
@@ -101,6 +167,7 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Africa/Dar_es_Salaam'
 USE_I18N = True
 USE_TZ = True
+USE_L10N = True  # Add this for django_humanize compatibility
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
@@ -110,10 +177,12 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Session Configuration
-SESSION_COOKIE_AGE = 300  # 5 minutes in seconds
-SESSION_SAVE_EVERY_REQUEST = True
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# Disable logging completely to prevent Railway crashes
+LOGGING_CONFIG = None
+
+# Memory optimization for Railway
+CONN_MAX_AGE = 60
+DEFAULT_AUTO_FIELD = 'BigAutoField'  # Use BigAutoField for better performance
 
 # Ensure Django admin uses its own static files
 STATICFILES_FINDERS = [
