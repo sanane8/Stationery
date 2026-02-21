@@ -39,24 +39,19 @@ CSRF_COOKIE_DOMAIN = None
 CSRF_COOKIE_PATH = '/'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
-# Comment out trusted origins temporarily
-# CSRF_TRUSTED_ORIGINS = [
-#     'https://stationery-production.up.railway.app',
-#     'https://*.up.railway.app',
-#     'https://railway.app',
-#     'http://stationery-production.up.railway.app',
-#     'http://*.up.railway.app',
-#     'http://railway.app',
-#     'http://localhost:8000',
-#     'http://127.0.0.1:8000',
-#     'https://localhost:8000',
-#     'https://127.0.0.1:8000',
-# ]
-
-# Also try environment variable approach
-# csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
-# if csrf_origins:
-#     CSRF_TRUSTED_ORIGINS.extend([origin.strip() for origin in csrf_origins.split(',') if origin.strip()])
+# Add trusted origins even with CSRF disabled
+CSRF_TRUSTED_ORIGINS = [
+    'https://stationery-production.up.railway.app',
+    'https://*.up.railway.app',
+    'https://railway.app',
+    'http://stationery-production.up.railway.app',
+    'http://*.up.railway.app',
+    'http://railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://localhost:8000',
+    'https://127.0.0.1:8000',
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -84,6 +79,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Ensure shop middleware is always enabled for both local and Railway
+# This fixes the 'filter_by_shop' attribute error
+if 'tracker.middleware.ShopSelectionMiddleware' not in MIDDLEWARE:
+    MIDDLEWARE.insert(MIDDLEWARE.index('django.contrib.auth.middleware.AuthenticationMiddleware') + 1, 'tracker.middleware.ShopSelectionMiddleware')
 
 ROOT_URLCONF = 'stationery_tracker.urls'
 
