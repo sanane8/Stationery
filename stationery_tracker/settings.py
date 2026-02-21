@@ -29,29 +29,8 @@ if allowed_hosts == '*':
 else:
     ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(',') if host.strip()]
 
-# TEMPORARY: Disable CSRF completely for testing - REMOVE IN PRODUCTION
-# This will confirm if CSRF is the issue
-CSRF_USE_SESSIONS = False
-CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_HTTPONLY = False
-CSRF_ALLOW_CREDENTIALS = True
-CSRF_COOKIE_DOMAIN = None
-CSRF_COOKIE_PATH = '/'
-CSRF_COOKIE_SAMESITE = 'Lax'
-
-# Add trusted origins even with CSRF disabled
-CSRF_TRUSTED_ORIGINS = [
-    'https://stationery-production.up.railway.app',
-    'https://*.up.railway.app',
-    'https://railway.app',
-    'http://stationery-production.up.railway.app',
-    'http://*.up.railway.app',
-    'http://railway.app',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-    'https://localhost:8000',
-    'https://127.0.0.1:8000',
-]
+# COMPLETELY remove all CSRF settings to disable origin checking
+# Remove all CSRF-related settings to prevent any origin checking
 
 # Application definition
 INSTALLED_APPS = [
