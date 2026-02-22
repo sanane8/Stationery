@@ -11,15 +11,6 @@ python manage.py collectstatic --noinput
 echo "Running database migrations..."
 python manage.py migrate --run-syncdb || echo "Migrations may have already run"
 
-# Start Gunicorn server for production
-echo "Starting Gunicorn server..."
-exec gunicorn stationery_tracker.wsgi:application \
-  --bind 0.0.0.0:$PORT \
-  --workers 1 \
-  --timeout 300 \
-  --max-requests 1000 \
-  --keep-alive 2 \
-  --preload \
-  --access-logfile - \
-  --error-logfile - \
-  --log-level info
+# Start Django development server for now to avoid Gunicorn logging issues
+echo "Starting Django server..."
+exec python manage.py runserver 0.0.0.0:$PORT
