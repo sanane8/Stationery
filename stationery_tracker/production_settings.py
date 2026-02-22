@@ -154,8 +154,11 @@ SESSION_COOKIE_HTTPONLY = True
 # CSRF protection for Railway domain
 # The exact domain that Railway is serving on
 csrf_trusted = [
+    'https://stationery-production.up.railway.app',
+    'http://stationery-production.up.railway.app',  # For local testing
     'https://proud-adventure-production.up.railway.app',
-    'http://proud-adventure-production.up.railway.app',  # For non-HTTPS testing
+    'http://proud-adventure-production.up.railway.app',  # Old domain for migration
+    'https://*.up.railway.app',  # Wildcard for any Railway domain
 ]
 # Add custom domain if set
 if os.environ.get('RAILWAY_PUBLIC_DOMAIN'):
