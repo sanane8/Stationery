@@ -1,5 +1,5 @@
 [build]
-builder = "NIXPACKS"
+builder = "DOCKERFILE"
 
 [deploy]
 startCommand = "bash start_railway.sh"
