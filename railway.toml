@@ -2,7 +2,7 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "python manage.py migrate --noinput && gunicorn stationery_tracker.production_settings:application --bind 0.0.0.0:$PORT --workers 1 --timeout 300 --log-level critical --capture-output"
+startCommand = "bash start_railway.sh"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
