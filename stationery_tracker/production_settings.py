@@ -14,9 +14,19 @@ ALLOWED_HOSTS = [
     'localhost', '127.0.0.1', '0.0.0.0',
 ]
 # Railway: allow *.railway.app and custom domain
-if os.environ.get('RAILWAY_PUBLIC_DOMAIN'):
-    ALLOWED_HOSTS.append(os.environ.get('RAILWAY_PUBLIC_DOMAIN'))
+railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+if railway_domain:
+    ALLOWED_HOSTS.append(railway_domain)
 ALLOWED_HOSTS.extend(['.railway.app', '.up.railway.app'])
+
+# CSRF Trusted Origins - MUST include the actual Railway domain
+CSRF_TRUSTED_ORIGINS = []
+if railway_domain:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{railway_domain}')
+CSRF_TRUSTED_ORIGINS.extend([
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+])
 
 # Application definition
 INSTALLED_APPS = [
@@ -26,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.humanize',
+    'django_humanize',
     'tracker',
 ]
 
@@ -37,6 +47,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'tracker.middleware.ShopSelectionMiddleware',
+    'tracker.middleware.UserProfileMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -54,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'tracker.context_processors.user_role',
             ],
         },
     },
@@ -62,7 +75,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'stationery_tracker.wsgi.application'
 
 # Database - use DATABASE_URL on Railway (PostgreSQL), else SQLite
-if os.environ.get('postgresql://postgres:MjyRknURlguOJGMzEQHcatyFNSBZEKoz@postgres.railway.internal:5432/railway'):
+database_url = os.environ.get('DATABASE_URL', '')
+if database_url and database_url.startswith(('postgresql://', 'postgres://')):
     import dj_database_url
     DATABASES = {
         'default': dj_database_url.config(
@@ -129,11 +143,12 @@ SECURE_HSTS_SECONDS = 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
 
-# Session security
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+# Session security - secure for production
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Email settings (for notifications)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

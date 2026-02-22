@@ -15,40 +15,48 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-stationery-tracker-default-key-for-development')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Enable DEBUG to see full error
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 # Handle ALLOWED_HOSTS safely - add exact Railway domain
-allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*')
-if allowed_hosts == '*':
+allowed_hosts = os.environ.get('ALLOWED_HOSTS', '')
+if allowed_hosts:
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(',') if host.strip()]
+else:
+    # Default to Railway domain and localhost
+    railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', 'stationery-production.up.railway.app')
     ALLOWED_HOSTS = [
-        'stationery-production.up.railway.app',
+        railway_domain,
+        '*.up.railway.app',
         'localhost',
         '127.0.0.1',
-        '*'
     ]
-else:
-    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(',') if host.strip()]
 
 # Re-enable CSRF middleware with proper configuration for Django 5.1
 # This is needed because templates use {% csrf_token %}
 
 # Add CSRF trusted origins for Railway and local development
+railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', 'stationery-production.up.railway.app')
 CSRF_TRUSTED_ORIGINS = [
-    'https://stationery-production.up.railway.app',
-    'https://*.up.railway.app',
+    f'https://{railway_domain}',
+    f'https://*.up.railway.app',
     'https://railway.app',
-    'http://stationery-production.up.railway.app',
-    'http://*.up.railway.app',
-    'http://railway.app',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-    'https://localhost:8000',
-    'https://127.0.0.1:8000',
 ]
 
-# CSRF cookie settings for development
-CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_HTTPONLY = False
+# Add HTTP origins for local development only
+if os.environ.get('DEBUG', 'False').lower() == 'true':
+    CSRF_TRUSTED_ORIGINS.extend([
+        f'http://{railway_domain}',
+        f'http://*.up.railway.app',
+        f'http://railway.app',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+        'https://localhost:8000',
+        'https://127.0.0.1:8000',
+    ])
+
+# CSRF cookie settings - secure for production, relaxed for development
+CSRF_COOKIE_SECURE = os.environ.get('DEBUG', 'False').lower() != 'true'
+CSRF_COOKIE_HTTPONLY = True
 CSRF_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_DOMAIN = None
 CSRF_COOKIE_PATH = '/'
