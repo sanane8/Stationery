@@ -40,6 +40,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'stationery_tracker.middleware.DatabaseErrorMiddleware',  # Catch DB errors gracefully
 ]
 
 ROOT_URLCONF = 'stationery_tracker.urls'

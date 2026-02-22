@@ -48,4 +48,4 @@ Thumbs.db
 # Heroku
 heroku-cli-local
 
-gunicorn.log
+
