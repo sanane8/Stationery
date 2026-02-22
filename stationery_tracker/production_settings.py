@@ -76,6 +76,7 @@ WSGI_APPLICATION = 'stationery_tracker.wsgi.application'
 
 # Database - use DATABASE_URL on Railway (PostgreSQL), else SQLite
 database_url = os.environ.get('DATABASE_URL', '')
+print(f"Database URL found: {bool(database_url)}")  # Debug logging
 if database_url and database_url.startswith(('postgresql://', 'postgres://')):
     import dj_database_url
     DATABASES = {
@@ -85,6 +86,7 @@ if database_url and database_url.startswith(('postgresql://', 'postgres://')):
             ssl_require=not os.environ.get('DISABLE_DATABASE_SSL'),
         )
     }
+    print("Using PostgreSQL database")
 else:
     DATABASES = {
         'default': {
@@ -92,6 +94,7 @@ else:
             'NAME': str(BASE_DIR / 'db.sqlite3'),
         }
     }
+    print("Using SQLite database (fallback)")
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
