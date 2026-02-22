@@ -147,22 +147,27 @@ SECURE_HSTS_PRELOAD = False
 
 # Session security
 SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True
 
 # CSRF protection for Railway domain
+# The exact domain that Railway is serving on
 csrf_trusted = [
     'https://proud-adventure-production.up.railway.app',
+    'http://proud-adventure-production.up.railway.app',  # For non-HTTPS testing
 ]
 # Add custom domain if set
 if os.environ.get('RAILWAY_PUBLIC_DOMAIN'):
     csrf_trusted.append(f'https://{os.environ.get("RAILWAY_PUBLIC_DOMAIN")}')
+    csrf_trusted.append(f'http://{os.environ.get("RAILWAY_PUBLIC_DOMAIN")}')
 
 CSRF_TRUSTED_ORIGINS = csrf_trusted
 
-# CSRF settings
-CSRF_COOKIE_AGE = 31449600  # One year
+# CSRF cookie settings - match development configuration
+CSRF_COOKIE_SECURE = False  # Railway handles HTTPS at the proxy level
+CSRF_COOKIE_HTTPONLY = True
+CSRF_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_DOMAIN = None
+CSRF_COOKIE_PATH = '/'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Email settings (for notifications)
