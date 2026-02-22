@@ -117,6 +117,7 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Africa/Dar_es_Salaam'
 USE_I18N = True
 USE_TZ = True
+USE_L10N = True  # Add this for django_humanize compatibility
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
