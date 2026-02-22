@@ -62,8 +62,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'stationery_tracker.wsgi.application'
 
 # Database - use DATABASE_URL on Railway (PostgreSQL), else SQLite
-if os.environ.get('postgresql://postgres:MjyRknURlguOJGMzEQHcatyFNSBZEKoz@postgres.railway.internal:5432/railway'):
-    import dj_database_url
+import dj_database_url
+if os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(
             conn_max_age=600,
