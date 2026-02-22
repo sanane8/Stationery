@@ -91,10 +91,10 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': str(BASE_DIR / 'db.sqlite3'),
+            'NAME': str(BASE_DIR / 'fresh_production.sqlite3'),  # Use fresh database name
         }
     }
-    print("Using SQLite database (fallback)")
+    print("Using fresh SQLite database (fallback)")
 
 # Disable migrations to avoid integrity errors
 class DisableMigrations:
