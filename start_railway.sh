@@ -8,5 +8,12 @@ python manage.py migrate --noinput
 # Collect static files
 python manage.py collectstatic --noinput
 
-# Start Django development server for now (to bypass gunicorn logging issues)
-exec python manage.py runserver 0.0.0.0:$PORT
+# Start gunicorn with stdout/stderr logging (avoids permission issues)
+exec gunicorn stationery_tracker.production_settings:application \
+  --bind 0.0.0.0:$PORT \
+  --workers 1 \
+  --timeout 300 \
+  --access-logfile - \
+  --error-logfile - \
+  --log-level critical \
+  --capture-output
