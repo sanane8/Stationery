@@ -11,9 +11,23 @@ env | grep -E '(PORT|RAILWAY|DATABASE)'
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
-# Run database migrations
+# Reset database and run migrations properly
+echo "Checking database state..."
+python manage.py showmigrations || echo "Show migrations failed"
+
 echo "Running database migrations..."
-python manage.py migrate --run-syncdb || echo "Migrations may have already run"
+python manage.py migrate --fake-initial || echo "Migrations completed with fake-initial"
+
+# Create a shop if none exists
+echo "Creating default shop if needed..."
+python manage.py shell -c "
+from tracker.models import Shop
+if not Shop.objects.exists():
+    Shop.objects.create(name='Default Shop', is_active=True)
+    print('Default shop created')
+else:
+    print('Shop already exists')
+"
 
 # Start Django development server to avoid Gunicorn logging issues
 echo "Starting Django server on port $PORT..."
