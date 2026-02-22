@@ -151,6 +151,17 @@ CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 
+# CSRF protection for Railway domain
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+    'https://proud-adventure-production.up.railway.app',
+]
+
+# CSRF settings
+CSRF_COOKIE_AGE = 31449600  # One year
+CSRF_COOKIE_SAMESITE = 'Lax'
+
 # Email settings (for notifications)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
