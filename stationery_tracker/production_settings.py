@@ -67,12 +67,16 @@ try:
     
     database_url = os.environ.get('DATABASE_URL')
     if database_url and database_url.startswith('postgresql://'):
+        config = dj_database_url.config(
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+        # Add SSL settings for PostgreSQL
+        config['OPTIONS'] = {
+            'sslmode': 'require',
+        }
         DATABASES = {
-            'default': dj_database_url.config(
-                conn_max_age=600,
-                conn_health_checks=True,
-                ssl_require=not os.environ.get('DISABLE_DATABASE_SSL'),
-            )
+            'default': config
         }
     else:
         # Fallback to SQLite if DATABASE_URL not set or invalid
