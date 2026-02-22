@@ -8,3 +8,4 @@ restartPolicyMaxRetries = 10
 
 [env]
 PYTHON_VERSION = "3.11"
+DATABASE_URL = "postgresql://postgres:railway@localhost:5432/railway"
