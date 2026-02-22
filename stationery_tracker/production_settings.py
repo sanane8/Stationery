@@ -185,3 +185,25 @@ LOGGING_CONFIG = None
 # Backup settings
 BACKUP_DIR = BASE_DIR / 'backups'
 BACKUP_SCHEDULE = '0 2 * * *'  # Daily at 2 AM
+
+# Minimal console logging so unhandled exceptions appear in Railway logs
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'ERROR',
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
