@@ -62,16 +62,28 @@ TEMPLATES = [
 WSGI_APPLICATION = 'stationery_tracker.wsgi.application'
 
 # Database - use DATABASE_URL on Railway (PostgreSQL), else SQLite
-import dj_database_url
-if os.environ.get('DATABASE_URL'):
-    DATABASES = {
-        'default': dj_database_url.config(
-            conn_max_age=600,
-            conn_health_checks=True,
-            ssl_require=not os.environ.get('DISABLE_DATABASE_SSL'),
-        )
-    }
-else:
+try:
+    import dj_database_url
+    
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url and database_url.startswith('postgresql://'):
+        DATABASES = {
+            'default': dj_database_url.config(
+                conn_max_age=600,
+                conn_health_checks=True,
+                ssl_require=not os.environ.get('DISABLE_DATABASE_SSL'),
+            )
+        }
+    else:
+        # Fallback to SQLite if DATABASE_URL not set or invalid
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': str(BASE_DIR / 'db.sqlite3'),
+            }
+        }
+except Exception as e:
+    # If dj_database_url fails, use SQLite
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
