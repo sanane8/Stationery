@@ -152,11 +152,14 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 
 # CSRF protection for Railway domain
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.railway.app',
-    'https://*.up.railway.app',
+csrf_trusted = [
     'https://proud-adventure-production.up.railway.app',
 ]
+# Add custom domain if set
+if os.environ.get('RAILWAY_PUBLIC_DOMAIN'):
+    csrf_trusted.append(f'https://{os.environ.get("RAILWAY_PUBLIC_DOMAIN")}')
+
+CSRF_TRUSTED_ORIGINS = csrf_trusted
 
 # CSRF settings
 CSRF_COOKIE_AGE = 31449600  # One year
