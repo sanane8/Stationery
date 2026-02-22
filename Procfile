@@ -1,2 +1,2 @@
-release: python manage.py migrate --settings=stationery_tracker.production_settings
-web: gunicorn stationery_tracker.wsgi --bind 0.0.0.0:$PORT --access-logfile - --error-logfile -
+release: DJANGO_SETTINGS_MODULE=stationery_tracker.production_settings python manage.py migrate
+web: DJANGO_SETTINGS_MODULE=stationery_tracker.production_settings gunicorn stationery_tracker.wsgi --bind 0.0.0.0:$PORT --access-logfile - --error-logfile -

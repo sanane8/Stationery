@@ -6,7 +6,15 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'stationery_tracker.settings')
+    # Use production settings if DJANGO_SETTINGS_MODULE not set and running on Railway
+    if not os.environ.get('DJANGO_SETTINGS_MODULE'):
+        if os.environ.get('RAILWAY_ENVIRONMENT'):
+            # Running on Railway - use production settings
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'stationery_tracker.production_settings')
+        else:
+            # Local development - use default settings
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'stationery_tracker.settings')
+    
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
