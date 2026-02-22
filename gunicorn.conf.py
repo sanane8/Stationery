@@ -16,15 +16,15 @@ max_requests = 1000
 max_requests_jitter = 100
 preload_app = True
 
-# Logging
-accesslog = "-"
-errorlog = "-"
-loglevel = "info"
+# Logging - disable to prevent permission errors
+accesslog = None
+errorlog = None
+loglevel = "critical"
 daemon = False
 
 # Security
 tmp_upload_dir = None
-capture_output = False
+capture_output = True
 
 # Disable syslog
 syslog = False

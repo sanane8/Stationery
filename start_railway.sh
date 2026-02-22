@@ -8,5 +8,5 @@ python manage.py migrate --noinput
 # Collect static files
 python manage.py collectstatic --noinput
 
-# Start gunicorn with minimal logging
-exec gunicorn stationery_tracker.production_settings:application --bind 0.0.0.0:$PORT --workers 1 --timeout 300
+# Start gunicorn with configuration file
+exec gunicorn stationery_tracker.production_settings:application --config gunicorn.conf.py
