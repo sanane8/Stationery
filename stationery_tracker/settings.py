@@ -21,6 +21,7 @@ DEBUG = True  # Enable DEBUG to see full error
 allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*')
 if allowed_hosts == '*':
     ALLOWED_HOSTS = [
+        'confident-truth-production.up.railway.app',
         'stationery-production.up.railway.app',
         'localhost',
         '127.0.0.1',
@@ -34,9 +35,11 @@ else:
 
 # Add CSRF trusted origins for Railway and local development
 CSRF_TRUSTED_ORIGINS = [
+    'https://confident-truth-production.up.railway.app',
     'https://stationery-production.up.railway.app',
     'https://*.up.railway.app',
     'https://railway.app',
+    'http://confident-truth-production.up.railway.app',
     'http://stationery-production.up.railway.app',
     'http://*.up.railway.app',
     'http://railway.app',
