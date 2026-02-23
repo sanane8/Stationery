@@ -1,0 +1,13 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "bash deploy.sh"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[env]
+PYTHON_VERSION = "3.11"
+DATABASE_URL = "sqlite:///db.sqlite3"
+CSRF_TRUSTED_ORIGINS = "https://confident-truth-production.up.railway.app,http://confident-truth-production.up.railway.app"
+ALLOWED_HOSTS = "confident-truth-production.up.railway.app,localhost,127.0.0.1"
