@@ -57,6 +57,18 @@ CSRF_COOKIE_DOMAIN = None
 CSRF_COOKIE_PATH = '/'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
+# Add CSRF debugging for development
+CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_AGE = 3600  # 1 hour
+
+# Session configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 3600  # 1 hour
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
