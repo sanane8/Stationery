@@ -4,6 +4,14 @@ echo "=== DJANGO DEPLOYMENT STARTUP ==="
 cd /app
 
 echo "DATABASE_URL: $DATABASE_URL"
+echo "ALLOWED_HOSTS: $ALLOWED_HOSTS"
+echo "DEBUG: $DEBUG"
+
+# Check if DATABASE_URL is set
+if [ -z "$DATABASE_URL" ]; then
+    echo "⚠️  DATABASE_URL not set, using SQLite fallback"
+    export DATABASE_URL="sqlite:///db.sqlite3"
+fi
 
 echo "Step 1: Collecting static files..."
 python manage.py collectstatic --noinput --clear

@@ -8,6 +8,8 @@ restartPolicyMaxRetries = 10
 
 [env]
 PYTHON_VERSION = "3.11"
-DATABASE_URL = "sqlite:///db.sqlite3"
-CSRF_TRUSTED_ORIGINS = "https://confident-truth-production.up.railway.app,http://confident-truth-production.up.railway.app"
+SECRET_KEY = "django-insecure-stationery-tracker-production-key-change-me"
+DEBUG = "False"
 ALLOWED_HOSTS = "confident-truth-production.up.railway.app,localhost,127.0.0.1"
+CSRF_TRUSTED_ORIGINS = "https://confident-truth-production.up.railway.app,http://confident-truth-production.up.railway.app"
+PORT = "8000"
