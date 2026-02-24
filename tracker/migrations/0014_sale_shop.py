@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tracker', '0013_5_create_shop_model'),
+        ('tracker', '0013_4_create_shop_model'),
     ]
 
     operations = [
