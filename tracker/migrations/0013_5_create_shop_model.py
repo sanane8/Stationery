@@ -1,4 +1,4 @@
-# Generated migration to ensure shop table exists
+# Generated migration to create Shop model before other migrations reference it
 
 from django.db import migrations, models
 
