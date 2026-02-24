@@ -7,6 +7,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
+from django.views.generic import RedirectView
 from tracker.admin_site import restricted_admin_site
 
 # Redirect root URL to login page
@@ -17,6 +18,7 @@ def root_redirect(request):
         return redirect('login')
 
 urlpatterns = [
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=True)),
     path('', root_redirect, name='root'),
     path('admin/', restricted_admin_site.urls),  # Use restricted admin site
     path('', include('tracker.urls')),
