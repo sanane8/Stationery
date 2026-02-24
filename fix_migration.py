@@ -28,7 +28,12 @@ def fix_foreign_key_constraints():
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS tracker_shop (
                     id SERIAL PRIMARY KEY,
-                    name VARCHAR(100) NOT NULL,
+                    name VARCHAR(50) NOT NULL UNIQUE,
+                    display_name VARCHAR(100),
+                    description TEXT,
+                    address TEXT,
+                    phone VARCHAR(20),
+                    email VARCHAR(254),
                     is_active BOOLEAN DEFAULT TRUE,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -38,7 +43,12 @@ def fix_foreign_key_constraints():
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS tracker_shop (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name VARCHAR(100) NOT NULL,
+                    name VARCHAR(50) NOT NULL UNIQUE,
+                    display_name VARCHAR(100),
+                    description TEXT,
+                    address TEXT,
+                    phone VARCHAR(20),
+                    email VARCHAR(254),
                     is_active BOOLEAN DEFAULT 1,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -48,12 +58,12 @@ def fix_foreign_key_constraints():
         # Insert default shop
         if connection.vendor == 'postgresql':
             cursor.execute("""
-                INSERT INTO tracker_shop (id, name, is_active) 
-                VALUES (1, 'Default Shop', TRUE) 
+                INSERT INTO tracker_shop (id, name, display_name, is_active) 
+                VALUES (1, 'stationery', 'Default Shop', TRUE) 
                 ON CONFLICT (id) DO NOTHING
             """)
         else:
-            cursor.execute("INSERT OR IGNORE INTO tracker_shop (id, name, is_active) VALUES (1, 'Default Shop', 1)")
+            cursor.execute("INSERT OR IGNORE INTO tracker_shop (id, name, display_name, is_active) VALUES (1, 'stationery', 'Default Shop', 1)")
         
         print(" Shop table created and populated")
         
