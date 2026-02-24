@@ -38,9 +38,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'tracker.middleware.ShopSelectionMiddleware',  # Add shop middleware
+    'tracker.middleware.UserProfileMiddleware',     # Add user profile middleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'stationery_tracker.middleware.DatabaseErrorMiddleware',  # Catch DB errors gracefully
 ]
 
 ROOT_URLCONF = 'stationery_tracker.urls'
@@ -56,6 +57,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'tracker.context_processors.user_role',
             ],
         },
     },

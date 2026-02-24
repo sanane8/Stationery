@@ -16,7 +16,10 @@ fi
 echo "Step 1: Collecting static files..."
 python manage.py collectstatic --noinput --clear
 
-echo "Step 2: Creating shop table first to fix foreign key constraints..."
+echo "Step 2: Fixing foreign key constraints..."
+python fix_migration.py
+
+echo "Step 3: Creating shop table first to fix foreign key constraints..."
 python manage.py shell -c "
 from django.db import connection
 with connection.cursor() as cursor:
@@ -34,10 +37,10 @@ with connection.cursor() as cursor:
     print('✅ Shop table created and populated')
 "
 
-echo "Step 3: Running database migrations..."
+echo "Step 4: Running database migrations..."
 python manage.py migrate --noinput --fake-initial
 
-echo "Step 4: Creating superuser if needed..."
+echo "Step 5: Creating superuser if needed..."
 python manage.py shell -c "
 from django.contrib.auth.models import User
 from tracker.models import Shop
@@ -59,7 +62,7 @@ else:
 print(f'✅ Total shops: {Shop.objects.count()}')
 "
 
-echo "Step 5: Verifying database integrity..."
+echo "Step 6: Verifying database integrity..."
 python manage.py shell -c "
 from tracker.models import Shop
 try:
@@ -69,9 +72,9 @@ except Shop.DoesNotExist:
     print('❌ Shop ID 1 missing')
 "
 
-echo "Step 6: Creating log directory..."
+echo "Step 7: Creating log directory..."
 mkdir -p /var/log/gunicorn 2>/dev/null || echo "Log directory creation skipped"
 
-echo "Step 7: Starting Django application with Gunicorn..."
+echo "Step 8: Starting Django application with Gunicorn..."
 echo "✅ All setup complete, starting server..."
 exec gunicorn stationery_tracker.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --log-level info --access-logfile - --error-logfile -
