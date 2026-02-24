@@ -16,8 +16,8 @@ fi
 echo "Step 1: Collecting static files..."
 python manage.py collectstatic --noinput --clear
 
-echo "Step 2: Fixing foreign key constraints..."
-python fix_migration.py
+echo "Step 2: Running database migrations directly..."
+python manage.py migrate --noinput --fake-initial
 
 echo "Step 3: Creating shop table first to fix foreign key constraints..."
 python manage.py shell -c "
