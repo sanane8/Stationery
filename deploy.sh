@@ -75,6 +75,9 @@ except Shop.DoesNotExist:
 echo "Step 7: Creating log directory..."
 mkdir -p /var/log/gunicorn 2>/dev/null || echo "Log directory creation skipped"
 
-echo "Step 8: Starting Django application with Gunicorn..."
+echo "Step 8: Running debug tests..."
+python debug_view.py
+
+echo "Step 9: Starting Django application with Gunicorn..."
 echo "✅ All setup complete, starting server..."
 exec gunicorn stationery_tracker.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --log-level info --access-logfile - --error-logfile -

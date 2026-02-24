@@ -6,18 +6,21 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key-here-change-in-production')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-stationery-tracker-production-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = [
     'localhost', '127.0.0.1', '0.0.0.0',
 ]
-# Railway: allow *.railway.app and custom domain
-if os.environ.get('RAILWAY_PUBLIC_DOMAIN'):
-    ALLOWED_HOSTS.append(os.environ.get('RAILWAY_PUBLIC_DOMAIN'))
+# Railway: allow specific domains
+railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+if railway_domain:
+    ALLOWED_HOSTS.append(railway_domain)
+    ALLOWED_HOSTS.append(f'.{railway_domain}')
 ALLOWED_HOSTS.extend(['.railway.app', '.up.railway.app'])
+ALLOWED_HOSTS.extend(['confident-truth-production.up.railway.app'])
 
 # Application definition
 INSTALLED_APPS = [
@@ -186,31 +189,45 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@stationery.co.tz')
 
-# Logging: disabled in production so WSGI does not crash
-LOGGING_CONFIG = None
-
 # Backup settings
 BACKUP_DIR = BASE_DIR / 'backups'
 BACKUP_SCHEDULE = '0 2 * * *'  # Daily at 2 AM
 
-# Minimal console logging so unhandled exceptions appear in Railway logs
+# Detailed logging for debugging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'root': {
         'handlers': ['console'],
-        'level': 'ERROR',
+        'level': 'INFO',
     },
     'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
         'django.request': {
             'handlers': ['console'],
             'level': 'ERROR',
-            'propagate': True,
+            'propagate': False,
+        },
+        'tracker': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
     },
 }
