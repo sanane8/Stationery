@@ -69,6 +69,9 @@ except Shop.DoesNotExist:
     print('❌ Shop ID 1 missing')
 "
 
-echo "Step 6: Starting Django application..."
+echo "Step 6: Creating log directory..."
+mkdir -p /var/log/gunicorn 2>/dev/null || echo "Log directory creation skipped"
+
+echo "Step 7: Starting Django application with Gunicorn..."
 echo "✅ All setup complete, starting server..."
-exec python manage.py runserver 0.0.0.0:$PORT
+exec gunicorn stationery_tracker.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --log-level info --access-logfile - --error-logfile -
