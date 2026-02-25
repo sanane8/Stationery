@@ -224,6 +224,32 @@ def quick_fix():
                     print("✅ product_type column already exists in tracker_saleitem")
                 else:
                     print(f"⚠️  Error adding product_type to tracker_saleitem: {e}")
+            
+            # Add missing retail_item_id column to tracker_saleitem table
+            try:
+                cursor.execute("""
+                    ALTER TABLE tracker_saleitem 
+                    ADD COLUMN retail_item_id INTEGER REFERENCES tracker_stationeryitem(id) ON DELETE CASCADE
+                """)
+                print("✅ Added retail_item_id column to tracker_saleitem")
+            except Exception as e:
+                if "already exists" in str(e).lower() or "duplicate column" in str(e).lower():
+                    print("✅ retail_item_id column already exists in tracker_saleitem")
+                else:
+                    print(f"⚠️  Error adding retail_item_id to tracker_saleitem: {e}")
+            
+            # Add missing wholesale_item_id column to tracker_saleitem table
+            try:
+                cursor.execute("""
+                    ALTER TABLE tracker_saleitem 
+                    ADD COLUMN wholesale_item_id INTEGER REFERENCES tracker_product(id) ON DELETE CASCADE
+                """)
+                print("✅ Added wholesale_item_id column to tracker_saleitem")
+            except Exception as e:
+                if "already exists" in str(e).lower() or "duplicate column" in str(e).lower():
+                    print("✅ wholesale_item_id column already exists in tracker_saleitem")
+                else:
+                    print(f"⚠️  Error adding wholesale_item_id to tracker_saleitem: {e}")
     
     print("✅ Quick database fix completed")
 
