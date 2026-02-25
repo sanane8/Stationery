@@ -60,6 +60,16 @@ def quick_fix():
             except Exception as e:
                 print(f"⚠️  Error adding display_name: {e}")
             
+            # Add created_by_id to tracker_debt table
+            try:
+                cursor.execute("""
+                    ALTER TABLE tracker_debt 
+                    ADD COLUMN IF NOT EXISTS created_by_id INTEGER
+                """)
+                print("✅ Added created_by_id to tracker_debt")
+            except Exception as e:
+                print(f"⚠️  Error adding created_by_id to tracker_debt: {e}")
+            
             # Ensure shop table has a record
             try:
                 cursor.execute("""
