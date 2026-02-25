@@ -2415,3 +2415,24 @@ def shop_list(request):
         'shops': accessible_shops,
         'current_shop': request.selected_shop,
     })
+
+
+@login_required
+def create_shop(request):
+    """Create a new shop"""
+    from .models import Shop
+    from .forms import ShopForm
+    
+    if request.method == 'POST':
+        form = ShopForm(request.POST)
+        if form.is_valid():
+            shop = form.save()
+            messages.success(request, f'Shop "{shop.display_name}" created successfully!')
+            return redirect('shop_list')
+    else:
+        form = ShopForm()
+    
+    return render(request, 'tracker/create_shop.html', {
+        'form': form,
+        'title': 'Create New Shop'
+    })

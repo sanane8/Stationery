@@ -12,7 +12,7 @@
                     <i class="fas fa-store me-2"></i>Shop Management
                 </h5>
                 {% if is_admin %}
-                <a href="/admin/tracker/shop/" class="btn btn-primary btn-sm">
+                <a href="{% url 'create_shop' %}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus me-1"></i>Add Shop
                 </a>
                 {% endif %}
@@ -83,7 +83,7 @@
                     <h5 class="text-muted">No Shops Available</h5>
                     <p class="text-muted">You don't have access to any shops yet.</p>
                     {% if is_admin %}
-                    <a href="/admin/tracker/shop/" class="btn btn-primary">
+                    <a href="{% url 'create_shop' %}" class="btn btn-primary">
                         <i class="fas fa-plus me-1"></i>Create First Shop
                     </a>
                     {% endif %}

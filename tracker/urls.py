@@ -76,6 +76,7 @@ urlpatterns = [
     
     # Shop Management
     path('shops/', views.shop_list, name='shop_list'),
+    path('shops/create/', views.create_shop, name='create_shop'),
     path('shops/manage-users/', views.manage_user_shops, name='manage_user_shops'),
     path('switch/<int:shop_id>/', views.switch_shop, name='switch_shop'),
     

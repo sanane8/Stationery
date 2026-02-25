@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import StationeryItem, Sale, SaleItem, Debt, Payment, Customer, Category, Product, Supplier, ProductCategory
+from .models import StationeryItem, Sale, SaleItem, Debt, Payment, Customer, Category, Product, Supplier, ProductCategory, Shop
 from .models import Expenditure
 
 
@@ -290,3 +290,18 @@ class RegistrationForm(UserCreationForm):
         self.fields['password1'].help_text = 'Your password must contain at least 8 characters.'
         self.fields['password2'].help_text = 'Enter the same password as before, for verification.'
         self.fields['role'].help_text = 'Select your role in the system.'
+
+
+class ShopForm(forms.ModelForm):
+    class Meta:
+        model = Shop
+        fields = ['name', 'display_name', 'description', 'address', 'phone', 'email', 'is_active']
+        widgets = {
+            'name': forms.Select(attrs={'class': 'form-control'}),
+            'display_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
