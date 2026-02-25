@@ -40,8 +40,8 @@ with connection.cursor() as cursor:
 echo "Step 4: Running database migrations..."
 python manage.py migrate --noinput --fake-initial
 
-echo "Step 5: Fixing Railway database schema..."
-python fix_railway_database.py
+echo "Step 5: Quick database schema fix..."
+python quick_database_fix.py
 
 echo "Step 6: Creating superuser if needed..."
 python create_superuser.py
