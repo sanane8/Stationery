@@ -101,6 +101,26 @@ def quick_fix():
             except Exception as e:
                 print(f"⚠️  Error creating assigned_shops table: {e}")
             
+            # Create tracker_supplier table if it doesn't exist (needed before tracker_product)
+            try:
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS tracker_supplier (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(200) NOT NULL,
+                        contact_person VARCHAR(200) DEFAULT '',
+                        phone VARCHAR(20) DEFAULT '',
+                        email VARCHAR(254) DEFAULT '',
+                        address TEXT DEFAULT '',
+                        shop_id INTEGER REFERENCES tracker_shop(id) ON DELETE CASCADE DEFAULT 1,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        is_active BOOLEAN DEFAULT TRUE
+                    )
+                """)
+                print("✅ Created tracker_supplier table")
+            except Exception as e:
+                print(f"⚠️  Error creating tracker_supplier table: {e}")
+            
             # Create tracker_productcategory table if it doesn't exist
             try:
                 cursor.execute("""
