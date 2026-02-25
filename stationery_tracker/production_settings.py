@@ -42,7 +42,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     # 'tracker.middleware.ShopSelectionMiddleware',  # Temporarily disabled to fix 500 error
-    'tracker.middleware.UserProfileMiddleware',     # Add user profile middleware
+    # 'tracker.middleware.UserProfileMiddleware',     # Temporarily disabled to fix 500 error
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -60,7 +60,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'tracker.context_processors.user_role',
+                # 'tracker.context_processors.user_role',  # Temporarily disabled to fix 500 error
             ],
         },
     },
