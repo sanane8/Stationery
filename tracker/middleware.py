@@ -22,10 +22,21 @@ class UserProfileMiddleware(MiddlewareMixin):
                 profile = request.user.profile
             except UserProfile.DoesNotExist:
                 # Create profile for existing users without one
-                UserProfile.objects.create(
-                    user=request.user,
-                    role='shop_seller'  # Default role for existing users
-                )
+                try:
+                    # Try to create profile with default shop
+                    from .models import Shop
+                    default_shop = Shop.objects.first()
+                    UserProfile.objects.create(
+                        user=request.user,
+                        role='shop_seller',  # Default role for existing users
+                        default_shop=default_shop
+                    )
+                except:
+                    # If Shop model doesn't exist, create profile without shop references
+                    UserProfile.objects.create(
+                        user=request.user,
+                        role='shop_seller'  # Default role for existing users
+                    )
                 profile = request.user.profile
             
             # Add role info to request for easy access
