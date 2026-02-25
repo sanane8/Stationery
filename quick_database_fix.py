@@ -105,10 +105,13 @@ def quick_fix():
             try:
                 cursor.execute("""
                     INSERT INTO tracker_shop (id, name, display_name, is_active) 
-                    VALUES (1, 'Default Shop', 'Default Shop', TRUE) 
-                    ON CONFLICT (id) DO NOTHING
+                    VALUES (1, 'stationery', 'Stationery Shop', TRUE) 
+                    ON CONFLICT (id) DO UPDATE SET
+                        name = EXCLUDED.name,
+                        display_name = EXCLUDED.display_name,
+                        is_active = EXCLUDED.is_active
                 """)
-                print("✅ Ensured default shop exists")
+                print("✅ Ensured default shop 'stationery' exists")
             except Exception as e:
                 print(f"⚠️  Error creating default shop: {e}")
             

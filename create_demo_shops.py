@@ -29,10 +29,11 @@ def create_demo_shops():
         if db_vendor == 'postgresql':
             # Create demo shops
             demo_shops = [
-                (2, 'Main Office', 'Main Office Shop', True),
-                (3, 'Branch A', 'Branch A - Downtown', True),
-                (4, 'Branch B', 'Branch B - Uptown', True),
-                (5, 'Warehouse', 'Main Warehouse', True),
+                (1, 'stationery', 'Stationery Shop', True),  # Default shop - stationery
+                (2, 'duka_la_vinywaji', 'Duka la Vinywaji', True),  # Enable duka la vinywaji
+                (3, 'main_office', 'Main Office', True),
+                (4, 'branch_a', 'Branch A - Downtown', True),
+                (5, 'branch_b', 'Branch B - Uptown', True),
             ]
             
             for shop_id, name, display_name, is_active in demo_shops:
