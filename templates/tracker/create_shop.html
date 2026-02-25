@@ -24,36 +24,17 @@
                 <form method="post">
                     {% csrf_token %}
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.name.id_for_label }}" class="form-label">Shop Type *</label>
-                                {{ form.name }}
-                                {% if form.name.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.name.errors %}
-                                            <small>{{ error }}</small>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                                <small class="form-text text-muted">Select the type of shop</small>
+                    <div class="mb-3">
+                        <label for="{{ form.display_name.id_for_label }}" class="form-label">Display Name *</label>
+                        {{ form.display_name }}
+                        {% if form.display_name.errors %}
+                            <div class="text-danger">
+                                {% for error in form.display_name.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
                             </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.display_name.id_for_label }}" class="form-label">Display Name *</label>
-                                {{ form.display_name }}
-                                {% if form.display_name.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.display_name.errors %}
-                                            <small>{{ error }}</small>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                                <small class="form-text text-muted">How the shop name will be displayed</small>
-                            </div>
-                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">How the shop name will be displayed</small>
                     </div>
                     
                     <div class="mb-3">

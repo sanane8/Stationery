@@ -295,9 +295,8 @@ class RegistrationForm(UserCreationForm):
 class ShopForm(forms.ModelForm):
     class Meta:
         model = Shop
-        fields = ['name', 'display_name', 'description', 'address', 'phone', 'email', 'is_active']
+        fields = ['display_name', 'description', 'address', 'phone', 'email', 'is_active']
         widgets = {
-            'name': forms.Select(attrs={'class': 'form-control'}),
             'display_name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),

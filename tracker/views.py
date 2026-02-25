@@ -2426,7 +2426,17 @@ def create_shop(request):
     if request.method == 'POST':
         form = ShopForm(request.POST)
         if form.is_valid():
-            shop = form.save()
+            # Set the name field automatically based on display_name or use a default
+            display_name = form.cleaned_data['display_name']
+            if 'stationery' in display_name.lower() or 'shop' in display_name.lower():
+                shop_name = 'stationery'
+            else:
+                shop_name = 'duka_la_vinywaji'
+            
+            shop = form.save(commit=False)
+            shop.name = shop_name
+            shop.save()
+            
             messages.success(request, f'Shop "{shop.display_name}" created successfully!')
             return redirect('shop_list')
     else:
