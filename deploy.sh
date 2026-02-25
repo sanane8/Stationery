@@ -46,12 +46,15 @@ python quick_database_fix.py
 echo "Step 6: Creating superuser if needed..."
 python create_superuser.py
 
-echo "Step 7: Creating log directory..."
+echo "Step 7: Creating demo shops for multi-shop testing..."
+python create_demo_shops.py
+
+echo "Step 8: Creating log directory..."
 mkdir -p /var/log/gunicorn 2>/dev/null || echo "Log directory creation skipped"
 
-echo "Step 8: Running debug tests..."
+echo "Step 9: Running debug tests..."
 python debug_view.py
 
-echo "Step 9: Starting Django application with Gunicorn..."
+echo "Step 10: Starting Django application with Gunicorn..."
 echo "✅ All setup complete, starting server..."
 exec gunicorn stationery_tracker.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --log-level info --access-logfile - --error-logfile -
