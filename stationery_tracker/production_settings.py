@@ -41,7 +41,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'tracker.middleware.ShopSelectionMiddleware',  # Add shop middleware
+    # 'tracker.middleware.ShopSelectionMiddleware',  # Temporarily disabled to fix 500 error
     'tracker.middleware.UserProfileMiddleware',     # Add user profile middleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
