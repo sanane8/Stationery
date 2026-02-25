@@ -296,8 +296,15 @@ def register_view(request):
 
 @login_required
 def dashboard(request):
-
     """Main dashboard view"""
+    
+    # Add fallback filter_by_shop method if middleware is disabled
+    if not hasattr(request, 'filter_by_shop'):
+        def filter_by_shop(queryset):
+            """Fallback filter - return queryset as-is"""
+            return queryset
+        request.filter_by_shop = filter_by_shop
+    
     # Get recent **paid** sales (exclude unpaid sales and sales with no items)
     recent_sales = (
         Sale.objects.select_related('customer')
