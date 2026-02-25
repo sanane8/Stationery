@@ -101,6 +101,52 @@ def quick_fix():
             except Exception as e:
                 print(f"⚠️  Error creating assigned_shops table: {e}")
             
+            # Create tracker_productcategory table if it doesn't exist
+            try:
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS tracker_productcategory (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(100) NOT NULL,
+                        description TEXT DEFAULT '',
+                        shop_id INTEGER REFERENCES tracker_shop(id) ON DELETE CASCADE,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                print("✅ Created tracker_productcategory table")
+            except Exception as e:
+                print(f"⚠️  Error creating tracker_productcategory table: {e}")
+            
+            # Create tracker_product table if it doesn't exist
+            try:
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS tracker_product (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(200) NOT NULL,
+                        description TEXT DEFAULT '',
+                        category_id INTEGER REFERENCES tracker_productcategory(id) ON DELETE CASCADE,
+                        sku VARCHAR(50) NOT NULL,
+                        supplier_id INTEGER REFERENCES tracker_supplier(id) ON DELETE CASCADE,
+                        stationery_item_id INTEGER REFERENCES tracker_stationeryitem(id) ON DELETE CASCADE,
+                        shop_id INTEGER REFERENCES tracker_shop(id) ON DELETE CASCADE DEFAULT 1,
+                        supplier_price DECIMAL(10,2) DEFAULT 0.01,
+                        selling_price DECIMAL(10,2) DEFAULT 0.01,
+                        units_per_carton INTEGER DEFAULT 1,
+                        carton_weight DECIMAL(8,2) NULL,
+                        unit_type VARCHAR(10) DEFAULT 'carton',
+                        cartons_in_stock INTEGER DEFAULT 0,
+                        minimum_cartons INTEGER DEFAULT 0,
+                        notes TEXT DEFAULT '',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        is_active BOOLEAN DEFAULT TRUE,
+                        UNIQUE(sku, shop_id)
+                    )
+                """)
+                print("✅ Created tracker_product table")
+            except Exception as e:
+                print(f"⚠️  Error creating tracker_product table: {e}")
+            
             # Ensure shop table has a record
             try:
                 cursor.execute("""
