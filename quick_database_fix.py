@@ -70,6 +70,37 @@ def quick_fix():
             except Exception as e:
                 print(f"⚠️  Error adding created_by_id to tracker_debt: {e}")
             
+            # Create tracker_userprofile table if it doesn't exist
+            try:
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS tracker_userprofile (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER UNIQUE NOT NULL REFERENCES auth_user(id) ON DELETE CASCADE,
+                        role VARCHAR(20) DEFAULT 'shop_seller',
+                        phone VARCHAR(20) DEFAULT '',
+                        default_shop_id INTEGER REFERENCES tracker_shop(id) ON DELETE SET NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                print("✅ Created tracker_userprofile table")
+            except Exception as e:
+                print(f"⚠️  Error creating tracker_userprofile table: {e}")
+            
+            # Create the many-to-many table for assigned_shops
+            try:
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS tracker_userprofile_assigned_shops (
+                        id SERIAL PRIMARY KEY,
+                        userprofile_id INTEGER NOT NULL REFERENCES tracker_userprofile(id) ON DELETE CASCADE,
+                        shop_id INTEGER NOT NULL REFERENCES tracker_shop(id) ON DELETE CASCADE,
+                        UNIQUE(userprofile_id, shop_id)
+                    )
+                """)
+                print("✅ Created tracker_userprofile_assigned_shops table")
+            except Exception as e:
+                print(f"⚠️  Error creating assigned_shops table: {e}")
+            
             # Ensure shop table has a record
             try:
                 cursor.execute("""
