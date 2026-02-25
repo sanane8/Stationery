@@ -225,6 +225,19 @@ def quick_fix():
                 else:
                     print(f"⚠️  Error adding product_type to tracker_saleitem: {e}")
             
+            # Add missing item_id column to tracker_saleitem table (legacy field, make nullable)
+            try:
+                cursor.execute("""
+                    ALTER TABLE tracker_saleitem 
+                    ADD COLUMN item_id INTEGER NULL
+                """)
+                print("✅ Added item_id column to tracker_saleitem")
+            except Exception as e:
+                if "already exists" in str(e).lower() or "duplicate column" in str(e).lower():
+                    print("✅ item_id column already exists in tracker_saleitem")
+                else:
+                    print(f"⚠️  Error adding item_id to tracker_saleitem: {e}")
+            
             # Add missing retail_item_id column to tracker_saleitem table
             try:
                 cursor.execute("""
@@ -250,6 +263,17 @@ def quick_fix():
                     print("✅ wholesale_item_id column already exists in tracker_saleitem")
                 else:
                     print(f"⚠️  Error adding wholesale_item_id to tracker_saleitem: {e}")
+            
+            # If item_id column has NOT NULL constraint, drop it and recreate as nullable
+            try:
+                cursor.execute("""
+                    ALTER TABLE tracker_saleitem 
+                    ALTER COLUMN item_id DROP NOT NULL
+                """)
+                print("✅ Made item_id column nullable in tracker_saleitem")
+            except Exception as e:
+                # This might fail if column doesn't exist or is already nullable
+                pass
     
     print("✅ Quick database fix completed")
 
