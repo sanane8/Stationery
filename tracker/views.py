@@ -75,6 +75,14 @@ except Exception:
 @login_required
 def product_list(request):
     """Display all products with supplier pricing and carton information"""
+    
+    # Add fallback filter_by_shop method if middleware is disabled
+    if not hasattr(request, 'filter_by_shop'):
+        def filter_by_shop(queryset):
+            """Fallback filter - return queryset as-is"""
+            return queryset
+        request.filter_by_shop = filter_by_shop
+    
     products = Product.objects.select_related('category', 'supplier').filter(is_active=True)
     products = request.filter_by_shop(products)
     
@@ -188,6 +196,14 @@ def product_update(request, pk):
 @login_required
 def supplier_list(request):
     """Display all suppliers"""
+    
+    # Add fallback filter_by_shop method if middleware is disabled
+    if not hasattr(request, 'filter_by_shop'):
+        def filter_by_shop(queryset):
+            """Fallback filter - return queryset as-is"""
+            return queryset
+        request.filter_by_shop = filter_by_shop
+    
     suppliers = Supplier.objects.filter(is_active=True)
     suppliers = request.filter_by_shop(suppliers)
     
@@ -393,6 +409,14 @@ def dashboard(request):
 @login_required
 def stationery_list(request):
     """List all stationery items"""
+    
+    # Add fallback filter_by_shop method if middleware is disabled
+    if not hasattr(request, 'filter_by_shop'):
+        def filter_by_shop(queryset):
+            """Fallback filter - return queryset as-is"""
+            return queryset
+        request.filter_by_shop = filter_by_shop
+    
     # Include active items and any legacy items where is_active might be null
     # Start from all items; we'll restrict to active-only unless 'inactive' toggle is set
     items = StationeryItem.objects.select_related('category').all()
