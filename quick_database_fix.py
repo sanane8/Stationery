@@ -112,6 +112,25 @@ def quick_fix():
             except Exception as e:
                 print(f"⚠️  Error creating default shop: {e}")
             
+            # Add missing columns to tracker_shop table
+            shop_columns = [
+                ("description", "TEXT DEFAULT ''"),
+                ("address", "TEXT DEFAULT ''"),
+                ("phone", "VARCHAR(20) DEFAULT ''"),
+                ("email", "VARCHAR(254) DEFAULT ''"),
+                ("created_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+            ]
+            
+            for column_name, column_def in shop_columns:
+                try:
+                    cursor.execute(f"""
+                        ALTER TABLE tracker_shop 
+                        ADD COLUMN IF NOT EXISTS {column_name} {column_def}
+                    """)
+                    print(f"✅ Added {column_name} to tracker_shop")
+                except Exception as e:
+                    print(f"⚠️  Error adding {column_name} to tracker_shop: {e}")
+            
             # Update all records to use shop_id = 1
             for table in tables_to_fix:
                 try:
