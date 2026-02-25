@@ -211,6 +211,19 @@ def quick_fix():
                     print(f"✅ Updated {table} records to use shop_id = 1")
                 except Exception as e:
                     print(f"⚠️  Error updating {table}: {e}")
+            
+            # Add missing product_type column to tracker_saleitem table
+            try:
+                cursor.execute("""
+                    ALTER TABLE tracker_saleitem 
+                    ADD COLUMN product_type VARCHAR(10) DEFAULT 'retail'
+                """)
+                print("✅ Added product_type column to tracker_saleitem")
+            except Exception as e:
+                if "already exists" in str(e).lower() or "duplicate column" in str(e).lower():
+                    print("✅ product_type column already exists in tracker_saleitem")
+                else:
+                    print(f"⚠️  Error adding product_type to tracker_saleitem: {e}")
     
     print("✅ Quick database fix completed")
 
