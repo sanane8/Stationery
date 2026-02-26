@@ -54,17 +54,34 @@ def send_sms(phone_number, message):
 
         response = sms.send(
             message=message,
-            recipients=[phone_number],
-            sender_id=settings.AFRICASTALKING_SENDER_ID
+            recipients=[phone_number]
         )
 
-        logger.info(f"SMS sent to {phone_number}: {response}")
-
-        return {
-            'success': True,
-            'response': response,
-            'recipient': phone_number
-        }
+        # Check if SMS was actually sent successfully
+        if response.get('SMSMessageData', {}).get('Recipients'):
+            recipient = response['SMSMessageData']['Recipients'][0]
+            if recipient.get('status') == 'Success':
+                logger.info(f"SMS sent to {phone_number}: {response}")
+                return {
+                    'success': True,
+                    'response': response,
+                    'recipient': phone_number,
+                    'message_id': recipient.get('messageId'),
+                    'cost': recipient.get('cost')
+                }
+            else:
+                error_msg = recipient.get('status', 'Unknown error')
+                logger.error(f"SMS failed to send to {phone_number}: {error_msg}")
+                return {
+                    'success': False,
+                    'error': f"SMS sending failed: {error_msg}"
+                }
+        else:
+            logger.error(f"Invalid response from SMS service: {response}")
+            return {
+                'success': False,
+                'error': 'Invalid response from SMS service'
+            }
 
     except Exception as e:
         logger.error(f"Failed to send SMS to {phone_number}: {e}")

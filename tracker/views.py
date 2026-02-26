@@ -504,8 +504,9 @@ def stationery_detail(request, pk):
     # Get recent sales for this stationery item (only retail sales)
     recent_sales = Sale.objects.filter(
         items__retail_item=item
-    ).order_by('-sale_date')[:10]
+    )
     recent_sales = request.filter_by_shop(recent_sales)  # Filter by current shop
+    recent_sales = recent_sales.order_by('-sale_date')[:10]
     
     context = {
         'item': item,

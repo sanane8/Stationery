@@ -229,7 +229,7 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'SP Msabila Stationery <nor
 # Africa's Talking SMS Settings
 AFRICASTALKING_USERNAME = os.getenv('AFRICASTALKING_USERNAME', 'paul.sanane@gmail.com')
 AFRICASTALKING_API_KEY = os.getenv('AFRICASTALKING_API_KEY', 'atsk_70aca8c7d14163b27fc4b28bf3e6576855879ed56d7a8968ca176b64fa86364009e1aacc')
-AFRICASTALKING_SENDER_ID = os.getenv('AFRICASTALKING_SENDER_ID', 'your_sender_id')
+AFRICASTALKING_SENDER_ID = os.getenv('AFRICICASTALKING_SENDER_ID', 'INFO')
 
 # Disable custom logging so WSGI never crashes
 LOGGING_CONFIG = None
