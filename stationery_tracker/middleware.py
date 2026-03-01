@@ -88,8 +88,8 @@ class SessionSecurityMiddleware:
         self.get_response = get_response
         
     def __call__(self, request):
-        # Check if user is authenticated
-        if request.user.is_authenticated:
+        # Check if user is authenticated and user attribute exists
+        if hasattr(request, 'user') and request.user.is_authenticated:
             # Get session data
             session_last_activity = request.session.get('last_activity')
             current_time = timezone.now()
@@ -123,7 +123,8 @@ class SessionSecurityMiddleware:
                 except Exception as e:
                     logger.error(f"Session validation error: {e}")
                     # Force logout on any error
-                    logout(request)
+                    if hasattr(request, 'user'):
+                        logout(request)
                     request.session.flush()
                     from django.shortcuts import redirect
                     return redirect('login')

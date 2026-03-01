@@ -84,12 +84,12 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'stationery_tracker.middleware.SessionSecurityMiddleware',  # Add session security middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',  # RE-ENABLED - needed for csrf_token
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'stationery_tracker.middleware.SessionSecurityMiddleware',  # Moved after authentication
     'tracker.middleware.ShopSelectionMiddleware',  # Re-enable this for shop filtering
     'tracker.middleware.UserProfileMiddleware',     # Re-enable this for user profiles
     'django.contrib.messages.middleware.MessageMiddleware',

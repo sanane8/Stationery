@@ -37,11 +37,11 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'stationery_tracker.middleware.SessionSecurityMiddleware',  # Add session security
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'stationery_tracker.middleware.SessionSecurityMiddleware',  # Moved after authentication
     'tracker.middleware.ShopSelectionMiddleware',  # Re-enabled - database schema fixed
     # 'tracker.middleware.UserProfileMiddleware',     # Keep disabled for now
     'django.contrib.messages.middleware.MessageMiddleware',
