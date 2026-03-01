@@ -1,9 +1,11 @@
 """
-Production middleware for graceful error handling.
+Production middleware for graceful error handling and session security.
 """
 from django.http import JsonResponse, HttpResponse
 from django.db import connection
 from django.core.management import call_command
+from django.contrib.auth import logout
+from django.utils import timezone
 import os
 import logging
 
@@ -75,3 +77,56 @@ class DatabaseErrorMiddleware:
                 logger.info("Migrations completed successfully.")
         except Exception as e:
             logger.error(f"Error running migrations: {e}")
+
+
+class SessionSecurityMiddleware:
+    """
+    Middleware to enforce session security and prevent unauthorized access.
+    """
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+        
+    def __call__(self, request):
+        # Check if user is authenticated
+        if request.user.is_authenticated:
+            # Get session data
+            session_last_activity = request.session.get('last_activity')
+            current_time = timezone.now()
+            
+            # Update last activity time
+            request.session['last_activity'] = current_time.isoformat()
+            request.session.modified = True
+            
+            # Check if session has expired (30 minutes)
+            if session_last_activity:
+                try:
+                    last_activity = timezone.datetime.fromisoformat(session_last_activity)
+                    time_diff = current_time - last_activity
+                    
+                    # Force logout if session is older than 30 minutes
+                    if time_diff.total_seconds() > 1800:  # 30 minutes
+                        logger.warning(f"Force logout for user {request.user.username} due to expired session")
+                        logout(request)
+                        # Clear session data
+                        request.session.flush()
+                        
+                        # Return JSON for AJAX requests, redirect for normal requests
+                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                            return JsonResponse({
+                                'error': 'Session expired. Please log in again.',
+                                'redirect': '/login/'
+                            }, status=401)
+                        else:
+                            from django.shortcuts import redirect
+                            return redirect('login')
+                except Exception as e:
+                    logger.error(f"Session validation error: {e}")
+                    # Force logout on any error
+                    logout(request)
+                    request.session.flush()
+                    from django.shortcuts import redirect
+                    return redirect('login')
+        
+        response = self.get_response(request)
+        return response

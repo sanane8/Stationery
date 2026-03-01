@@ -64,10 +64,12 @@ CSRF_COOKIE_AGE = 3600  # 1 hour
 
 # Session configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 3600  # 1 hour
-SESSION_COOKIE_SECURE = False
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_AGE = 1800  # 30 minutes - reduced from 1 hour for security
+SESSION_COOKIE_SECURE = False  # Will be True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to cookies
+SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+SESSION_SAVE_EVERY_REQUEST = True  # Ensure session is validated on each request
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Additional security layer
 
 # Application definition
 INSTALLED_APPS = [
@@ -82,6 +84,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'stationery_tracker.middleware.SessionSecurityMiddleware',  # Add session security middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -91,6 +94,7 @@ MIDDLEWARE = [
     'tracker.middleware.UserProfileMiddleware',     # Re-enable this for user profiles
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'stationery_tracker.middleware.DatabaseErrorMiddleware',  # Keep original middleware
 ]
 
 # Ensure shop middleware is always enabled for both local and Railway

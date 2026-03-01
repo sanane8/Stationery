@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'stationery_tracker.middleware.SessionSecurityMiddleware',  # Add session security
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -152,9 +153,12 @@ SECURE_HSTS_SECONDS = 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
 
-# Session security
-SESSION_COOKIE_SECURE = False
+# Session security - more restrictive for production
+SESSION_COOKIE_SECURE = False  # Railway handles HTTPS at proxy level
 SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 1800  # 30 minutes
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # CSRF protection for Railway domain
 # The exact domain that Railway is serving on
