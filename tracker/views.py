@@ -269,6 +269,11 @@ def supplier_update(request, pk):
     })
 
 
+def landing_page(request):
+    """Landing page for the stationery management system"""
+    return render(request, 'tracker/landing_page.html')
+
+
 @csrf_protect
 def login_view(request):
     if request.method == 'POST':
