@@ -513,7 +513,68 @@
             // Also check periodically for any missed messages
             setInterval(setAutoDismiss, 1000);
         });
+        
+        // Auto Search Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add auto-search to all search inputs
+            const searchInputs = document.querySelectorAll('input[name="search"], input[name="product"], #customer-search');
+            
+            searchInputs.forEach(input => {
+                let searchTimeout;
+                const form = input.closest('form');
+                
+                input.addEventListener('input', function(e) {
+                    const value = e.target.value;
+                    
+                    // Clear previous timeout
+                    clearTimeout(searchTimeout);
+                    
+                    // Add loading animation to input
+                    input.style.background = 'linear-gradient(90deg, #fff 0%, #e3f2fd 50%, #fff 100%)';
+                    input.style.backgroundSize = '200% 100%';
+                    input.style.animation = 'searchLoading 1.5s ease-in-out infinite';
+                    
+                    // Set new timeout for search
+                    searchTimeout = setTimeout(() => {
+                        // Remove loading animation
+                        input.style.background = '';
+                        input.style.animation = '';
+                        
+                        // Trigger search if value has at least 1 character
+                        if (value.length >= 1) {
+                            // Create hidden submit event
+                            const submitEvent = new Event('submit', { 
+                                bubbles: true, 
+                                cancelable: true 
+                            });
+                            form.dispatchEvent(submitEvent);
+                        }
+                    }, 800); // Wait 800ms before triggering search
+                });
+                
+                // Remove loading animation on blur
+                input.addEventListener('blur', function() {
+                    clearTimeout(searchTimeout);
+                    input.style.background = '';
+                    input.style.animation = '';
+                });
+            });
+        });
     </script>
+    
+    <style>
+        @keyframes searchLoading {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .search-loading {
+            background: linear-gradient(90deg, #fff 0%, #e3f2fd 50%, #fff 100%);
+            background-size: 200% 100%;
+            animation: searchLoading 1.5s ease-in-out infinite;
+        }
+    </style>
         <!-- Site footer -->
         <footer class="text-center text-white" style="background-color:#2c3e50;">
             <div class="container-fluid">
