@@ -87,6 +87,43 @@
             color: white;
         }
         
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 8px 15px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .language-switcher:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .language-switcher a {
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .language-switcher a:hover {
+            color: #fff;
+        }
+        
+        .language-switcher i {
+            font-size: 1rem;
+        }
+        
         .features-section {
             padding: 50px 0;
             background: #f8f9fa;
@@ -206,14 +243,24 @@
 <body>
     <!-- Hero Section -->
     <section class="hero-section">
+        <!-- Language Switcher -->
+        <div class="language-switcher">
+            <a href="#" onclick="toggleLanguage()" title="Change Language">
+                <i class="fas fa-globe"></i>
+                <span id="current-lang">EN</span>
+            </a>
+        </div>
+        
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">
-                    <i class="fas fa-store"></i> SP MSABILA MULT-SHOP MANAGEMENT SYSTEM
+                <h1 class="hero-title" data-en="SP MSABILA MULT-SHOP MANAGEMENT SYSTEM" data-sw="MFUMU WA DUKA ANOPA WA SP MSABILA">
+                    <i class="fas fa-store"></i> <span class="title-text">SP MSABILA MULT-SHOP MANAGEMENT SYSTEM</span>
                 </h1>
-                <p class="hero-subtitle">Complete Business Solution for Multi-Shop Management</p>
-                <a href="{% url 'login' %}" class="cta-button">
-                    <i class="fas fa-sign-in-alt"></i> Login to Access the System
+                <p class="hero-subtitle" data-en="Complete Business Solution for Multi-Shop Management" data-sw="Suluhisho Kamili kwa Usimamizi wa Maduka Mengi">
+                    Complete Business Solution for Multi-Shop Management
+                </p>
+                <a href="{% url 'login' %}" class="cta-button" data-en="Login to Access System" data-sw="Ingia kwenye Mfumo">
+                    <i class="fas fa-sign-in-alt"></i> <span class="btn-text">Login to Access System</span>
                 </a>
             </div>
         </div>
@@ -228,8 +275,8 @@
                         <div class="feature-icon">
                             <i class="fas fa-shopping-cart"></i>
                         </div>
-                        <h3 class="feature-title">Sales Management</h3>
-                        <p class="feature-description">
+                        <h3 class="feature-title" data-en="Sales Management" data-sw="Usimamizi wa Mauzo">Sales Management</h3>
+                        <p class="feature-description" data-en="Track sales, manage transactions, and monitor revenue with our comprehensive sales management system." data-sw="Fuatilia mauzo, simamisha miamala, na kagua mapato kwa mfumo wetu kamili wa usimamizi wa mauzo.">
                             Track sales, manage transactions, and monitor revenue with our comprehensive sales management system.
                         </p>
                     </div>
@@ -239,8 +286,8 @@
                         <div class="feature-icon">
                             <i class="fas fa-boxes"></i>
                         </div>
-                        <h3 class="feature-title">Inventory Control</h3>
-                        <p class="feature-description">
+                        <h3 class="feature-title" data-en="Inventory Control" data-sw="Usimamizi wa Hisa">Inventory Control</h3>
+                        <p class="feature-description" data-en="Monitor stock levels, manage products, and get alerts for low inventory items automatically." data-sw="Fuatilia viwango vya hisa, simamisha bidhaa, na pokea tahadhari kwa bidhaa chache za hisa moja kwa moja.">
                             Monitor stock levels, manage products, and get alerts for low inventory items automatically.
                         </p>
                     </div>
@@ -250,8 +297,8 @@
                         <div class="feature-icon">
                             <i class="fas fa-users"></i>
                         </div>
-                        <h3 class="feature-title">Customer Management</h3>
-                        <p class="feature-description">
+                        <h3 class="feature-title" data-en="Customer Management" data-sw="Usimamizi wa Wateja">Customer Management</h3>
+                        <p class="feature-description" data-en="Maintain customer records, track purchases, and manage customer relationships effectively." data-sw="Weka rekodi za wateja, fuatilia ununuzi, na simamia mahusiano na wateja kwa ufanisi.">
                             Maintain customer records, track purchases, and manage customer relationships effectively.
                         </p>
                     </div>
@@ -261,8 +308,8 @@
                         <div class="feature-icon">
                             <i class="fas fa-hand-holding-usd"></i>
                         </div>
-                        <h3 class="feature-title">Debt Tracking</h3>
-                        <p class="feature-description">
+                        <h3 class="feature-title" data-en="Debt Tracking" data-sw="Ufuatiliaji wa Madeni">Debt Tracking</h3>
+                        <p class="feature-description" data-en="Monitor customer debts, send payment reminders, and manage credit accounts efficiently." data-sw="Fuatilia madeni ya wateja, tuma ukumbusho wa malipo, na simamia akaunti za mikopo kwa ufanisi.">
                             Monitor customer debts, send payment reminders, and manage credit accounts efficiently.
                         </p>
                     </div>
@@ -272,8 +319,8 @@
                         <div class="feature-icon">
                             <i class="fas fa-chart-line"></i>
                         </div>
-                        <h3 class="feature-title">Analytics & Reports</h3>
-                        <p class="feature-description">
+                        <h3 class="feature-title" data-en="Analytics & Reports" data-sw="Uchambuzi na Ripoti">Analytics & Reports</h3>
+                        <p class="feature-description" data-en="Generate detailed reports, analyze business performance, and make data-driven decisions." data-sw="Zalisha ripoti za kina, chunguza utendaji wa biashara, na fanya maamuzi yanayotegemea data.">
                             Generate detailed reports, analyze business performance, and make data-driven decisions.
                         </p>
                     </div>
@@ -283,8 +330,8 @@
                         <div class="feature-icon">
                             <i class="fas fa-mobile-alt"></i>
                         </div>
-                        <h3 class="feature-title">SMS Notifications</h3>
-                        <p class="feature-description">
+                        <h3 class="feature-title" data-en="SMS Notifications" data-sw="Taarifa za SMS">SMS Notifications</h3>
+                        <p class="feature-description" data-en="Send automated SMS reminders to customers for payments and promotional messages." data-sw="Tuma ukumbusho wa SMS moja kwa moja kwa wateja kwa ajili ya malipo na ujumbe wa matangazo.">
                             Send automated SMS reminders to customers for payments and promotional messages.
                         </p>
                     </div>
@@ -298,15 +345,15 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6 mb-4">
-                    <h2 style="font-size: 2rem; color: var(--text-dark); font-weight: 700; margin-bottom: 20px;">
-                        About SP Msabila Stationery
-                    </h2>
-                    <p style="color: #6c757d; line-height: 1.6; margin-bottom: 20px;">
-                        Welcome to SP Msabila Stationery, your trusted partner for comprehensive stationery and business management solutions in Tanzania. We provide high-quality photocopying, printing, office supplies, and computer services to meet all your business needs.
-                    </p>
-                    <p style="color: #6c757d; line-height: 1.6;">
-                        Our multi-shop management system ensures efficient operations across all locations, providing you with the tools you need to succeed in today's competitive business environment.
-                    </p>
+                    <h2 style="font-size: 2rem; color: var(--text-dark); font-weight: 700; margin-bottom: 20px;" data-en="About SP Msabila Stationery" data-sw="Kuhusu Stationery ya SP Msabila">
+                    About SP Msabila Stationery
+                </h2>
+                <p style="color: #6c757d; line-height: 1.6; margin-bottom: 20px;" data-en="Welcome to SP Msabila Stationery, your trusted partner for comprehensive stationery and business management solutions in Tanzania. We provide high-quality photocopying, printing, office supplies, and computer services to meet all your business needs." data-sw="Karibu Stationery ya SP Msabila, mshirika wako wa kuaminika kwa suluhisho kamili za stationery na usimamizi wa biashara Tanzania. Tunatoa huduma bora za nakala, uchapishaji, vifaa vya ofisi, na huduma za kompyuta kukidhitaji mahitaji yako yote ya biashara.">
+                    Welcome to SP Msabila Stationery, your trusted partner for comprehensive stationery and business management solutions in Tanzania. We provide high-quality photocopying, printing, office supplies, and computer services to meet all your business needs.
+                </p>
+                <p style="color: #6c757d; line-height: 1.6;" data-en="Our multi-shop management system ensures efficient operations across all locations, providing you with tools you need to succeed in today's competitive business environment." data-sw="Mfumo wetu wa usimamizi wa maduka anopahakikisha uendeshaji wa ufanisi katika maeneo yote, ukikupa zana unazohitaji kufanikiwa katika mazingira ya ushindani wa biashara ya leo.">
+                    Our multi-shop management system ensures efficient operations across all locations, providing you with tools you need to succeed in today's competitive business environment.
+                </p>
                 </div>
                 <div class="col-lg-6 mb-4">
                     <img src="{% static 'images/stationery-shop.jpg' %}" 
@@ -320,7 +367,7 @@
     <!-- Services Section -->
     <section class="services-section">
         <div class="container">
-            <h2 class="text-center mb-4" style="font-size: 2rem; color: var(--text-dark); font-weight: 700;">
+            <h2 class="text-center mb-4" style="font-size: 2rem; color: var(--text-dark); font-weight: 700;" data-en="Our Stationery Services" data-sw="Huduma Zetu za Stationery">
                 Our Stationery Services
             </h2>
             <div class="row">
@@ -328,24 +375,30 @@
                     <div class="service-item">
                         <img src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
                              alt="Photocopy and Printing Services" class="service-image">
-                        <h4 class="service-title">Photocopy & Printing</h4>
-                        <p class="text-muted">High-quality photocopying and printing services for all your document needs</p>
+                        <h4 class="service-title" data-en="Photocopy & Printing" data-sw="Nakala na Uchapishaji">Photocopy & Printing</h4>
+                        <p class="text-muted" data-en="High-quality photocopying and printing services for all your document needs" data-sw="Huduma bora za nakala na uchapishaji kwa mahitaji yote ya nyaraka">
+                            High-quality photocopying and printing services for all your document needs
+                        </p>
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="service-item">
                         <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
                              alt="Office Supplies" class="service-image">
-                        <h4 class="service-title">Office Supplies</h4>
-                        <p class="text-muted">Complete range of office stationery and supplies for businesses</p>
+                        <h4 class="service-title" data-en="Office Supplies" data-sw="Vifaa vya Ofisi">Office Supplies</h4>
+                        <p class="text-muted" data-en="Complete range of office stationery and supplies for businesses" data-sw="Mkondo kamili wa stationery na vifaa vya ofisi kwa biashara">
+                            Complete range of office stationery and supplies for businesses
+                        </p>
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="service-item">
                         <img src="https://images.unsplash.com/photo-1605146768851-4030223cc2b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
                              alt="Computer Services" class="service-image">
-                        <h4 class="service-title">Computer Services</h4>
-                        <p class="text-muted">Typing, printing, scanning, and computer-related services</p>
+                        <h4 class="service-title" data-en="Computer Services" data-sw="Huduma za Kompyuta">Computer Services</h4>
+                        <p class="text-muted" data-en="Typing, printing, scanning, and computer-related services" data-sw="Uandishi, uchapishaji, uchambuzi, na huduma zinazohusiana na kompyuta">
+                            Typing, printing, scanning, and computer-related services
+                        </p>
                     </div>
                 </div>
             </div>
@@ -401,5 +454,43 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentLanguage = 'en';
+        
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'sw' : 'en';
+            updateLanguage();
+        }
+        
+        function updateLanguage() {
+            // Update language indicator
+            document.getElementById('current-lang').textContent = currentLanguage.toUpperCase();
+            
+            // Update all elements with language attributes
+            const elements = document.querySelectorAll('[data-en][data-sw]');
+            elements.forEach(element => {
+                const text = currentLanguage === 'en' ? element.getAttribute('data-en') : element.getAttribute('data-sw');
+                if (element.classList.contains('hero-title')) {
+                    element.querySelector('.title-text').textContent = text;
+                } else if (element.classList.contains('cta-button')) {
+                    element.querySelector('.btn-text').textContent = text;
+                } else {
+                    element.textContent = text;
+                }
+            });
+            
+            // Save language preference
+            localStorage.setItem('preferredLanguage', currentLanguage);
+        }
+        
+        // Load saved language preference on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLanguage = localStorage.getItem('preferredLanguage');
+            if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'sw')) {
+                currentLanguage = savedLanguage;
+                updateLanguage();
+            }
+        });
+    </script>
 </body>
 </html>
