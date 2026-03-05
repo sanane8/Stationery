@@ -120,6 +120,7 @@ def product_list(request):
     total_products = products.count()
     low_stock_products = products.filter(cartons_in_stock__lte=models.F('minimum_cartons')).count()
     total_stock_value = sum(product.get_total_value() for product in products)
+    total_buy_value = sum(product.buy_value for product in products)
     
     context = {
         'page_obj': page_obj,
@@ -128,6 +129,7 @@ def product_list(request):
         'total_products': total_products,
         'low_stock_products': low_stock_products,
         'total_stock_value': total_stock_value,
+        'total_buy_value': total_buy_value,
         'search_query': search_query or '',
         'selected_category': category_id or '',
         'selected_supplier': supplier_id or '',
@@ -476,6 +478,7 @@ def stationery_list(request):
     total_products = items.count()
     low_stock_products = items.filter(stock_quantity__lte=models.F('minimum_stock')).count()
     total_stock_value = sum(item.get_total_value() for item in items)
+    total_buy_value = sum(item.buy_value for item in items)
     
     # Paginate
     page = request.GET.get('page')
@@ -496,6 +499,7 @@ def stationery_list(request):
         'total_products': total_products,
         'low_stock_products': low_stock_products,
         'total_stock_value': total_stock_value,
+        'total_buy_value': total_buy_value,
     }
     
     return render(request, 'tracker/stationery_list.html', context)
