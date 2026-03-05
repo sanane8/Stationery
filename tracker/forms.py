@@ -63,7 +63,20 @@ class ProductForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
+        
+        # Filter categories by shop if request is available
+        if request and hasattr(request, 'filter_by_shop'):
+            categories = Category.objects.all()
+            categories = request.filter_by_shop(categories)
+            self.fields['category'].queryset = categories
+        
+        # Filter suppliers by shop if request is available
+        if request and hasattr(request, 'filter_by_shop'):
+            suppliers = Supplier.objects.filter(is_active=True)
+            suppliers = request.filter_by_shop(suppliers)
+            self.fields['supplier'].queryset = suppliers
         
         # For existing products, make SKU editable
         if self.instance and self.instance.pk:
@@ -127,6 +140,16 @@ class StationeryItemForm(forms.ModelForm):
             'minimum_stock': forms.NumberInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+        
+        # Filter categories by shop if request is available
+        if request and hasattr(request, 'filter_by_shop'):
+            categories = Category.objects.all()
+            categories = request.filter_by_shop(categories)
+            self.fields['category'].queryset = categories
 
 class SaleForm(forms.ModelForm):
     class Meta:

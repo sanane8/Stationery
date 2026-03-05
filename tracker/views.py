@@ -160,13 +160,13 @@ def product_detail(request, pk):
 def product_create(request):
     """Create a new product"""
     if request.method == 'POST':
-        form = ProductForm(request.POST)
+        form = ProductForm(request.POST, request=request)
         if form.is_valid():
             product = form.save()
             messages.success(request, f'Product "{product.name}" has been created successfully.')
             return redirect('product_detail', pk=product.pk)
     else:
-        form = ProductForm()
+        form = ProductForm(request=request)
     
     return render(request, 'tracker/product_form.html', {
         'form': form,
@@ -180,13 +180,13 @@ def product_update(request, pk):
     product = get_object_or_404(Product, pk=pk)
     
     if request.method == 'POST':
-        form = ProductForm(request.POST, instance=product)
+        form = ProductForm(request.POST, instance=product, request=request)
         if form.is_valid():
             product = form.save()
             messages.success(request, f'Whole sale product "{product.name}" has been updated successfully.')
             return redirect('product_detail', pk=product.pk)
     else:
-        form = ProductForm(instance=product)
+        form = ProductForm(instance=product, request=request)
     
     return render(request, 'tracker/product_form.html', {
         'form': form,
@@ -2057,7 +2057,7 @@ def create_customer(request):
 def create_stationery_item(request):
     """Create a new stationery item"""
     if request.method == 'POST':
-        form = StationeryItemForm(request.POST)
+        form = StationeryItemForm(request.POST, request=request)
         if form.is_valid():
             item = form.save(commit=False)
             item.shop = request.selected_shop
@@ -2065,16 +2065,10 @@ def create_stationery_item(request):
             messages.success(request, 'Stationery item created successfully!')
             return redirect('stationery_list')
     else:
-        form = StationeryItemForm()
+        form = StationeryItemForm(request=request)
         # Set default shop for form if shop field exists
         if request.selected_shop and 'shop' in form.fields:
             form.fields['shop'].initial = request.selected_shop.id
-        
-        # Filter categories by current shop
-        if request.selected_shop and 'category' in form.fields:
-            form.fields['category'].queryset = Category.objects.filter(
-                shop=request.selected_shop
-            )
     
     context = {
         'form': form,
