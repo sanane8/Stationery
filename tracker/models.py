@@ -208,11 +208,6 @@ class Product(models.Model):
     def get_total_value(self):
         """Get total value of current stock"""
         return self.cartons_in_stock * self.selling_price
-    
-    @property
-    def buy_value(self):
-        """Calculate buy value (supplier price × total units)"""
-        return self.supplier_price * self.total_units_in_stock
 
     def save(self, *args, **kwargs):
         """Override save to sync with StationeryItem and generate SKU if needed"""
@@ -321,11 +316,6 @@ class StationeryItem(models.Model):
         if self.cost_price > 0:
             return ((self.unit_price - self.cost_price) / self.cost_price) * 100
         return 0
-    
-    @property
-    def buy_value(self):
-        """Calculate buy value (cost price × stock quantity)"""
-        return self.cost_price * self.stock_quantity
 
     @property
     def is_low_stock(self):

@@ -10,12 +10,12 @@ from django.shortcuts import redirect
 from django.views.generic import RedirectView
 from tracker.admin_site import restricted_admin_site
 
-# Redirect root URL to landing page
+# Redirect root URL to login page
 def root_redirect(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     else:
-        return redirect('landing_page')
+        return redirect('login')
 
 urlpatterns = [
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=True)),

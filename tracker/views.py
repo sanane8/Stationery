@@ -120,7 +120,6 @@ def product_list(request):
     total_products = products.count()
     low_stock_products = products.filter(cartons_in_stock__lte=models.F('minimum_cartons')).count()
     total_stock_value = sum(product.get_total_value() for product in products)
-    total_buy_value = sum(product.buy_value for product in products)
     
     context = {
         'page_obj': page_obj,
@@ -129,7 +128,6 @@ def product_list(request):
         'total_products': total_products,
         'low_stock_products': low_stock_products,
         'total_stock_value': total_stock_value,
-        'total_buy_value': total_buy_value,
         'search_query': search_query or '',
         'selected_category': category_id or '',
         'selected_supplier': supplier_id or '',
@@ -269,11 +267,6 @@ def supplier_update(request, pk):
         'supplier': supplier,
         'title': 'Update Supplier',
     })
-
-
-def landing_page(request):
-    """Landing page for the stationery management system"""
-    return render(request, 'tracker/landing_page.html')
 
 
 @csrf_protect
@@ -478,7 +471,6 @@ def stationery_list(request):
     total_products = items.count()
     low_stock_products = items.filter(stock_quantity__lte=models.F('minimum_stock')).count()
     total_stock_value = sum(item.get_total_value() for item in items)
-    total_buy_value = sum(item.buy_value for item in items)
     
     # Paginate
     page = request.GET.get('page')
@@ -499,7 +491,6 @@ def stationery_list(request):
         'total_products': total_products,
         'low_stock_products': low_stock_products,
         'total_stock_value': total_stock_value,
-        'total_buy_value': total_buy_value,
     }
     
     return render(request, 'tracker/stationery_list.html', context)
@@ -2057,7 +2048,7 @@ def create_customer(request):
 def create_stationery_item(request):
     """Create a new stationery item"""
     if request.method == 'POST':
-        form = StationeryItemForm(request.POST, request=request)
+        form = StationeryItemForm(request.POST)
         if form.is_valid():
             item = form.save(commit=False)
             item.shop = request.selected_shop
@@ -2065,10 +2056,16 @@ def create_stationery_item(request):
             messages.success(request, 'Stationery item created successfully!')
             return redirect('stationery_list')
     else:
-        form = StationeryItemForm(request=request)
+        form = StationeryItemForm()
         # Set default shop for form if shop field exists
         if request.selected_shop and 'shop' in form.fields:
             form.fields['shop'].initial = request.selected_shop.id
+        
+        # Filter categories by current shop
+        if request.selected_shop and 'category' in form.fields:
+            form.fields['category'].queryset = Category.objects.filter(
+                shop=request.selected_shop
+            )
     
     context = {
         'form': form,

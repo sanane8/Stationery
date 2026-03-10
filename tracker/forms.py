@@ -141,16 +141,6 @@ class StationeryItemForm(forms.ModelForm):
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        request = kwargs.pop('request', None)
-        super().__init__(*args, **kwargs)
-        
-        # Filter categories by shop if request is available
-        if request and hasattr(request, 'filter_by_shop'):
-            categories = Category.objects.all()
-            categories = request.filter_by_shop(categories)
-            self.fields['category'].queryset = categories
-
 class SaleForm(forms.ModelForm):
     class Meta:
         model = Sale
