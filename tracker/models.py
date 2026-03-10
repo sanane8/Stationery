@@ -206,8 +206,12 @@ class Product(models.Model):
         return self.cartons_in_stock <= self.minimum_cartons
 
     def get_total_value(self):
-        """Get total value of current stock"""
+        """Get total value of current stock (selling value)"""
         return self.cartons_in_stock * self.selling_price
+    
+    def get_total_buy_value(self):
+        """Get total buy value of current stock (cost × stock)"""
+        return self.cartons_in_stock * self.supplier_price
 
     def save(self, *args, **kwargs):
         """Override save to sync with StationeryItem and generate SKU if needed"""
@@ -267,10 +271,21 @@ class Product(models.Model):
     def create_stationery_item(self):
         """Create a corresponding stationery item for this product"""
         if not self.stationery_item:
-            # Use the same category for the stationery item
-            stationery_category = self.category
+            # Find the corresponding Category for this ProductCategory
+            try:
+                stationery_category = Category.objects.get(
+                    name=self.category.name,
+                    shop=self.shop
+                )
+            except Category.DoesNotExist:
+                # Create a corresponding Category if it doesn't exist
+                stationery_category = Category.objects.create(
+                    name=self.category.name,
+                    description=self.category.description,
+                    shop=self.shop
+                )
             
-            # Create the stationery item with default pricing (user can update later)
+            # Create stationery item with default pricing (user can update later)
             stationery_item = StationeryItem.objects.create(
                 name=self.name,
                 description=self.description,
@@ -323,8 +338,12 @@ class StationeryItem(models.Model):
         return self.stock_quantity <= self.minimum_stock
 
     def get_total_value(self):
-        """Get total value of current stock"""
+        """Get total value of current stock (selling value)"""
         return self.stock_quantity * self.unit_price
+    
+    def get_total_buy_value(self):
+        """Get total buy value of current stock (cost × stock)"""
+        return self.stock_quantity * self.cost_price
 
     def generate_sku(self):
         """Generate automatic SKU based on product name and category"""
