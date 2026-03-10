@@ -23,6 +23,11 @@
             <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Whole Sale Products
             </a>
+            {% if not product and request.user.is_staff %}
+            <a href="{% url 'sync_product_categories' %}" class="btn btn-outline-warning ms-2" onclick="return confirm('This will sync all retail categories to wholesale categories. Continue?')">
+                <i class="fas fa-sync"></i> Sync Categories from Retail
+            </a>
+            {% endif %}
         </div>
     </div>
 

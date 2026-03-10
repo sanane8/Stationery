@@ -194,6 +194,42 @@ def product_update(request, pk):
 
 
 @login_required
+def sync_product_categories(request):
+    """Sync ProductCategory instances from Category instances"""
+    if not request.user.is_staff:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('dashboard')
+    
+    created_count = 0
+    existing_count = 0
+    
+    # Get all shops
+    shops = Shop.objects.all()
+    
+    for shop in shops:
+        # Get all categories for this shop
+        categories = Category.objects.filter(shop=shop)
+        
+        for category in categories:
+            # Check if ProductCategory already exists
+            product_category, created = ProductCategory.objects.get_or_create(
+                name=category.name,
+                shop=shop,
+                defaults={
+                    'description': category.description
+                }
+            )
+            
+            if created:
+                created_count += 1
+            else:
+                existing_count += 1
+    
+    messages.success(request, f'Product categories synced successfully! Created: {created_count}, Already existed: {existing_count}')
+    return redirect('product_create')
+
+
+@login_required
 def supplier_list(request):
     """Display all suppliers"""
     

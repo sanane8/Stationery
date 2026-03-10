@@ -28,6 +28,7 @@ urlpatterns = [
     path('products/<int:pk>/', views.product_detail, name='product_detail'),
     path('products/create/', views.product_create, name='product_create'),
     path('products/<int:pk>/update/', views.product_update, name='product_update'),
+    path('products/sync-categories/', views.sync_product_categories, name='sync_product_categories'),
     
     # Suppliers
     path('suppliers/', views.supplier_list, name='supplier_list'),
