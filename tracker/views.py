@@ -157,6 +157,28 @@ def product_detail(request, pk):
 @admin_required
 def product_create(request):
     """Create a new product"""
+    
+    # Auto-sync product categories if none exist for current shop
+    if request.selected_shop:
+        shop_product_categories = ProductCategory.objects.filter(shop=request.selected_shop)
+        if not shop_product_categories.exists():
+            # Sync categories for this shop
+            categories = Category.objects.filter(shop=request.selected_shop)
+            created_count = 0
+            for category in categories:
+                product_category, created = ProductCategory.objects.get_or_create(
+                    name=category.name,
+                    shop=request.selected_shop,
+                    defaults={
+                        'description': category.description
+                    }
+                )
+                if created:
+                    created_count += 1
+            
+            if created_count > 0:
+                messages.info(request, f'Auto-synced {created_count} categories from retail to wholesale products.')
+    
     if request.method == 'POST':
         form = ProductForm(request.POST, request=request)
         if form.is_valid():
@@ -176,6 +198,27 @@ def product_create(request):
 def product_update(request, pk):
     """Update an existing product"""
     product = get_object_or_404(Product, pk=pk)
+    
+    # Auto-sync product categories if none exist for current shop
+    if request.selected_shop:
+        shop_product_categories = ProductCategory.objects.filter(shop=request.selected_shop)
+        if not shop_product_categories.exists():
+            # Sync categories for this shop
+            categories = Category.objects.filter(shop=request.selected_shop)
+            created_count = 0
+            for category in categories:
+                product_category, created = ProductCategory.objects.get_or_create(
+                    name=category.name,
+                    shop=request.selected_shop,
+                    defaults={
+                        'description': category.description
+                    }
+                )
+                if created:
+                    created_count += 1
+            
+            if created_count > 0:
+                messages.info(request, f'Auto-synced {created_count} categories from retail to wholesale products.')
     
     if request.method == 'POST':
         form = ProductForm(request.POST, instance=product, request=request)
