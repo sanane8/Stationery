@@ -236,7 +236,9 @@ def supplier_create(request):
     if request.method == 'POST':
         form = SupplierForm(request.POST)
         if form.is_valid():
-            supplier = form.save()
+            supplier = form.save(commit=False)
+            supplier.shop = request.selected_shop
+            supplier.save()
             messages.success(request, f'Supplier "{supplier.name}" has been created successfully.')
             return redirect('supplier_list')
     else:
