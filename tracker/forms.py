@@ -68,7 +68,7 @@ class ProductForm(forms.ModelForm):
         
         # Filter categories by shop if request is available
         if request and hasattr(request, 'filter_by_shop'):
-            categories = Category.objects.all()
+            categories = ProductCategory.objects.all()
             categories = request.filter_by_shop(categories)
             self.fields['category'].queryset = categories
         
