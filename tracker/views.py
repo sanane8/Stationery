@@ -184,7 +184,11 @@ def product_create(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request=request)
         if form.is_valid():
-            product = form.save()
+            product = form.save(commit=False)
+            # Set the shop based on selected shop
+            if request.selected_shop:
+                product.shop = request.selected_shop
+            product.save()
             messages.success(request, f'Product "{product.name}" has been created successfully.')
             return redirect('product_detail', pk=product.pk)
     else:
@@ -225,7 +229,11 @@ def product_update(request, pk):
     if request.method == 'POST':
         form = ProductForm(request.POST, instance=product, request=request)
         if form.is_valid():
-            product = form.save()
+            product = form.save(commit=False)
+            # Ensure the shop is correctly set based on selected shop
+            if request.selected_shop:
+                product.shop = request.selected_shop
+            product.save()
             messages.success(request, f'Whole sale product "{product.name}" has been updated successfully.')
             return redirect('product_detail', pk=product.pk)
     else:
