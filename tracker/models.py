@@ -296,6 +296,7 @@ class Product(models.Model):
                 stock_quantity=self.total_units_in_stock,
                 minimum_stock=self.minimum_cartons * self.units_per_carton,  # Convert to units
                 supplier=self.supplier.name,
+                shop=self.shop,  # Use the same shop as the product
                 is_active=self.is_active
             )
             self.stationery_item = stationery_item
