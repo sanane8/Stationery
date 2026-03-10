@@ -111,7 +111,7 @@ def product_list(request):
     page_obj = paginator.get_page(page_number)
     
     # Get filter options
-    categories = Category.objects.all()
+    categories = ProductCategory.objects.all()
     categories = request.filter_by_shop(categories)
     suppliers = Supplier.objects.filter(is_active=True)
     suppliers = request.filter_by_shop(suppliers)

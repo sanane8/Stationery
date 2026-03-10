@@ -168,12 +168,14 @@ def restore_stock_on_sale_item_delete(sender, instance, **kwargs):
             old_stock = instance.retail_item.stock_quantity
             instance.retail_item.stock_quantity += instance.quantity
             instance.retail_item.save(update_fields=['stock_quantity'])
-            print(f"SIGNAL DEBUG: Restored retail item {instance.retail_item.name} from {old_stock} to {instance.retail_item.stock_quantity}")
+            print(f"SIGNAL DEBUG: Restored retail item: {instance.retail_item.name} (+{instance.quantity})")
         elif instance.product_type == 'wholesale' and instance.wholesale_item:
             old_stock = instance.wholesale_item.cartons_in_stock
             instance.wholesale_item.cartons_in_stock += instance.quantity
             instance.wholesale_item.save(update_fields=['cartons_in_stock'])
-            print(f"SIGNAL DEBUG: Restored wholesale item {instance.wholesale_item.name} from {old_stock} to {instance.wholesale_item.cartons_in_stock}")
+            print(f"SIGNAL DEBUG: Restored wholesale item: {instance.wholesale_item.name} (+{instance.quantity})")
+        else:
+            print(f"SIGNAL DEBUG: No valid product type for stock restoration")
 
     # Recompute the sale total if the sale still exists (it may be being deleted)
     try:
