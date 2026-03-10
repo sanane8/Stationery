@@ -447,10 +447,12 @@ class Sale(models.Model):
         # Normal case: sale with items
         items = list(self.items.all())
         if items:
-            total_cost = sum(
-                (item.retail_item.cost_price if item.product_type == 'retail' and item.retail_item else Decimal('0')) * item.quantity 
-                for item in items
-            )
+            total_cost = Decimal('0')
+            for item in items:
+                if item.product_type == 'retail' and item.retail_item:
+                    total_cost += (item.retail_item.cost_price or Decimal('0')) * item.quantity
+                elif item.product_type == 'wholesale' and item.wholesale_item:
+                    total_cost += (item.wholesale_item.supplier_price or Decimal('0')) * item.quantity
             return self.total_amount - total_cost
 
         # Payment-sale case: try to infer associated debt and originating sale
