@@ -9,7 +9,7 @@ from django.db.models.functions import TruncDate
 from django.utils import timezone
 from django.core.paginator import Paginator
 from datetime import datetime, timedelta
-from .models import StationeryItem, Sale, SaleItem, Debt, Customer, Category, Product, Supplier, UserProfile
+from .models import StationeryItem, Sale, SaleItem, Debt, Customer, Category, ProductCategory, Product, Supplier, UserProfile
 from .forms import SaleForm, SaleItemForm, DebtForm, PaymentForm, StationeryItemForm, CustomerForm, LoginForm, RegistrationForm, ProductForm, SupplierForm
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse, HttpResponseBadRequest
