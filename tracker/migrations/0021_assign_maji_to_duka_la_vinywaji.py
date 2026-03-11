@@ -3,6 +3,46 @@
 from django.db import migrations
 
 
+def ensure_maji_category(apps, schema_editor):
+    """Ensure MAJI ProductCategory exists for Duka la Vinywaji"""
+    Shop = apps.get_model('tracker', 'Shop')
+    ProductCategory = apps.get_model('tracker', 'ProductCategory')
+    
+    try:
+        shop = Shop.objects.get(name='duka_la_vinywaji')
+        
+        # Get or create MAJI category for this shop
+        pc, created = ProductCategory.objects.get_or_create(
+            name='MAJI',
+            shop=shop,
+            defaults={'description': 'Water/Maji products'}
+        )
+        
+        # Remove any duplicate case-insensitive entries
+        duplicates = ProductCategory.objects.filter(
+            shop=shop,
+            name__iexact='MAJI'
+        ).exclude(id=pc.id)
+        
+        for dup in duplicates:
+            dup.delete()
+            
+    except Shop.DoesNotExist:
+        pass
+
+
+def reverse_maji_category(apps, schema_editor):
+    """Reverse: Remove MAJI ProductCategory for Duka la Vinywaji"""
+    Shop = apps.get_model('tracker', 'Shop')
+    ProductCategory = apps.get_model('tracker', 'ProductCategory')
+    
+    try:
+        shop = Shop.objects.get(name='duka_la_vinywaji')
+        ProductCategory.objects.filter(name='MAJI', shop=shop).delete()
+    except Shop.DoesNotExist:
+        pass
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,4 +50,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(ensure_maji_category, reverse_maji_category),
     ]
