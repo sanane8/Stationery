@@ -65,6 +65,7 @@ class ProductForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
+        self.request = request  # Store request for later use
         
         # Filter categories by shop if request is available
         if request and hasattr(request, 'filter_by_shop'):
@@ -89,8 +90,13 @@ class ProductForm(forms.ModelForm):
         """Validate SKU uniqueness"""
         sku = self.cleaned_data.get('sku')
         if sku:
-            # Check if SKU already exists (excluding current instance)
+            # Check if SKU already exists in the same shop (excluding current instance)
             existing_products = Product.objects.filter(sku=sku)
+            
+            # If we have a request with selected shop, filter by shop
+            if hasattr(self, 'request') and self.request and hasattr(self.request, 'selected_shop'):
+                existing_products = existing_products.filter(shop=self.request.selected_shop)
+            
             if self.instance and self.instance.pk:
                 existing_products = existing_products.exclude(pk=self.instance.pk)
             
