@@ -713,6 +713,8 @@ def sales_list(request):
         for item in sale.items.all():
             if item.product_type == 'retail' and item.retail_item:
                 total_cost += item.quantity * (item.retail_item.cost_price or Decimal('0'))
+            elif item.product_type == 'wholesale' and item.wholesale_item:
+                total_cost += item.quantity * (item.wholesale_item.supplier_price or Decimal('0'))
         sale.total_cost = total_cost
         sale.annotated_profit = sale.total_amount - total_cost
 
@@ -743,6 +745,8 @@ def sales_list(request):
             for item in sale.items.all():
                 if item.product_type == 'retail' and item.retail_item:
                     sale_cost += item.quantity * (item.retail_item.cost_price or Decimal('0'))
+                elif item.product_type == 'wholesale' and item.wholesale_item:
+                    sale_cost += item.quantity * (item.wholesale_item.supplier_price or Decimal('0'))
             sale.total_cost = sale_cost  # Store for daily aggregates
         overall_cost += sale_cost
     
@@ -790,6 +794,8 @@ def sales_list(request):
                         item_cost = Decimal('0')
                         if si.product_type == 'retail' and si.retail_item:
                             item_cost = si.quantity * (si.retail_item.cost_price or Decimal('0'))
+                        elif si.product_type == 'wholesale' and si.wholesale_item:
+                            item_cost = si.quantity * (si.wholesale_item.supplier_price or Decimal('0'))
                     matching_item_cost += item_cost
                     
                     entry['product_names'].add(si.item_name)
