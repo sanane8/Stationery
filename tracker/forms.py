@@ -67,17 +67,13 @@ class ProductForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.request = request  # Store request for later use
         
-        # Filter categories by shop if request is available
-        if request and hasattr(request, 'filter_by_shop'):
-            categories = ProductCategory.objects.all()
-            categories = request.filter_by_shop(categories)
-            self.fields['category'].queryset = categories
+        # Filtering is handled in the view for consistency with stationery items.
+        # The form no longer applies shop-based filtering itself.
+        # request is stored for validation needs if required later.
         
-        # Filter suppliers by shop if request is available
-        if request and hasattr(request, 'filter_by_shop'):
-            suppliers = Supplier.objects.filter(is_active=True)
-            suppliers = request.filter_by_shop(suppliers)
-            self.fields['supplier'].queryset = suppliers
+        # NOTE: if the view forgets to filter, the dropdown will show all entries.
+        # This mirrors StationeryItemForm behaviour where the view explicitly
+        # sets the queryset based on the selected shop.
         
         # For existing products, make SKU editable
         if self.instance and self.instance.pk:

@@ -183,6 +183,10 @@ def product_create(request):
     
     if request.method == 'POST':
         form = ProductForm(request.POST, request=request)
+        # apply explicit shop filtering to the form
+        if request.selected_shop:
+            form.fields['category'].queryset = ProductCategory.objects.filter(shop=request.selected_shop)
+            form.fields['supplier'].queryset = Supplier.objects.filter(is_active=True, shop=request.selected_shop)
         if form.is_valid():
             product = form.save(commit=False)
             # Set the shop based on selected shop
@@ -193,6 +197,9 @@ def product_create(request):
             return redirect('product_detail', pk=product.pk)
     else:
         form = ProductForm(request=request)
+        if request.selected_shop:
+            form.fields['category'].queryset = ProductCategory.objects.filter(shop=request.selected_shop)
+            form.fields['supplier'].queryset = Supplier.objects.filter(is_active=True, shop=request.selected_shop)
     
     return render(request, 'tracker/product_form.html', {
         'form': form,
@@ -228,6 +235,9 @@ def product_update(request, pk):
     
     if request.method == 'POST':
         form = ProductForm(request.POST, instance=product, request=request)
+        if request.selected_shop:
+            form.fields['category'].queryset = ProductCategory.objects.filter(shop=request.selected_shop)
+            form.fields['supplier'].queryset = Supplier.objects.filter(is_active=True, shop=request.selected_shop)
         if form.is_valid():
             product = form.save(commit=False)
             # Ensure the shop is correctly set based on selected shop
@@ -238,6 +248,9 @@ def product_update(request, pk):
             return redirect('product_detail', pk=product.pk)
     else:
         form = ProductForm(instance=product, request=request)
+        if request.selected_shop:
+            form.fields['category'].queryset = ProductCategory.objects.filter(shop=request.selected_shop)
+            form.fields['supplier'].queryset = Supplier.objects.filter(is_active=True, shop=request.selected_shop)
     
     return render(request, 'tracker/product_form.html', {
         'form': form,
