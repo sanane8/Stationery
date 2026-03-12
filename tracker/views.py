@@ -1965,7 +1965,7 @@ def expenditures_export_pdf(request):
 @login_required
 def debt_detail(request, pk):
     """Detail view for a debt"""
-    debt = get_object_or_404(Debt, pk=pk)
+    debt = get_object_or_404(Debt.objects.filter(shop=request.selected_shop), pk=pk)
     payments = debt.payments.all().order_by('-payment_date')
     
     context = {
@@ -1983,11 +1983,15 @@ def create_debt(request):
         form = DebtForm(request.POST)
         if form.is_valid():
             debt = form.save(commit=False)
+            # Set the shop based on selected shop
+            if request.selected_shop:
+                debt.shop = request.selected_shop
+            
             # If an item is provided and amount left blank, auto-calc from item price
             if debt.item and (debt.amount is None or debt.amount == 0):
                 debt.amount = (debt.item.unit_price or Decimal('0.00')) * debt.quantity
-            # If an item is provided and the user entered the item unit price (not the total),
-            # treat it as a per-unit price and multiply by the quantity to store the total debt.
+            # If an item is provided and user entered item unit price (not total),
+            # treat it as a per-unit price and multiply by quantity to store the total debt.
             elif debt.item and debt.amount is not None:
                 try:
                     unit_price = (debt.item.unit_price or Decimal('0.00'))
@@ -2043,7 +2047,7 @@ def create_debt(request):
 @login_required
 def add_payment(request, debt_id):
     """Add a payment to a debt"""
-    debt = get_object_or_404(Debt, pk=debt_id)
+    debt = get_object_or_404(Debt.objects.filter(shop=request.selected_shop), pk=debt_id)
     
     if request.method == 'POST':
         form = PaymentForm(request.POST, debt=debt)
@@ -2205,7 +2209,7 @@ def create_stationery_item(request):
 @login_required
 def send_debt_sms(request, debt_id):
     """Send SMS reminder for a specific debt"""
-    debt = get_object_or_404(Debt, pk=debt_id)
+    debt = get_object_or_404(Debt.objects.filter(shop=request.selected_shop), pk=debt_id)
 
     if request.method == 'POST':
         from .sms_utils import send_debt_reminder_sms
@@ -2329,7 +2333,7 @@ def send_bulk_debt_sms(request):
 @login_required
 def send_debt_whatsapp(request, debt_id):
     """Send WhatsApp reminder for a specific debt"""
-    debt = get_object_or_404(Debt, pk=debt_id)
+    debt = get_object_or_404(Debt.objects.filter(shop=request.selected_shop), pk=debt_id)
 
     if request.method == 'POST':
         from .sms_utils import send_debt_reminder_whatsapp
