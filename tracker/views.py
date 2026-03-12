@@ -1693,6 +1693,19 @@ def debts_list(request):
     debts = Debt.objects.select_related('customer').order_by('-created_at')
     debts = request.filter_by_shop(debts)
     
+    # Filter by date range
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    # guard against literal 'None' or empty strings from template/query
+    if start_date in (None, '', 'None'):
+        start_date = None
+    if end_date in (None, '', 'None'):
+        end_date = None
+    if start_date:
+        debts = debts.filter(created_at__date__gte=start_date)
+    if end_date:
+        debts = debts.filter(created_at__date__lte=end_date)
+    
     # Filter by status
     status = request.GET.get('status')
     if status:
@@ -1727,8 +1740,9 @@ def debts_list(request):
                 Q(description__icontains=search_query)
             )
     
-    # Get all customers for the dropdown
+    # Get all customers for the dropdown (filtered by shop)
     customers = Customer.objects.filter(is_active=True).order_by('name')
+    customers = request.filter_by_shop(customers)
     
     # Totals for the filtered dataset
     totals = debts.aggregate(
@@ -1755,6 +1769,8 @@ def debts_list(request):
         'total_remaining': total_remaining,
         'paginator': paginator,
         'page_obj': page_obj,
+        'start_date': start_date,
+        'end_date': end_date,
     }
 
     return render(request, 'tracker/debts_list.html', context)

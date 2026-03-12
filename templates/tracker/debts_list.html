@@ -29,6 +29,14 @@
 <div class="card mb-4">
     <div class="card-body">
         <form method="get" class="row g-3">
+            <div class="col-md-2">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|default:'' }}">
+            </div>
+            <div class="col-md-2">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|default:'' }}">
+            </div>
             <div class="col-md-3">
                 <label for="customer" class="form-label">Customer</label>
                 <select class="form-select" id="customer" name="customer">
@@ -50,19 +58,19 @@
                     <option value="overdue" {% if selected_status == 'overdue' %}selected{% endif %}>Overdue</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="search" class="form-label">Search</label>
                 <input type="text" class="form-control" id="search" name="search" placeholder="{% if selected_customer %}Description{% else %}Customer name or description{% endif %}" value="{{ search_query|default:'' }}">
                 {% if selected_customer %}
                     <small class="text-muted">Searching in description only</small>
                 {% endif %}
             </div>
-            <div class="col-md-2">
+            <div class="col-md-1">
                 <div class="form-check mt-4">
                     <input class="form-check-input" type="checkbox" id="overdue" name="overdue" 
                            {% if overdue_only %}checked{% endif %}>
                     <label class="form-check-label" for="overdue">
-                        Show only overdue debts
+                        Overdue
                     </label>
                 </div>
             </div>
