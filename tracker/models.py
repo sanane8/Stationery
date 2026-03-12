@@ -242,7 +242,8 @@ class Product(models.Model):
         # Get sequential number for today
         today = datetime.datetime.now().date()
         count_today = Product.objects.filter(
-            created_at__date=today
+            created_at__date=today,
+            shop=self.shop  # Filter by current shop
         ).count()
         
         # Generate sequential number (3 digits, padded with zeros)
@@ -254,7 +255,7 @@ class Product(models.Model):
         # Ensure uniqueness
         original_sku = sku
         counter = 1
-        while Product.objects.filter(sku=sku).exists():
+        while Product.objects.filter(sku=sku, shop=self.shop).exists():
             sku = f"{original_sku}-{counter}"
             counter += 1
         
