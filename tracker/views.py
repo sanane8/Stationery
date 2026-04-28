@@ -27,6 +27,14 @@ import json
 
 logger = logging.getLogger(__name__)
 
+def landing_page(request):
+    """Landing page view - accessible to everyone"""
+    # If user is already authenticated, redirect to dashboard
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    
+    return render(request, 'tracker/landing.html')
+
 # Role-based decorators
 def admin_required(view_func):
     """Decorator to require admin role"""

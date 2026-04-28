@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SP Msabila Stationery - Management System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+/* Modern Landing Page Styles */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    --secondary-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    --success-gradient: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+    --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --dark-gradient: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+    --light-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    --purple-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    --sunset-gradient: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+    --ocean-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    
+    /* Color Palette */
+    --purple-500: #667eea;
+    --purple-600: #5a67d8;
+    --pink-500: #f093fb;
+    --pink-600: #e91e63;
+    --blue-500: #4facfe;
+    --blue-600: #0099ff;
+    --green-500: #00b09b;
+    --green-600: #00d4aa;
+    --yellow-500: #fee140;
+    --yellow-600: #feca57;
+    --orange-500: #fa709a;
+    --orange-600: #ff6b6b;
+    --red-500: #f5576c;
+    --red-600: #ff4757;
+    --teal-500: #30cfd0;
+    --teal-600: #00b894;
+    --indigo-500: #330867;
+    --indigo-600: #5f27cd;
+}
+
+/* Navigation Bar */
+.navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.navbar.scrolled {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.05);
+}
+
+.navbar-nav .nav-link {
+    color: #4a5568;
+    font-weight: 500;
+    margin: 0 0.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--purple-500);
+}
+
+.navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.navbar-nav .nav-link:hover::after {
+    width: 80%;
+}
+
+.btn-get-started-nav {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-get-started-nav:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+/* Adjust hero section to account for fixed navbar */
+.hero-section {
+    padding: 140px 0 100px;
+}
+
+/* Center page title */
+.main-content h1.h2 {
+    display: block !important;
+    text-align: center !important;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 2rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Hero Section */
+.hero-section {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 120px 0 100px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="0,100 1000,0 1000,100"/></svg>');
+    background-size: cover;
+}
+
+.hero-section::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(30px, 30px) rotate(180deg); }
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    letter-spacing: -0.02em;
+    overflow: hidden;
+    position: relative;
+}
+
+.hero-title span {
+    display: inline-block;
+    animation: slideInFromLeft 1s ease-out forwards;
+    opacity: 0;
+}
+
+.hero-title span:nth-child(1) { animation-delay: 0.1s; }
+.hero-title span:nth-child(2) { animation-delay: 0.3s; }
+.hero-title span:nth-child(3) { animation-delay: 0.5s; }
+.hero-title span:nth-child(4) { animation-delay: 0.7s; }
+.hero-title span:nth-child(5) { animation-delay: 0.9s; }
+.hero-title span:nth-child(6) { animation-delay: 1.1s; }
+
+@keyframes slideInFromLeft {
+    0% {
+        transform: translateX(-100px);
+        opacity: 0;
+    }
+    60% {
+        transform: translateX(10px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Alternative sliding effect for continuous animation */
+.hero-title.sliding span {
+    animation: slideInFromLeftContinuous 2s ease-in-out infinite;
+}
+
+.hero-title.sliding span:nth-child(1) { animation-delay: 0s; }
+.hero-title.sliding span:nth-child(2) { animation-delay: 0.2s; }
+.hero-title.sliding span:nth-child(3) { animation-delay: 0.4s; }
+.hero-title.sliding span:nth-child(4) { animation-delay: 0.6s; }
+.hero-title.sliding span:nth-child(5) { animation-delay: 0.8s; }
+.hero-title.sliding span:nth-child(6) { animation-delay: 1.0s; }
+
+@keyframes slideInFromLeftContinuous {
+    0%, 100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    50% {
+        transform: translateX(-20px);
+        opacity: 0.8;
+    }
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 3rem;
+    opacity: 0.95;
+    font-weight: 500;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-features {
+    background: rgba(255,255,255,0.15);
+    padding: 2.5rem;
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.2);
+    margin-bottom: 3rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.feature-icon-hero {
+    font-size: 2.5rem;
+    color: white;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.feature-icon-hero:hover {
+    transform: scale(1.1) rotate(5deg);
+    color: #fbbf24;
+}
+
+/* Modern Buttons */
+.btn-hero {
+    padding: 16px 32px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.btn-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.btn-hero:hover::before {
+    left: 100%;
+}
+
+.btn-hero:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.btn-text {
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.btn-icon {
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    display: inline-block;
+}
+
+.btn-primary-hero {
+    background: white;
+    color: #6366f1;
+    border: 2px solid white;
+}
+
+.btn-primary-hero:hover {
+    background: #f8fafc;
+    color: #4f46e5;
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.btn-primary-hero:hover .btn-icon {
+    transform: translateX(5px);
+}
+
+.btn-outline-hero {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.8);
+    backdrop-filter: blur(10px);
+}
+
+.btn-outline-hero:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: white;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.btn-outline-hero:hover .btn-icon {
+    transform: translateY(3px);
+}
+
+/* Features Section */
+.features-section {
+    padding: 100px 0;
+    background: var(--light-gradient);
+    position: relative;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.features-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: var(--primary-gradient);
+    transform: skewY(-2deg);
+    transform-origin: top left;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.section-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+}
+
+.section-subtitle {
+    font-size: 1.3rem;
+    color: #64748b;
+    font-weight: 500;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    border: none;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover::before {
+    transform: scaleX(1);
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+}
+
+/* Colorful Feature Cards */
+.feature-card:nth-child(1) .feature-icon-wrapper {
+    background: var(--purple-gradient);
+}
+
+.feature-card:nth-child(2) .feature-icon-wrapper {
+    background: var(--info-gradient);
+}
+
+.feature-card:nth-child(3) .feature-icon-wrapper {
+    background: var(--success-gradient);
+}
+
+.feature-card:nth-child(4) .feature-icon-wrapper {
+    background: var(--warning-gradient);
+}
+
+.feature-card:nth-child(5) .feature-icon-wrapper {
+    background: var(--secondary-gradient);
+}
+
+.feature-card:nth-child(6) .feature-icon-wrapper {
+    background: var(--sunset-gradient);
+}
+
+.feature-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 2rem;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.25);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-icon-wrapper {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 15px 35px rgba(99, 102, 241, 0.35);
+}
+
+.feature-icon {
+    font-size: 2rem;
+    color: white;
+}
+
+.feature-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+}
+
+.feature-description {
+    font-size: 1rem;
+    color: #64748b;
+    line-height: 1.7;
+}
+
+/* Process Section */
+.process-section {
+    position: relative;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.process-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: var(--success-gradient);
+    transform: skewY(-2deg);
+    transform-origin: top left;
+}
+
+.process-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.process-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--success-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.process-card:hover::before {
+    transform: scaleX(1);
+}
+
+.process-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+}
+
+.process-number {
+    width: 40px;
+    height: 40px;
+    background: var(--success-gradient);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin: 0 auto 1rem;
+    box-shadow: 0 5px 15px rgba(0, 176, 155, 0.3);
+}
+
+.process-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+/* Colorful Process Icons */
+.process-card:nth-child(1) .process-icon-wrapper {
+    background: var(--purple-gradient);
+}
+
+.process-card:nth-child(2) .process-icon-wrapper {
+    background: var(--info-gradient);
+}
+
+.process-card:nth-child(3) .process-icon-wrapper {
+    background: var(--warning-gradient);
+}
+
+.process-card:nth-child(4) .process-icon-wrapper {
+    background: var(--success-gradient);
+}
+
+.process-card:hover .process-icon-wrapper {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.process-icon {
+    font-size: 1.8rem;
+    color: white;
+}
+
+.process-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.process-description {
+    font-size: 0.95rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* Stats Section */
+.stats-section {
+    background: var(--dark-gradient);
+    color: white;
+    padding: 100px 0;
+    position: relative;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.stats-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="rgba(255,255,255,0.03)"><circle cx="50" cy="50" r="40"/><circle cx="50" cy="50" r="30"/><circle cx="50" cy="50" r="20"/></svg>');
+    background-size: 100px 100px;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 3rem 1rem;
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    margin: 1rem 0;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.stat-card:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+/* Colorful Stat Cards */
+.stat-card:nth-child(1) {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.stat-card:nth-child(1):hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+}
+
+.stat-card:nth-child(2) {
+    background: linear-gradient(135deg, rgba(250, 112, 154, 0.1) 0%, rgba(254, 225, 64, 0.1) 100%);
+    border-color: rgba(250, 112, 154, 0.3);
+}
+
+.stat-card:nth-child(2):hover {
+    background: linear-gradient(135deg, rgba(250, 112, 154, 0.2) 0%, rgba(254, 225, 64, 0.2) 100%);
+}
+
+.stat-card:nth-child(3) {
+    background: linear-gradient(135deg, rgba(0, 176, 155, 0.1) 0%, rgba(150, 201, 61, 0.1) 100%);
+    border-color: rgba(0, 176, 155, 0.3);
+}
+
+.stat-card:nth-child(3):hover {
+    background: linear-gradient(135deg, rgba(0, 176, 155, 0.2) 0%, rgba(150, 201, 61, 0.2) 100%);
+}
+
+.stat-card:nth-child(4) {
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+    border-color: rgba(79, 172, 254, 0.3);
+}
+
+.stat-card:nth-child(4):hover {
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.2) 0%, rgba(0, 242, 254, 0.2) 100%);
+}
+
+.stat-number {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.stat-label {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 600;
+    color: #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.testimonials-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: var(--dark-gradient);
+    transform: skewY(-2deg);
+    transform-origin: top left;
+}
+
+.testimonial-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.testimonial-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--info-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.testimonial-card:hover::before {
+    transform: scaleX(1);
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+}
+
+.testimonial-content {
+    margin-bottom: 1.5rem;
+}
+
+.testimonial-text {
+    font-size: 1rem;
+    color: #475569;
+    line-height: 1.7;
+    font-style: italic;
+    margin-bottom: 1rem;
+}
+
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.author-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.author-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.author-title {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 0;
+}
+
+.stars {
+    color: #fbbf24;
+    font-size: 1.1rem;
+}
+
+/* CTA Section */
+.cta-section {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 100px 0;
+    text-align: center;
+    position: relative;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.cta-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.05)"><polygon points="0,0 1000,100 0,100"/></svg>');
+    background-size: cover;
+}
+
+.cta-content {
+    position: relative;
+    z-index: 1;
+}
+
+.cta-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    letter-spacing: -0.02em;
+}
+
+.cta-description {
+    font-size: 1.4rem;
+    margin-bottom: 3rem;
+    opacity: 0.95;
+    background: rgba(255,255,255,0.1);
+    padding: 2rem;
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.2);
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.cta-button .btn-hero {
+    background: white;
+    color: #6366f1;
+    font-weight: 700;
+    box-shadow: 0 15px 35px rgba(255,255,255,0.25);
+    padding: 18px 40px;
+    font-size: 1.2rem;
+}
+
+.cta-button .btn-hero:hover {
+    background: #f8fafc;
+    color: #4f46e5;
+    transform: translateY(-3px);
+    box-shadow: 0 25px 50px rgba(255,255,255,0.35);
+}
+
+/* Hide default page elements for landing page */
+.main-content .border-bottom {
+    display: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+    }
+    
+    .cta-title {
+        font-size: 2.5rem;
+    }
+    
+    .btn-hero {
+        padding: 14px 24px;
+        font-size: 1rem;
+        margin: 5px;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+    }
+    
+    .features-section,
+    .stats-section,
+    .cta-section,
+    .process-section,
+    .testimonials-section {
+        padding: 80px 0;
+    }
+    
+    .hero-section {
+        padding: 80px 0 60px;
+    }
+}
+
+/* Modern animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.6s ease-out;
+}
+</style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#hero">
+                <i class="fas fa-store me-2"></i>SP Msabila Stationery
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#process">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#testimonials">Testimonials</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a href="/login/" class="btn-get-started-nav">
+                            <i class="fas fa-rocket me-2"></i>Get Started
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mx-auto">
+                    <div class="hero-content animate-fade-in">
+                        <div class="badge bg-white text-primary mb-3 px-3 py-2">
+                            <i class="fas fa-star me-2"></i>Modern Stationery Management
+                        </div>
+                        <h1 class="hero-title">
+                            <span>Welcome</span>
+                            <span>to</span>
+                            <span>SP</span>
+                            <span>Msabila</span>
+                            <span>Stationery</span>
+                        </h1>
+                        <p class="hero-subtitle">Transform your stationery business with our comprehensive management solution. Track inventory, manage sales, and grow your business with ease.</p>
+                        
+                        <!-- Key Features -->
+                        <div class="hero-features">
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <i class="fas fa-box feature-icon-hero"></i>
+                                        <h6 class="fw-bold">Smart Inventory</h6>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <i class="fas fa-shopping-cart feature-icon-hero"></i>
+                                        <h6 class="fw-bold">Sales Analytics</h6>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <i class="fas fa-chart-line feature-icon-hero"></i>
+                                        <h6 class="fw-bold">Business Insights</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="hero-buttons">
+                            <a href="/login/" class="btn-hero btn-primary-hero" id="getStartedBtn">
+                                <span class="btn-text">Get Started</span>
+                                <span class="btn-icon">
+                                    <i class="fas fa-arrow-right"></i>
+                                </span>
+                            </a>
+                            <a href="#features" class="btn-hero btn-outline-hero" id="learnMoreBtn">
+                                <span class="btn-text">Learn More</span>
+                                <span class="btn-icon">
+                                    <i class="fas fa-chevron-down"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+        <div class="container">
+            <div class="section-header">
+                <div class="badge bg-primary text-white mb-3 px-3 py-2">
+                    <i class="fas fa-cogs me-2"></i>Powerful Features
+                </div>
+                <h2 class="section-title">Everything You Need to Succeed</h2>
+                <p class="section-subtitle">Comprehensive tools designed specifically for stationery businesses to streamline operations, boost productivity, and accelerate growth in today's competitive market.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card card h-100 animate-fade-in">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon-wrapper mb-4">
+                                <i class="fas fa-box feature-icon"></i>
+                            </div>
+                            <h5 class="feature-title">Product Management</h5>
+                            <p class="feature-description">Complete inventory control with automatic SKU generation, real-time stock tracking, wholesale & retail pricing, barcode scanning, and low-stock alerts. Perfect for managing diverse stationery products from pens to office supplies.</p>
+                            <div class="mt-3">
+                                <span class="badge bg-light text-primary">Real-time</span>
+                                <span class="badge bg-light text-primary">Automated</span>
+                                <span class="badge bg-light text-primary">Multi-category</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card card h-100 animate-fade-in">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon-wrapper mb-4">
+                                <i class="fas fa-shopping-cart feature-icon"></i>
+                            </div>
+                            <h5 class="feature-title">Sales Management</h5>
+                            <p class="feature-description">Streamlined point-of-sale system with digital receipts, payment processing, discount management, and sales analytics. Handle both cash and digital payments while tracking every transaction in real-time.</p>
+                            <div class="mt-3">
+                                <span class="badge bg-light text-primary">Fast</span>
+                                <span class="badge bg-light text-primary">Secure</span>
+                                <span class="badge bg-light text-primary">POS Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card card h-100 animate-fade-in">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon-wrapper mb-4">
+                                <i class="fas fa-users feature-icon"></i>
+                            </div>
+                            <h5 class="feature-title">Customer Relations</h5>
+                            <p class="feature-description">Build lasting relationships with detailed customer profiles, purchase history tracking, loyalty programs, and personalized communication. Perfect for managing both retail customers and wholesale clients.</p>
+                            <div class="mt-3">
+                                <span class="badge bg-light text-primary">Smart</span>
+                                <span class="badge bg-light text-primary">Personalized</span>
+                                <span class="badge bg-light text-primary">CRM Tools</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card card h-100 animate-fade-in">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon-wrapper mb-4">
+                                <i class="fas fa-credit-card feature-icon"></i>
+                            </div>
+                            <h5 class="feature-title">Debt Tracking</h5>
+                            <p class="feature-description">Comprehensive credit management with automated reminders, payment scheduling, debt aging reports, and collection tracking. Ideal for stationery businesses offering credit to schools, offices, and regular customers.</p>
+                            <div class="mt-3">
+                                <span class="badge bg-light text-primary">Automated</span>
+                                <span class="badge bg-light text-primary">Secure</span>
+                                <span class="badge bg-light text-primary">Reports</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card card h-100 animate-fade-in">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon-wrapper mb-4">
+                                <i class="fas fa-truck feature-icon"></i>
+                            </div>
+                            <h5 class="feature-title">Supplier Management</h5>
+                            <p class="feature-description">Optimize your supply chain with supplier profiles, purchase order management, delivery tracking, and automated reordering. Never run out of popular stationery items with smart inventory alerts.</p>
+                            <div class="mt-3">
+                                <span class="badge bg-light text-primary">Efficient</span>
+                                <span class="badge bg-light text-primary">Reliable</span>
+                                <span class="badge bg-light text-primary">Auto-reorder</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card card h-100 animate-fade-in">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon-wrapper mb-4">
+                                <i class="fas fa-chart-line feature-icon"></i>
+                            </div>
+                            <h5 class="feature-title">Business Analytics</h5>
+                            <p class="feature-description">Data-driven insights with sales trends, profit analysis, inventory turnover reports, and customer behavior patterns. Make informed decisions with comprehensive dashboards and custom reports.</p>
+                            <div class="mt-3">
+                                <span class="badge bg-light text-primary">Insightful</span>
+                                <span class="badge bg-light text-primary">Real-time</span>
+                                <span class="badge bg-light text-primary">Dashboard</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Additional Benefits Section -->
+    <section class="benefits-section" style="background: white; padding: 80px 0; position: relative;">
+        <div class="container">
+            <div class="section-header">
+                <div class="badge bg-success text-white mb-3 px-3 py-2">
+                    <i class="fas fa-star me-2"></i>Why Choose Us
+                </div>
+                <h2 class="section-title">Built for Stationery Success</h2>
+                <p class="section-subtitle">Tailored specifically for the unique needs of stationery businesses in Tanzania and beyond.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="benefit-item d-flex align-items-start mb-4">
+                        <div class="benefit-icon me-3">
+                            <i class="fas fa-mobile-alt text-primary" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Mobile-First Design</h6>
+                            <p class="text-muted mb-0">Manage your business from anywhere with our fully responsive mobile interface. Perfect for busy stationery shop owners on the go.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item d-flex align-items-start mb-4">
+                        <div class="benefit-icon me-3">
+                            <i class="fas fa-shield-alt text-primary" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Secure & Reliable</h6>
+                            <p class="text-muted mb-0">Bank-level security with daily backups and encrypted data storage. Your business information is always protected.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item d-flex align-items-start mb-4">
+                        <div class="benefit-icon me-3">
+                            <i class="fas fa-headset text-primary" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">24/7 Support</h6>
+                            <p class="text-muted mb-0">Local Tanzanian support team ready to help you succeed. Get assistance whenever you need it.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="benefit-item d-flex align-items-start mb-4">
+                        <div class="benefit-icon me-3">
+                            <i class="fas fa-graduation-cap text-primary" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Easy to Learn</h6>
+                            <p class="text-muted mb-0">Intuitive interface designed for stationery business owners. No technical expertise required - start using it in minutes.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item d-flex align-items-start mb-4">
+                        <div class="benefit-icon me-3">
+                            <i class="fas fa-sync text-primary" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Automatic Updates</h6>
+                            <p class="text-muted mb-0">Always get the latest features and improvements without any additional cost or technical hassle.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item d-flex align-items-start mb-4">
+                        <div class="benefit-icon me-3">
+                            <i class="fas fa-chart-pie text-primary" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold">Growth Focused</h6>
+                            <p class="text-muted mb-0">Scale from single shop to multiple locations seamlessly. Built to grow with your stationery business.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Enhanced button interactions
+        const buttons = document.querySelectorAll('.btn-hero');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.02)';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+            
+            button.addEventListener('click', function(e) {
+                createRipple(this, e);
+            });
+        });
+        
+        // Ripple effect function
+        function createRipple(button, event) {
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            button.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+        
+        // Add loading state styles
+        if (!document.querySelector('#button-styles')) {
+            const style = document.createElement('style');
+            style.id = 'button-styles';
+            style.textContent = `
+                .btn-loading {
+                    pointer-events: none;
+                    opacity: 0.7;
+                }
+                
+                .btn-loading .btn-icon {
+                    animation: spin 1s linear infinite;
+                }
+                
+                .ripple {
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.5);
+                    transform: scale(0);
+                    animation: ripple-animation 0.6s ease-out;
+                    pointer-events: none;
+                }
+                
+                @keyframes ripple-animation {
+                    to {
+                        transform: scale(4);
+                        opacity: 0;
+                    }
+                }
+                
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Add floating particles to hero section
+        function createParticle() {
+            const heroSection = document.querySelector('.hero-section');
+            if (!heroSection) return;
+            
+            const particle = document.createElement('div');
+            particle.style.position = 'absolute';
+            particle.style.width = Math.random() * 6 + 2 + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.background = `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.3})`;
+            particle.style.borderRadius = '50%';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '1';
+            particle.style.animation = `float ${5 + Math.random() * 10}s linear infinite`;
+            
+            heroSection.appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 20000);
+        }
+
+        // Create initial particles
+        for (let i = 0; i < 20; i++) {
+            setTimeout(createParticle, i * 200);
+        }
+
+        // Create particles periodically
+        setInterval(createParticle, 2000);
+
+        // Add sliding effect to hero title on hover
+        const heroTitle = document.querySelector('.hero-title');
+        if (heroTitle) {
+            heroTitle.addEventListener('mouseenter', function() {
+                this.classList.add('sliding');
+            });
+            
+            heroTitle.addEventListener('mouseleave', function() {
+                this.classList.remove('sliding');
+            });
+            
+            // Optional: Trigger sliding effect every 10 seconds
+            setInterval(() => {
+                heroTitle.classList.add('sliding');
+                setTimeout(() => {
+                    heroTitle.classList.remove('sliding');
+                }, 2000);
+            }, 10000);
+        }
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animate-fade-in elements
+        document.querySelectorAll('.animate-fade-in').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    });
+    </script>
+</body>
+</html>
