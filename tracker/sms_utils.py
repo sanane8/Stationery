@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 def initialize_africastalking():
     """Initialize Africa's Talking SDK"""
     try:
+        logger.info(f"Initializing Africa's Talking with username: {settings.AFRICASTALKING_USERNAME}")
+        logger.info(f"API Key (first 10 chars): {settings.AFRICASTALKING_API_KEY[:10]}...")
         africastalking.initialize(
             username=settings.AFRICASTALKING_USERNAME,
             api_key=settings.AFRICASTALKING_API_KEY
@@ -15,6 +17,8 @@ def initialize_africastalking():
         return africastalking.SMS
     except Exception as e:
         logger.error(f"Failed to initialize Africa's Talking: {e}")
+        logger.error(f"Username: {settings.AFRICASTALKING_USERNAME}")
+        logger.error(f"API Key exists: {bool(settings.AFRICASTALKING_API_KEY)}")
         return None
 
 def initialize_whatsapp():
