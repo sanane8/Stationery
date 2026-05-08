@@ -33,7 +33,23 @@ def landing_page(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     
-    return render(request, 'tracker/landing.html')
+    # Check for session expiration message
+    session_message = request.GET.get('message', '')
+    if session_message:
+        # Store the message in session to display it via JavaScript
+        request.session['session_message'] = session_message
+        # Redirect to clear URL parameters but keep the message
+        return redirect('/landing/')
+    
+    # Check if there's a stored session message to display
+    session_message_to_display = request.session.pop('session_message', None)
+    
+    # Create context with the message
+    context = {
+        'session_message': session_message_to_display
+    }
+    
+    return render(request, 'tracker/landing.html', context)
 
 # Role-based decorators
 def admin_required(view_func):

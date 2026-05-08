@@ -89,6 +89,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tracker.middleware.ShopSelectionMiddleware',  # Re-enable this for shop filtering
     'tracker.middleware.UserProfileMiddleware',     # Re-enable this for user profiles
+    'tracker.middleware.SessionSecurityMiddleware', # Session expiration handling
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

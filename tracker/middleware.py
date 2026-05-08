@@ -93,11 +93,11 @@ class SessionSecurityMiddleware:
                     return JsonResponse({
                         'success': False,
                         'error': 'Session expired',
-                        'redirect_url': '/login/?message=Your session has expired due to inactivity'
+                        'redirect_url': '/landing/?message=Your session has expired due to inactivity'
                     }, status=401)
                 
-                # For regular requests, redirect to login
-                return redirect('/login/?message=Your session has expired due to inactivity')
+                # For regular requests, redirect to landing page
+                return redirect('/landing/?message=Your session has expired due to inactivity')
         
         return self.get_response(request)
     
@@ -108,6 +108,7 @@ class SessionSecurityMiddleware:
             '/media/',
             '/favicon.ico',
             '/login/',
+            '/landing/',
             '/logout/',
             '/password-reset/',
             '/admin/login/',
