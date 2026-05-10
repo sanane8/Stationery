@@ -406,6 +406,16 @@ def login_view(request):
             password = form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)
             if user is not None:
+                # Check if user is approved
+                try:
+                    profile = user.profile
+                    if not profile.is_approved:
+                        messages.error(request, 'Your account is pending admin approval. Please wait for approval before logging in.')
+                        return redirect('login')
+                except UserProfile.DoesNotExist:
+                    messages.error(request, 'User profile not found. Please contact administrator.')
+                    return redirect('login')
+                
                 login(request, user)
                 return redirect('dashboard')
             else:
@@ -424,14 +434,15 @@ def register_view(request):
             user = form.save()
             role = form.cleaned_data.get('role')
             
-            # Create UserProfile with role
+            # Create UserProfile with role (unapproved by default)
             UserProfile.objects.create(
                 user=user,
-                role=role
+                role=role,
+                is_approved=False  # Must be approved by admin
             )
             
             username = form.cleaned_data.get('username')
-            messages.success(request, f'Account created for {username}! You can now log in.')
+            messages.success(request, f'Account created for {username}! Your account is pending admin approval. You will be notified when approved.')
             return redirect('login')
     else:
         form = RegistrationForm()
@@ -2603,3 +2614,42 @@ def create_shop(request):
         'form': form,
         'title': 'Create New Shop'
     })
+
+
+@login_required
+def user_approval(request):
+    """Admin view for approving pending user registrations"""
+    # Only admins can access this view
+    if not request.user.profile.is_admin():
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('dashboard')
+    
+    pending_users = UserProfile.objects.filter(is_approved=False).select_related('user')
+    
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        action = request.POST.get('action')
+        role = request.POST.get('role', 'shop_seller')
+        
+        try:
+            user_profile = UserProfile.objects.get(id=user_id)
+            
+            if action == 'approve':
+                user_profile.is_approved = True
+                user_profile.role = role
+                user_profile.save()
+                messages.success(request, f'User {user_profile.user.username} has been approved with role: {user_profile.get_role_display()}.')
+            elif action == 'reject':
+                user_profile.user.delete()
+                messages.info(request, f'User {user_profile.user.username} has been rejected and deleted.')
+                
+        except UserProfile.DoesNotExist:
+            messages.error(request, 'User not found.')
+        
+        return redirect('user_approval')
+    
+    context = {
+        'pending_users': pending_users,
+        'role_choices': UserProfile.ROLE_CHOICES,
+    }
+    return render(request, 'tracker/user_approval.html', context)

@@ -58,6 +58,7 @@ class UserProfile(models.Model):
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='shop_seller')
+    is_approved = models.BooleanField(default=False, help_text="User must be approved by admin before accessing the system")
     phone = models.CharField(max_length=20, blank=True)
     assigned_shops = models.ManyToManyField(Shop, blank=True, help_text="Shops this user can access")
     default_shop = models.ForeignKey(Shop, on_delete=models.SET_NULL, null=True, blank=True, related_name='default_users')
@@ -76,6 +77,9 @@ class UserProfile(models.Model):
     
     def is_shop_seller(self):
         return self.role == 'shop_seller'
+    
+    def is_approved_user(self):
+        return self.is_approved
     
     def get_accessible_shops(self):
         """Get shops this user can access"""
