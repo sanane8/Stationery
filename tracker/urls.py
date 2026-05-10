@@ -84,9 +84,6 @@ urlpatterns = [
     path('shops/manage-users/', views.manage_user_shops, name='manage_user_shops'),
     path('switch/<int:shop_id>/', views.switch_shop, name='switch_shop'),
     
-    # User Management
-    path('user-approval/', views.user_approval, name='user_approval'),
-    
     # Session Management
     path('extend-session/', views.extend_session, name='extend_session'),
     path('logout-session/', views.logout_session, name='logout_session'),
