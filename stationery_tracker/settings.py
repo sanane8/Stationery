@@ -72,6 +72,10 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 # Django Sites Framework - Required for password reset
 SITE_ID = 1
 
+# Set site domain dynamically for Railway.app
+SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'spstationery.up.railway.app')
+SITE_NAME = os.getenv('SITE_NAME', 'SP Msabila Stationery')
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
