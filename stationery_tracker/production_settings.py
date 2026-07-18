@@ -26,6 +26,9 @@ DEBUG = False  # Temporarily enabled for debugging
 
 ALLOWED_HOSTS = [
 
+    'spstationery.up.railway.app',
+    'confident-truth-production.up.railway.app',
+    'stationery-production.up.railway.app',
     'localhost', '127.0.0.1', '0.0.0.0',
 
 ]

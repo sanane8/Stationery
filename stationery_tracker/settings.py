@@ -21,6 +21,7 @@ DEBUG = False  # Enable DEBUG to see full error
 allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*')
 if allowed_hosts == '*':
     ALLOWED_HOSTS = [
+        'spstationery.up.railway.app',
         'confident-truth-production.up.railway.app',
         'stationery-production.up.railway.app',
         'localhost',
