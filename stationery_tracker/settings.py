@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-stationery-tracker-default-key-for-development')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False  # Enable DEBUG to see full error
+DEBUG = True  # Temporarily enabled to debug 500 error
 
 # Handle ALLOWED_HOSTS safely - add exact Railway domain
 allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*')
