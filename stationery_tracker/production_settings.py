@@ -20,7 +20,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-stationery-tracker-pr
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = False  # Temporarily enabled for debugging
+DEBUG = True  # Temporarily enabled for debugging
 
 
 
